@@ -1,0 +1,7 @@
+// @flow
+
+export const ErrorCode = {
+    ENQUIRY_TIMEOUT: 'SYSERR_00001',
+    UPDATE_TIMEOUT: 'SYSERR_00002',
+    SYSTEM_ERROR: 'SYSERR_09999'
+};

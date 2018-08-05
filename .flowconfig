@@ -1,0 +1,15 @@
+[ignore]
+
+[include]
+
+[libs]
+
+[lints]
+
+[options]
+module.ignore_non_literal_requires=true
+module.name_mapper='^shared' ->'<PROJECT_ROOT>/src/shared'
+module.name_mapper='^app' ->'<PROJECT_ROOT>/src/app'
+module.name_mapper='^assets' ->'<PROJECT_ROOT>/assets'
+
+[strict]

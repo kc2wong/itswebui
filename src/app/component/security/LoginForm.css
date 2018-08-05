@@ -1,0 +1,45 @@
+/* .container {
+  height: 100vh;  
+} */
+
+.page-content {
+  background-color: #fff!important;
+  flex: 1 1 auto;
+  position: relative;/* need this to position inner content */
+  overflow-y: auto;
+}
+
+.leftPanel {
+  width: 30vw;
+  /* height: 100vh; */
+  min-width: 300px;
+  max-width: 450px;
+  float: left;
+}
+
+.footer {
+  margin-left: 20px;
+  position: absolute;
+  bottom: 0;
+  width: 30vw;
+  min-width: 300px;
+}
+
+.rightPanel {
+  height: 99vh;
+  overflow: hidden;
+  background-image: url("./../../../../assets/images/photo-1435575653489-b0873ec954e2.jpg");
+  background-size:     cover;                      /* <------ */
+  background-repeat:   no-repeat;  
+}
+
+.topFiller {
+  height: 25vh;
+  max-height: 400px;
+}
+
+.loginForm {
+  margin-left: 10px;
+  margin-right: 10px;
+  max-width: 400px;
+}

@@ -1,0 +1,8 @@
+.xcForm {
+    padding: 1em;
+}
+
+.form-group.required .control-label:after { 
+    content: " *";
+    color: red;
+ }

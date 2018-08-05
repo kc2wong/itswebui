@@ -1,0 +1,81 @@
+{
+    "name": "itswebui",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "enumify": "^1.0.4",
+        "file-loader": "^1.1.11",
+        "history": "^4.7.2",
+        "i18n-react": "^0.6.4",
+        "immutability-helper": "^2.7.0",
+        "json-loader": "^0.5.7",
+        "lodash": "^4.17.10",
+        "moment-es6": "^1.0.0",
+        "node-forge": "^0.7.5",
+        "npm": "^6.1.0",
+        "path": "^0.12.7",
+        "react": "^16.4.0",
+        "react-dom": "^16.4.0",
+        "react-router-dom": "^4.3.1",
+        "react-scripts": "1.1.4",
+        "semantic-ui-css": "^2.3.1",
+        "semantic-ui-react": "^0.81.1"
+    },
+    "scripts": {
+        "start": "webpack-dev-server --port 3000 --config ./webpack.dev.config.js --mode development",
+        "flow": "flow",
+        "flow start": "flow start",
+        "flow stop": "flow stop",
+        "flow status": "flow status",
+        "flow coverage": "flow coverage",
+        "build": "webpack --config ./webpack.prd.config.js --mode production",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "test:coverage": "jest --coverage",
+        "eject": "react-scripts eject"
+    },
+    "devDependencies": {
+        "babel-core": "^6.26.3",
+        "babel-eslint": "^8.2.3",
+        "babel-loader": "^7.1.4",
+        "babel-plugin-immutable-record": "^0.2.1",
+        "babel-plugin-transform-class-properties": "^6.24.1",
+        "babel-polyfill": "^6.26.0",
+        "babel-preset-es2015": "^6.24.1",
+        "babel-preset-react": "^6.24.1",
+        "babel-preset-stage-3": "^6.24.1",
+        "css-loader": "^0.28.11",
+        "enzyme": "^3.3.0",
+        "enzyme-adapter-react-16": "^1.1.1",
+        "enzyme-to-json": "^3.3.4",
+        "eslint": "^4.9.0",
+        "eslint-config-airbnb": "^16.1.0",
+        "eslint-plugin-import": "^2.7.0",
+        "eslint-plugin-jsx-a11y": "^6.0.2",
+        "eslint-plugin-react": "^7.4.0",
+        "html-webpack-plugin": "^3.2.0",
+        "identity-obj-proxy": "^3.0.0",
+        "jest": "^23.1.0",
+        "react-test-renderer": "^16.4.0",
+        "string-replace-loader": "^2.1.1",
+        "webpack": "^4.9.1",
+        "webpack-cli": "^2.1.4",
+        "webpack-dev-server": "^3.1.4"
+    },
+    "jest": {
+        "setupFiles": [
+            "./__tests__/jest.config.js"
+        ],
+        "snapshotSerializers": [
+            "enzyme-to-json/serializer"
+        ],
+        "testMatch": [
+            "**/__tests__/**/test*.js?(x)"
+        ],
+        "moduleNameMapper": {
+            "^.+\\.(css|scss)$": "identity-obj-proxy",
+            "^shared(.*)$": "<rootDir>/src/shared$1",
+            "^app(.*)$": "<rootDir>/src/app$1"
+        }
+    }
+}

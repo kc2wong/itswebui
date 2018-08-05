@@ -1,0 +1,13 @@
+.itsvflexcontainer {
+    display: flex; 
+    flex-direction: column; 
+}
+
+.its-flex-content {
+    flex-grow: 1;
+}
+
+.its-vscrollable-flex-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}

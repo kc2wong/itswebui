@@ -1,0 +1,111 @@
+{
+    "applicationName": "Web InterTrade",
+    "enum": {
+        "buySell" : {
+            "B": "Buy",
+            "S": "Sell"            
+        },
+        "functionCategory" : {
+            "I": "Instrument",
+            "C": "Client"
+        },
+        "stmActionType" : {
+            "I": "Information",
+            "R": "Rejection"
+        },
+        "status" : {
+            "A": "Active",
+            "I": "Inactive"
+        }
+    },
+    "error": {
+        "SS": {
+            "00015E": "Invalid username or password"
+        }
+    },
+    "general": {
+        "back": "Back",
+        "cancel": "Cancel",
+        "clear": "Clear",
+        "confirm": "Confirm",
+        "discardChangeQuestion": "Discard Changes ?",
+        "edit": "Edit",        
+        "delete": "Delete",        
+        "enquiry": "Enquiry",        
+        "loadingIndicator": "Loading ...",
+        "new": "New",        
+        "no": "No",
+        "noOfMatchRecord": "{0} matched record(s)",
+        "ok": "Ok",
+        "pageSize": "Page Size",
+        "refresh": "Refresh",
+        "save": "Save",
+        "saveChangeQuestion": "Save Changes ?",
+        "search": "Search",
+        "searchResult": "Search Result",
+        "view": "View",
+        "yes": "Yes"        
+    },
+    "home": {
+        "changePassword": "Change Password",
+        "greeting": "Welcome, {name}",
+        "language": "Language",
+        "logout": "Logout",
+        "versionToolTip": "Env : {env} \n Version : {ver}",
+        "lang" : {
+            "en": "English",
+            "zh": "繁體中文",
+            "gb": "简体中文"    
+        },
+        "preference": "Preference",
+        "setup": "Setup"
+    },    
+    "loginForm": {
+        "password": "Password",
+        "username": "Username",
+        "welcomeTo": "Welcome To",
+        "copyRight": "Copyright Reserved @ Excel Technology International (HK) Limited"
+    },
+    "menu": {
+        "actionCodeMaintenance": "Action Code Maintenance",
+        "ccog": "CCOG",
+        "configuration": "Configuration",
+        "currencyMaintenance": "Currency Maintenance",
+        "main": "Main Menu"
+    },
+    "currencyEditForm": {
+        "currencyCode": "Currency Code",
+        "decimalPoint": "Decimal Point",        
+        "descptDefLang": "Description",
+        "descpt2ndLang": "Description (Trad. Chi)",
+        "descpt3rdLang": "Description (Simp. Chi)",
+        "isoCode": "ISO Code",
+        "subUnitName": "Sub Unit Name",
+        "title": "Currency Maintenance ({0})",
+        "unitName": "Unit Name" 
+    },
+    "currencyMaintenanceForm": {
+        "title": "Currency Maintenance ({0})"
+    },
+    "orderInputForm": {        
+        "confirm": "Confirm",
+        "exchangeOid": "Exchange",
+        "instrumentOid": "Stock Code",
+        "price": "Price",
+        "quantity": "Quantity",
+        "reset": "Reset",
+        "side": "Buy / Sell"
+    },
+    "retailHome": {
+        "newOrder": "New Order"
+    },    
+    "stmActionEditForm": {
+        "stmActionCode": "Action Code",
+        "descpt": "Description",
+        "functionCategory": "Function Category",
+        "stmActionType": "Action Type"
+    },
+    "stmActionMaintenanceForm": {
+        "title": "Action Code Maintenance ({0})"
+    }      
+}

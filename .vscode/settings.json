@@ -1,0 +1,12 @@
+// Place your settings in this file to overwrite the default settings
+{
+    "files.exclude": {
+        "**/*.js.map": true,
+        "**/*.js": { "when": "$(basename).ts"}
+    },
+    "extensions.ignoreRecommendations": false,
+    "editor.detectIndentation": false,
+    "flow.useNPMPackagedFlow": true,
+    "flow.runOnAllFiles": true,
+    "javascript.validate.enable": false
+}

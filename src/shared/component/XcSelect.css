@@ -1,0 +1,9 @@
+.xcSelect {
+    margin-bottom: 1em;
+}
+
+/** Change background color of readonly dropdown **/
+div.xc-select-readonly > div.ui.selection.dropdown {
+  color: #495057!important;
+  background-color: #e9ecef!important;
+}

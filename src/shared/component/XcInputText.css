@@ -1,0 +1,16 @@
+.xcInputText {
+    margin-bottom: 1em!important;
+}
+
+div.ms-TextField-wrapper > label.ms-Label {
+    font-weight: bold;
+}
+
+/** Change background color of readonly input **/
+.ui.form input[readonly],
+.ui.form input:read-only,
+.ui.form textarea[readonly],
+.ui.form textarea:read-only {
+  color: #495057!important;
+  background-color: #e9ecef!important;
+}

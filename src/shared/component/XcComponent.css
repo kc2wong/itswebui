@@ -1,0 +1,15 @@
+.xcForm {
+    padding: 1em;
+}
+
+.xcInputText {
+    margin-bottom: 1em;
+}
+
+.xcSelect {
+    margin-bottom: 1em;
+}
+
+.xcButton-fluid {
+    width: 100%;
+}

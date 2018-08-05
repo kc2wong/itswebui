@@ -1,0 +1,13 @@
+.xcTab {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column
+}
+
+.xcActiveTabPane {
+    background-color: #F5F5F5!important
+}
+
+.xcActiveTabMenu {
+    background-color: #F5F5F5!important
+}
