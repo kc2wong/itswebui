@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 // import { ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
-import { Form } from 'semantic-ui-react';
+import { Form, Input } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import FormGroupContext from './XcFormGroup';
 import { constructLabel, createColumnClass, getRequired, getStringValue } from './XcFormUtil';
@@ -45,32 +45,19 @@ export class XcInputNumber extends Component<Props, State> {
                 {formCtx =>
                     <FormGroupContext.Consumer>
                         {formGrpCtx =>
-                            formGrpCtx != null && formGrpCtx.fluid ?
-                            <Form.Input
-                                fluid
-                                label={constructLabel(formCtx.name, name, label)}
-                                onChange={this.handleChange(formCtx.updateModel)}
-                                required={getRequired(validation)}
-                                type="text"
-                                value={getStringValue(value, formCtx.model, name)}
-                                {...i}
-                                {...p}
-                                {...ph}
-                                {...r}
-                            />
-                            :
-                            <Form.Input
-                                label={constructLabel(formCtx.name, name, label)}
-                                onChange={this.handleChange(formCtx.updateModel)}
-                                required={getRequired(validation)}
-                                type="text"
-                                value={getStringValue(value, formCtx.model, name)}                                
-                                width={width}
-                                {...i}
-                                {...p}
-                                {...ph}
-                                {...r}
-                            />
+                            <Form.Field required={getRequired(validation)}>
+                                <label>{constructLabel(formCtx.name, name, label)}</label>
+                                <Input
+                                    onChange={this.handleChange(formCtx.updateModel)}                                    
+                                    type="text"
+                                    value={getStringValue(value, formCtx.model, name)}
+                                    {...i}
+                                    {...p}
+                                    {...ph}
+                                    {...r}
+                                    {... (formCtx != null && formGrpCtx.fluid) ? { fluid: true } : { width: width }}
+                                />
+                            </Form.Field>
                         }
                     </FormGroupContext.Consumer>
                 }

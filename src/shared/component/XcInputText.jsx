@@ -1,7 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-// import { ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
-import { Form } from 'semantic-ui-react';
+import { Form, Input } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import FormGroupContext from './XcFormGroup';
 import { constructLabel, createColumnClass, getRequired, getStringValue } from './XcFormUtil';
@@ -18,6 +17,7 @@ type Props = {
     password: ?bool,
     placeholder: ?string,
     readonly: ?bool,
+    subLabel? :string,
     value: ?string,
     validation: ?XcInputTextConstraint,
     width: ?number
@@ -33,44 +33,32 @@ export class XcInputText extends Component<Props, State> {
     };
 
     render() {
-        const { icon, label, name, password, placeholder, readonly, validation, value, width, ...props } = this.props;
+        const { icon, label, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const i = icon != null ? { icon: icon.name, iconPosition: "left" } : {};
         const p = Object.assign({}, parseBool(password, false) ? { type: 'password' } : {}, props)
-        const c = createColumnClass(width) + " " + (getRequired(validation)  ? "required" : "")
+        // const c = createColumnClass(width) + " " + (getRequired(validation)  ? "required" : "")
         const r = parseBool(readonly, false) ? { readOnly: true } : {}
-
+        const float = subLabel ? { style: { float: "left" } } : {}
         return (
             <FormContext.Consumer>
                 {formCtx =>
                     <FormGroupContext.Consumer>
                         {formGrpCtx =>
-                            formGrpCtx != null && formGrpCtx.fluid ?
-                            <Form.Input
-                                fluid
-                                label={constructLabel(formCtx.name, name, label)}
-                                onChange={this.handleChange(formCtx.updateModel)}
-                                required={getRequired(validation)}
-                                type="text"
-                                value={getStringValue(value, formCtx.model, name)}
-                                {...i}
-                                {...p}
-                                {...ph}
-                                {...r}
-                            />
-                            :
-                            <Form.Input
-                                label={constructLabel(formCtx.name, name, label)}
-                                onChange={this.handleChange(formCtx.updateModel)}
-                                required={getRequired(validation)}
-                                type="text"
-                                value={getStringValue(value, formCtx.model, name)}                                
-                                width={width}
-                                {...i}
-                                {...p}
-                                {...ph}
-                                {...r}
-                            />
+                            <Form.Field required={getRequired(validation)}>
+                                <label {...float}>{constructLabel(formCtx.name, name, label)}</label>
+                                {subLabel ? <small {...float} {... formCtx.subLabelColor ? { style: { color: formCtx.subLabelColor } } : {}} >&nbsp;&nbsp;{subLabel}</small> : null}
+                                <Input
+                                    onChange={this.handleChange(formCtx.updateModel)}                                    
+                                    type="text"
+                                    value={getStringValue(value, formCtx.model, name)}
+                                    {...i}
+                                    {...p}
+                                    {...ph}
+                                    {...r}
+                                    {... (formCtx != null && formGrpCtx.fluid) ? { fluid: true } : { width: width }}
+                                />
+                            </Form.Field>
                         }
                     </FormGroupContext.Consumer>
                 }

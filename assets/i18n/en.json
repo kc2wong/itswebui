@@ -89,8 +89,8 @@
     },
     "orderInputForm": {        
         "confirm": "Confirm",
-        "exchangeOid": "Exchange",
-        "instrumentOid": "Stock Code",
+        "exchangeCode": "Exchange",
+        "instrumentCode": "Stock Code",
         "price": "Price",
         "quantity": "Quantity",
         "reset": "Reset",

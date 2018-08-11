@@ -1,5 +1,6 @@
 // @flow
 import { Enum } from 'enumify';
+import { Language } from 'shared/util/lang';
 
 export class SortDirection extends Enum { }
 SortDirection.initEnum({ Ascending: { value: 'asc' }, Descending: { value: 'desc' } });
@@ -7,6 +8,10 @@ SortDirection.initEnum({ Ascending: { value: 'asc' }, Descending: { value: 'desc
 export interface BaseModel {
     getId(): Object;
     toJson(): Object;
+}
+
+export interface MultiLingual {
+    getDescription(language: Language): string
 }
 
 export class Pageable {

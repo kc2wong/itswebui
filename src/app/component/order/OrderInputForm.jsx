@@ -34,17 +34,17 @@ export class OrderInputForm extends React.Component<Props, State> {
         const { orderRequest } = this.state
 
         const exchangeOpt = _.map(exchanges, (e) => (
-            new XcOption(e.exchangeOid, e.shortNameDefLang)
+            new XcOption(e.exchangeCode, e.shortNameDefLang)
         ))
         const buySellOpt = _.map(BuySell.enumValues, (e) => (
             new XcOption(e.value, xlate(`enum.buySell.${e.value}`))
         ))
 
         return (
-            <XcForm model={orderRequest} name="orderInputForm" onModelUpdate={this.handleModelUpdate}>
-                <XcSelect name="exchangeOid" options={exchangeOpt} />
-                <XcSelect name="side" options={buySellOpt} />
-                <XcInputText name="instrumentOid" />
+            <XcForm model={orderRequest} name="orderInputForm" onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
+                <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
+                <XcSelect name="side" options={buySellOpt} validation={{ required: true }} />
+                <XcInputText name="instrumentCode" subLabel="Hi Hi" validation={{ required: true }} />
                 <XcInputNumber name="price" />
                 <XcInputNumber name="quantity" />
                 <XcButtonGroup>

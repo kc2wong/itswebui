@@ -11,6 +11,7 @@ type FormContextType = {
     name: string,
     model?: Object,
     onSubmit?: () => void,
+    subLabelColor?: string,
     updateModel: (name: string, value:any) => void
 }
 
@@ -27,6 +28,7 @@ type Props = {
     model: BaseModel,
     onModelUpdate?: (model: BaseModel) => void,
     onSubmit?: () => void,
+    subLabelColor?: string,
     children: ?React.Node
 }
 
@@ -42,11 +44,12 @@ export class XcForm extends React.Component<Props, State> {
     }
 
     render() {
-        const { model, name, onModelUpdate, onSubmit, ...props } = this.props
+        const { model, name, onModelUpdate, onSubmit, subLabelColor, ...props } = this.props
         const formContextType: FormContextType = {
             name: name, 
             model: model,
             onSubmit: onSubmit,
+            subLabelColor: subLabelColor,
             updateModel: (name: string, value: any) => { 
                 const newModel = update(model, {[name]: {$set: value}});                
                 onModelUpdate && onModelUpdate(newModel);                

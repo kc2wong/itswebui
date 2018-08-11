@@ -1,16 +1,16 @@
 export class OrderRequest {
-    buySell: string;
+    side: string;
     caccOid: string;
-    exchangeOid: string;
-    instrumentOid: string;
+    exchangeCode: string;
+    instrumentCode: string;
     quantity: number;
     price: number;
 
-    constructor(buySell: string, caccOid: string, exchangeOid: string, instrumentOid: string, quantity: number, price: number) {
-        this.buySell = buySell
+    constructor(side: string, caccOid: string, exchangeCode: string, instrumentCode: string, quantity: number, price: number) {
+        this.side = side
         this.caccOid = caccOid
-        this.exchangeOid = exchangeOid
-        this.instrumentOid = instrumentOid
+        this.exchangeCode = exchangeCode
+        this.instrumentCode = instrumentCode
         this.quantity = quantity
         this.price = price
     }
