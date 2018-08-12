@@ -21,7 +21,7 @@ export function getRequired(constraint: ?IFieldConstraint): bool {
 
 export function getStringValue (value: ?string, model: any, name: string, defaultValue: ?string = ""): ?string {
     const v = value != null ? value : (model[name]: string) ;
-    console.log(`XcFormUtil.getStringValue(), ${name} = ${v}`)
+    console.log(`XcFormUtil.getStringValue(), ${name} = ${v}, type = ${typeof v}`)
     switch (typeof v) {
         case 'number':
             return v.toString();

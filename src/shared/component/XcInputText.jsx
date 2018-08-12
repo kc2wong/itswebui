@@ -37,7 +37,6 @@ export class XcInputText extends Component<Props, State> {
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const i = icon != null ? { icon: icon.name, iconPosition: "left" } : {};
         const p = Object.assign({}, parseBool(password, false) ? { type: 'password' } : {}, props)
-        // const c = createColumnClass(width) + " " + (getRequired(validation)  ? "required" : "")
         const r = parseBool(readonly, false) ? { readOnly: true } : {}
         const float = subLabel ? { style: { float: "left" } } : {}
         return (

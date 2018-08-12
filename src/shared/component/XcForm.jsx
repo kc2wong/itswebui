@@ -12,13 +12,15 @@ type FormContextType = {
     model?: Object,
     onSubmit?: () => void,
     subLabelColor?: string,
-    updateModel: (name: string, value:any) => void
+    updateModel: (name: string, value:any) => void,
+    patchModel: (name: string, delta:number) => void,
 }
 
 const defaultFormContextType: FormContextType = {
     name: "", 
     model: {},
-    updateModel: (name: string, value:any) => {}
+    updateModel: (name: string, value:any) => {},
+    patchModel: (name: string, delta:number) => {}
 }; 
 
 const FormContext = React.createContext(defaultFormContextType);
@@ -52,6 +54,11 @@ export class XcForm extends React.Component<Props, State> {
             subLabelColor: subLabelColor,
             updateModel: (name: string, value: any) => { 
                 const newModel = update(model, {[name]: {$set: value}});                
+                onModelUpdate && onModelUpdate(newModel);                
+            },    
+            patchModel: (name: string, delta: number) => { 
+                const newValue = parseFloat(model[name]) + delta
+                const newModel = update(model, {[name]: {$set: newValue}});                
                 onModelUpdate && onModelUpdate(newModel);                
             }    
         }; 

@@ -6,7 +6,7 @@ import { Instrument } from 'app/model/staticdata';
 import { handleJsonResponse, httpGet } from 'shared/util/networkUtil';
 import { parseBool } from 'shared/util/lang';
 
-const contextPath = `${SERVER_API_URL}/eapi/static-data/instruments`
+const contextPath = `${SERVER_API_URL}/sapi/static-data/instruments`
 
 class InstrumentService {
 

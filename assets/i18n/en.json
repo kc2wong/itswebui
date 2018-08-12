@@ -91,6 +91,7 @@
         "confirm": "Confirm",
         "exchangeCode": "Exchange",
         "instrumentCode": "Stock Code",
+        "lotSizeHint": "Lot Size {0}",
         "price": "Price",
         "quantity": "Quantity",
         "reset": "Reset",

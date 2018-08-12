@@ -19,6 +19,8 @@ type State = {
     instrument: ?Instrument
 }
 
+const formName = "orderInputForm"
+
 export class OrderInputForm extends React.Component<Props, State> {
 
     constructor(props: Props) {
@@ -44,14 +46,14 @@ export class OrderInputForm extends React.Component<Props, State> {
         ))
 
         const instrumentName = instrument ? instrument.getDescription(Language.English) : null
+        const lotSizeHint = instrument ? xlate(`${formName}.lotSizeHint`, [instrument.lotSize]) : null
         return (
-            <XcForm model={orderRequest} name="orderInputForm" onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
+            <XcForm model={orderRequest} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
                 <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
                 <XcSelect name="side" options={buySellOpt} validation={{ required: true }} />
                 <XcInputText name="instrumentCode" onBlur={this.handleSearchStock} subLabel={instrumentName} validation={{ required: true }} />
-                <XcInputNumber name="price" prefix={instrument ? instrument.tradingCurrencyCode : null}
-                    stepping={instrument ? instrument.lotSize : null} />
-                <XcInputNumber name="quantity" />
+                <XcInputNumber name="price" prefix={instrument ? instrument.tradingCurrencyCode : ""} prefixMinWidth="55px" stepping={instrument ? instrument.lotSize : 0} />
+                <XcInputNumber name="quantity" stepping={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
                 <XcButtonGroup>
                     <XcButton onClick={this.handleClick} label="#orderInputForm.reset" />
                     <XcButton disabled={isNullOrEmpty(orderRequest.exchangeOid) || isNullOrEmpty(orderRequest.stockCode)} primary onClick={this.handleClick} label="#orderInputForm.confirm" />
