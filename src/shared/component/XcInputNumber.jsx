@@ -19,7 +19,8 @@ type Props = {
     prefix: ?string,
     prefixMinWidth: ?string,
     readonly: ?bool,
-    stepping: ?number,
+    steppingDown: ?number,
+    steppingUp: ?number,
     subLabel: ?string,
     value: ?string,
     validation: ?XcInputTextConstraint,
@@ -57,28 +58,30 @@ export class XcInputNumber extends Component<Props, State> {
         console.log("handleClick.....")
     }
 
-    handleStepUp = (formCtx: FormContext) => (event: SyntheticInputEvent<>) => {
+    handleStepUp = (formCtx: any) => (event: SyntheticInputEvent<>) => {
         console.log("handleStepUp.....")
-        const { stepping, value } = this.props
-        if (stepping) {
+        const { steppingUp, value } = this.props
+        if (steppingUp) {
             if (value) {
-                formCtx.updateModel(this.props.name, parseFloat(value) + stepping);
+                // should be calling onChange as it is controlled component
+                formCtx.updateModel(this.props.name, parseFloat(value) + steppingUp);
             }
             else {
-                formCtx.patchModel(this.props.name, stepping);
+                formCtx.patchModel(this.props.name, steppingUp);
             }
         }
     }
 
-    handleStepDown = (formCtx: FormContext) => (event: SyntheticInputEvent<>) => {
+    handleStepDown = (formCtx: any) => (event: SyntheticInputEvent<>) => {
         console.log("handleStepDown.....")
-        const { stepping, value } = this.props
-        if (stepping) {
+        const { steppingDown, value } = this.props
+        if (steppingDown) {
             if (value) {
-                formCtx.updateModel(this.props.name, parseFloat(value) - stepping);
+                formCtx.updateModel(this.props.name, parseFloat(value) - steppingDown);
             }
             else {
-                formCtx.patchModel(this.props.name, -stepping);
+                // should be calling onChange as it is controlled component
+                formCtx.patchModel(this.props.name, -steppingDown);
             }
         }
     }
@@ -88,8 +91,8 @@ export class XcInputNumber extends Component<Props, State> {
         updateModel(this.props.name, event.target.value);
     }
 
-    constructInputField = (formCtx: FormContext, formGrpCtx: FormGrpContext) => {
-        const { icon, label, name, placeholder, prefix, prefixMinWidth, readonly, stepping, subLabel, validation, value, width, ...props } = this.props;
+    constructInputField = (formCtx: any, formGrpCtx: any) => {
+        const { icon, label, name, placeholder, prefix, prefixMinWidth, readonly, steppingDown, steppingUp, subLabel, validation, value, width, ...props } = this.props;
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const i = icon != null ? { icon: icon.name, iconPosition: "left" } : {};
         const c = createColumnClass(width) + " " + (getRequired(validation) ? "required" : "")
@@ -97,7 +100,7 @@ export class XcInputNumber extends Component<Props, State> {
         const l = prefix != null ? { label: prefix } : {}
         const float = subLabel ? { style: { float: "left" } } : {}
 
-        if (stepping != null) {
+        if (steppingUp != null || steppingDown != null) {
             return (
                 <Form.Field required={getRequired(validation)}>
                     <label {...float}>{constructLabel(formCtx.name, name, label)}</label>
@@ -113,8 +116,8 @@ export class XcInputNumber extends Component<Props, State> {
                         {... (formGrpCtx && formGrpCtx.fluid) ? { fluid: true } : { width: width }}>
                         {prefix != null && (<Label {... prefixMinWidth ? {style: {minWidth: prefixMinWidth}} : {} }>{prefix}</Label>)}
                         <input onChange={this.handleChange(formCtx.updateModel)} type="text" value={getStringValue(value, formCtx.model, name)} />
-                        <Button disabled={stepping == 0} icon="plus" onClick={this.handleStepUp(formCtx)} />
-                        <Button disabled={stepping == 0} icon="minus" onClick={this.handleStepDown(formCtx)} />
+                        <Button disabled={steppingUp == 0} icon="plus" onClick={this.handleStepUp(formCtx)} />
+                        <Button disabled={steppingDown == 0} icon="minus" onClick={this.handleStepDown(formCtx)} />
                     </Input>
                 </Form.Field>
             )

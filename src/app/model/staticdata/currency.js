@@ -1,27 +1,26 @@
 // @flow
-import { BaseModel } from 'shared/model/BaseModel';
+import { BaseModel, MultiLingual } from 'shared/model/BaseModel'
+import { Language } from 'shared/util/lang'
 
-export class Currency implements BaseModel {
-    currencyOid: string;
+export class Currency implements BaseModel, MultiLingual {
     currencyCode: string;
     descptDefLang: string;
     descpt2ndLang: ?string;
     descpt3rdLang: ?string;
     isoCode: ?string;
     decimalPoint: number;
-    unit: ?string;
-    subUnit: ?string;
+    unitName: ?string;
+    subUnitName: ?string;
 
     constructor(currencyCode: string, descptDefLang: string, decimalPoint: number) {
-        this.currencyOid = "";
         this.currencyCode = currencyCode;
         this.descptDefLang = descptDefLang;
         this.decimalPoint = decimalPoint;
         this.descpt2ndLang = null;
         this.descpt3rdLang = null;
         this.isoCode = null;
-        this.unit = null;
-        this.subUnit = null;
+        this.unitName = null;
+        this.subUnitName = null;
     }
 
     getId(): Object {
@@ -36,8 +35,19 @@ export class Currency implements BaseModel {
         return rtn        
     }
     
+    getDescription(language: Language): string {
+        var rtn: ?string
+        if (language == Language.TraditionalChinese ) {
+            rtn = this.descpt2ndLang
+        }
+        if (!rtn) {
+            rtn = this.currencyCode
+        }
+        return rtn        
+    }
+
     static fromJson(json: Object): Currency {
-        const rtn = new Currency("", "", 0);
+        const rtn = Currency.newInstance()
         Object.assign(rtn, json);
         return rtn
     }
@@ -48,7 +58,7 @@ export class Currency implements BaseModel {
 
     static getId(json: Object): Object {
         return {
-            currencyOid: json.currencyOid
+            currencyCode: json.currencyCode
         }        
     }
 }

@@ -1,4 +1,5 @@
 export * from './currency'
 export * from './exchange'
+export * from './exchangeBoardPriceSpread'
 export * from './instrument'
 export * from './stmAction'
