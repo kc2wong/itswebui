@@ -1,3 +1,4 @@
+// @flow
 import { Instrument } from '../staticdata/instrument'
 import { Currency } from '../staticdata/currency'
 import { ExchangeBoardPriceSpread } from '../staticdata/exchangeBoardPriceSpread'
@@ -41,6 +42,12 @@ export class OrderInputResourceBundle {
     instrument: ?Instrument;
     currency: ?Currency;
     exchangeBoardPriceSpread: ?ExchangeBoardPriceSpread;
+
+    constructor(instrument: ?Instrument, currency: ?Currency, exchangeBoardPriceSpread: ?ExchangeBoardPriceSpread) {
+        this.instrument = instrument
+        this.currency = currency
+        this.exchangeBoardPriceSpread = exchangeBoardPriceSpread
+    }
 
     static fromJson(json: Object): OrderInputResourceBundle {
         const rtn = this.newInstance()

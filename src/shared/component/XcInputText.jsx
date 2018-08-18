@@ -12,18 +12,19 @@ import './XcInputText.css';
 
 type Props = {
     icon: ?XcIconProps,
-    label? :string,
+    label?: string,
     name: string,
     password: ?bool,
     placeholder: ?string,
     readonly: ?bool,
-    subLabel? :string,
+    subLabel?: string,
     value: ?string,
     validation: ?XcInputTextConstraint,
     width: ?number
 }
 
 type State = {
+    mouseOverIcon: boolean
 }
 
 export class XcInputText extends Component<Props, State> {
@@ -32,11 +33,18 @@ export class XcInputText extends Component<Props, State> {
         width: 12
     };
 
+    constructor(props: Props) {
+        super();
+        this.props = props;
+        this.state = { mouseOverIcon: false }
+    }
+    
     render() {
         const { icon, label, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
+        const { mouseOverIcon } = this.state
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
-        const i = icon != null ? { icon: icon.name, iconPosition: "left" } : {};
-        const p = Object.assign({}, parseBool(password, false) ? { type: 'password' } : {}, props)
+        const i = icon != null ? { icon: icon.name, iconPosition: "left", onMouseOut: this.handleMouseOut, onMouseOver: this.handleMouseOver } : {};
+        const p = Object.assign({}, parseBool(password, false) && !mouseOverIcon ? { type: 'password' } : {}, props)
         const r = parseBool(readonly, false) ? { readOnly: true } : {}
         const float = subLabel ? { style: { float: "left" } } : {}
         return (
@@ -46,9 +54,9 @@ export class XcInputText extends Component<Props, State> {
                         {formGrpCtx =>
                             <Form.Field required={getRequired(validation)}>
                                 <label {...float}>{constructLabel(formCtx.name, name, label)}</label>
-                                {subLabel ? <small {...float} {... formCtx.subLabelColor ? { style: { color: formCtx.subLabelColor } } : {}} >&nbsp;&nbsp;{subLabel}</small> : null}
+                                {subLabel ? <small {...float} {...formCtx.subLabelColor ? { style: { color: formCtx.subLabelColor } } : {}} >&nbsp;&nbsp;{subLabel}</small> : null}
                                 <Input
-                                    onChange={this.handleChange(formCtx.updateModel)}                                    
+                                    onChange={this.handleChange(formCtx.updateModel)}
                                     type="text"
                                     value={getStringValue(value, formCtx.model, name)}
                                     {...i}
@@ -65,8 +73,21 @@ export class XcInputText extends Component<Props, State> {
         )
     }
 
-    handleMouseOver = (event: any) => {
-        console.log("handleMouseOver.....")
+    handleMouseOver = (event: SyntheticMouseEvent<>) => {
+        // const { onMouseOver, password } = this.props
+        // if (onMouseOver) {
+        //     this.setState({ mouseOverIcon: true }, () => {
+        //         onMouseOver(event)
+        //     })
+        // }
+        // else if (parseBool(password)) {
+        //     this.setState({ mouseOverIcon: true })
+        // }
+        this.setState({ mouseOverIcon: true })
+    }
+
+    handleMouseOut = (event: SyntheticMouseEvent<>) => {
+        this.setState({ mouseOverIcon: false })
     }
 
     handleClick = (event: SyntheticMouseEvent<>) => {
@@ -76,6 +97,6 @@ export class XcInputText extends Component<Props, State> {
     handleChange = (updateModel: any) => (event: SyntheticInputEvent<>) => {
         console.debug(`XcInputText.handleChanged(), name=${this.props.name}, newValue=${event.target.value}`);
         updateModel(this.props.name, event.target.value);
-    }       
-     
+    }
+
 }

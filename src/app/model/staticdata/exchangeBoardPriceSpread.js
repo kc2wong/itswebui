@@ -5,9 +5,9 @@ import { BaseModel } from 'shared/model/BaseModel';
 export class ExchangeBoardPriceSpread implements BaseModel {
     exchangeBoardCode: string;
     exchangeBoardPriceSpreadCode: string;
-    exchangeBoardPriceSpreadDetail: [ExchangeBoardPriceSpreadDetail];
+    exchangeBoardPriceSpreadDetail: Array<ExchangeBoardPriceSpreadDetail>;
 
-    constructor(exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string, exchangeBoardPriceSpreadDetail: [ExchangeBoardPriceSpreadDetail]) {
+    constructor(exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string, exchangeBoardPriceSpreadDetail: Array<ExchangeBoardPriceSpreadDetail>) {
         this.exchangeBoardCode = exchangeBoardCode;
         this.exchangeBoardPriceSpreadCode = exchangeBoardPriceSpreadCode;
         this.exchangeBoardPriceSpreadDetail = exchangeBoardPriceSpreadDetail;

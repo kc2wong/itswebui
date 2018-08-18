@@ -8,17 +8,34 @@ import { XcCard, XcNavigationTab } from 'shared/component';
 import { Language, xlate } from 'shared/util/lang';
 import { getCurrentUserid } from 'shared/util/sessionUtil';
 import { MessageContext, MessageService } from 'shared/service';
-import { AppToolbar, navigator, SidebarMenu } from 'app/home';
+import { RetailAppToolbar, navigator, RetailSidebarMenu } from 'app/home';
 import { MenuHierarchy } from 'app/model/security/menuHierarchy'
 import CurrencyMaintenanceForm from 'app/component/staticdata/currency/CurrencyMaintenanceForm';
 import StmActionMaintenanceForm from 'app/component/staticdata/stmaction/StmActionMaintenanceForm';
 import { Exchange } from 'app/model/staticdata'
-import { OrderRequest } from 'app/model/order'
+import { SimpleTradingAccount } from 'app/model/client/simpleTradingAccount'
 import { authenticationService, exchangeService, userProfileService } from 'app/service';
 import { OrderInputForm } from 'app/component/order/OrderInputForm';
 
 import './RetailHome.css';
 import { XcLabel } from '../../shared/component/XcLabel';
+
+export type AccountSelectorContextType = {
+    language: Language,
+    availableTradingAccount: Array<SimpleTradingAccount>,
+    selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => void,
+    gelectTradingAccount: () => ?SimpleTradingAccount
+}
+
+const defaultAccountSelectorContextType: AccountSelectorContextType = {
+    language: Language.English,
+    selectLanguage: (language: Language) => {},
+    availableTradingAccount: [], 
+    selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => {},
+    gelectTradingAccount: () => { return null}
+}; 
+
+export const AccountSelectorContext = React.createContext(defaultAccountSelectorContextType);
 
 type Props = {
     messageService: MessageService,
@@ -26,11 +43,13 @@ type Props = {
 }
 
 type State = {
-    menuHierarchy: ?MenuHierarchy,
+    exchanges: Array<Exchange>,
+    language: Language,
+    tradingAccounts: Array<SimpleTradingAccount>,
+    selectedTradingAccount: ?SimpleTradingAccount,
     menuOpen: bool,
     panes: XcNavigationTab.Pane[],
-    tabIndex: number,
-    exchanges: Exchange[]
+    tabIndex: number
 }
 
 const pathMapping = new Map()
@@ -56,89 +75,104 @@ class RetailHome extends React.Component<Props, State> {
         panes.push(<XcNavigationTab.Pane key={'AccountInfo'} id={'AccountInfo'} label={'Account Information'} component={dummyForm} ></XcNavigationTab.Pane>)
 
         this.state = {
-            menuHierarchy: null,
+            exchanges: [],
+            language: props.language,
+            selectedTradingAccount: null,
+            tradingAccounts: [],
             menuOpen: false,
             panes: panes,
             tabIndex: 0,
-            exchanges: []
         }
     }
 
     componentDidMount() {
         const { messageService } = this.props
-        const { menuHierarchy, exchanges } = this.state
+        const { exchanges, tradingAccounts } = this.state
 
-        if (menuHierarchy == null) {
-            messageService.showLoading()
-            userProfileService.constructMainMenu().then(m => {
-                this.setState({ menuHierarchy: m }, () => {
-                    messageService.hideLoading()
-                })
-            })
-        }
+        var promises = [
+            exchanges.length > 0 ? Promise.resolve({ data: exchanges }) : exchangeService.getPage(null, {}),
+            tradingAccounts.length > 0 ? Promise.resolve(tradingAccounts) : userProfileService.getOwnedTradingAccount()
+        ]
 
-        if (exchanges.length == 0) {
-            messageService.showLoading()
-            exchangeService.getPage(null, {}).then(result => {
-                console.log(result)
-                this.setState({ exchanges: _.sortBy(result.data, ['sequence']) }, () => {
-                    messageService.hideLoading()
-                })
+        messageService.showLoading()
+        Promise.all(promises).then(result => {
+            this.setState({ exchanges: _.sortBy(result[0].data, ['sequence']), tradingAccounts: result[1] }, () => {
+                messageService.hideLoading()
             })
-        }
+        });
+        
     }
 
     render() {
-        const { language } = this.props;
-        const { exchanges, menuHierarchy, menuOpen, panes, tabIndex } = this.state;
+        // const { language } = this.props;
+        const { language, exchanges, selectedTradingAccount, tradingAccounts, menuOpen, panes, tabIndex } = this.state;
 
         const applicationDate = new Date()
 
+        const accountSelectorContextType: AccountSelectorContextType = {
+            language: language,
+            selectLanguage: (language: Language) => {
+                this.setState({
+                    language: language
+                })
+            },
+            availableTradingAccount: tradingAccounts,
+            selectTradingAccount: (simpleTradingAccount: SimpleTradingAccount) => {
+                console.log('hihi')
+                if (_.findIndex(tradingAccounts, ta => ta.tradingAccountCode == simpleTradingAccount.tradingAccountCode) > -1) {
+                    this.setState({
+                        menuOpen: false,
+                        selectedTradingAccount: simpleTradingAccount,
+                    })
+                }
+                else {
+                    this.setState({
+                        menuOpen: false
+                    })
+                }
+            },
+            gelectTradingAccount: () => { return selectedTradingAccount ? selectedTradingAccount : tradingAccounts.length > 0 ? tradingAccounts[0] : null}
+        }; 
+
         let userid = getCurrentUserid()
         return (
-            <React.Fragment>
-                <AppToolbar applicationDate={applicationDate} language={language != null ? language : Language.English} menuOpen={menuOpen}
-                    onLogout={this.handleLogout} username={userid ? userid : ""} />
-                <div style={{ flex: 1 }}>
-                    <div className='orderPanel' >
-                        {exchanges.length > 0 && (
-                            <XcCard>
-                                <h3>{xlate("retailHome.newOrder")}</h3>
-                                <OrderInputForm exchanges={exchanges} />
-                            </XcCard>
-                        )}
-                    </div>
-                    <div className='traderPanel'>
-                        <div className='vl' />
-                        <XcNavigationTab onTabChange={this.handleTabChange} tabIndex={tabIndex}>
-                            {panes}
-                        </XcNavigationTab>
-                    </div>
-                </div >
-            </React.Fragment>
+            <AccountSelectorContext.Provider value={accountSelectorContextType}>
+                <React.Fragment>
+                    {(<RetailSidebarMenu onClose={this.closeMenu} onSelectAccount={this.handleSelectAccount} open={menuOpen} tradingAccounts={tradingAccounts}>
+                        <RetailAppToolbar applicationDate={applicationDate} language={language != null ? language : Language.English} menuOpen={menuOpen}
+                            onLanguageChange={this.handleChangeLanguage} onLogout={this.handleLogout} onMenuClick={this.toggleMenu} username={userid ? userid : ""} />
+                        <div style={{ flex: 1 }}>
+                            <div className='orderPanel' >
+                                {exchanges.length > 0 && (
+                                    <XcCard>
+                                        <h3>{xlate("retailHome.newOrder")}</h3>
+                                        <OrderInputForm exchanges={exchanges} />
+                                    </XcCard>
+                                )}
+                            </div>
+                            <div className='traderPanel'>
+                                <div className='vl' />
+                                <XcNavigationTab onTabChange={this.handleTabChange} tabIndex={tabIndex}>
+                                    {panes}
+                                </XcNavigationTab>
+                            </div>
+                        </div >
+                    </RetailSidebarMenu>)}
+                </React.Fragment>
+            </AccountSelectorContext.Provider>            
         )
     }
 
-    handleOpenFunction = (menuItem: MenuHierarchy) => {
-        const { panes } = this.state
-        const name = menuItem.name
-        const form = pathMapping.get(name)
+    handleChangeLanguage = (language: Language) => {
+        this.setState({
+            language: language
+        })
+    }
 
-        const openedForm = _.findIndex(panes, e => e.props.id == name)
-
-        if (openedForm == -1 && form) {
-            panes.push(<XcNavigationTab.Pane key={name} id={name} label={xlate(`menu.${name}`)} component={form} ></XcNavigationTab.Pane>)
-            this.setState({
-                menuOpen: false,
-                panes: panes,
-                tabIndex: panes.length - 1
-            })
-        }
-        else {
-            this.setState({
-                menuOpen: false
-            })
-        }
+    handleSelectAccount = (simpleTradingAccount: SimpleTradingAccount) => {
+        this.setState({
+            menuOpen: false
+        })
     }
 
     handleLogout = () => {

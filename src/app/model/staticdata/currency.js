@@ -25,7 +25,7 @@ export class Currency implements BaseModel, MultiLingual {
 
     getId(): Object {
         return {
-            currencyOid: this.currencyOid
+            currencyCode: this.currencyCode
         }
     }
     

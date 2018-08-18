@@ -71,7 +71,8 @@
         "ccog": "CCOG",
         "configuration": "Configuration",
         "currencyMaintenance": "Currency Maintenance",
-        "main": "Main Menu"
+        "main": "Main Menu",
+        "selectAccount": "Select Account"
     },
     "currencyEditForm": {
         "currencyCode": "Currency Code",
