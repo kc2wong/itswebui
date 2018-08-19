@@ -12,11 +12,13 @@ export class SimpleTradingAccount {
     shortNameDefLang: string;
     shortName2ndLang: ?string;
     shortName3rdLang: ?string;
+    operationUnitCode: string;
     tradingAccountTypeCode: string;
 
     constructor(tradingAccountCode: string, nameOneDefLang: string, nameOne2ndLang: ?string, nameOne3rdLang: ?string, 
         nameTwoDefLang: ?string, nameTwo2ndLang: ?string, nameTwo3rdLang: ?string, 
-        shortNameDefLang: string, shortName2ndLang: ?string, shortName3rdLang: ?string, tradingAccountTypeCode: string) {
+        shortNameDefLang: string, shortName2ndLang: ?string, shortName3rdLang: ?string, 
+        operationUnitCode: string, tradingAccountTypeCode: string) {
 
         this.tradingAccountCode = tradingAccountCode
         this.nameOneDefLang = nameOneDefLang
@@ -28,6 +30,8 @@ export class SimpleTradingAccount {
         this.shortNameDefLang = shortNameDefLang
         this.shortName2ndLang = shortName2ndLang
         this.shortName3rdLang = shortName3rdLang
+        this.operationUnitCode = operationUnitCode
+        this.tradingAccountTypeCode = tradingAccountTypeCode
     }
 
     toJson(): Object {
@@ -38,13 +42,12 @@ export class SimpleTradingAccount {
 
     static fromJson(json: Object): SimpleTradingAccount {
         const rtn = this.newInstance()
-        // Object.assign(rtn, _.pick(json, rtn.toJson().keys()))
-        Object.assign(rtn, json)
+        Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
         return rtn
     }
 
     static newInstance(): SimpleTradingAccount {
-        return new SimpleTradingAccount("", "", null, null, null, null, null, "", null, null, "");
+        return new SimpleTradingAccount("", "", null, null, null, null, null, "", null, null, "", "");
     }
 
 }

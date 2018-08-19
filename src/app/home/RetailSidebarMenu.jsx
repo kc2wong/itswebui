@@ -63,7 +63,7 @@ export class RetailSidebarMenu extends React.Component<Props, State> {
                             <Divider />
                             <div style={{ marginLeft: 20, marginTop: 10 }}><Header inverted as="h5"><Icon name="setting"/><Header.Content>{xlate(`home.preference`)}</Header.Content></Header></div>
                             <Divider />
-                            <div style={{ marginLeft: 20, marginTop: 10 }}><Header inverted as="h5"><Icon name="user secret"/><Header.Content>{xlate(`home.changePassword`)}</Header.Content></Header></div>
+                            <div style={{ marginLeft: 20, marginTop: 10 }}><Header inverted as="h5"><Icon name="address card"/><Header.Content>{xlate(`home.changePassword`)}</Header.Content></Header></div>
                         </Sidebar>
                         <Sidebar.Pusher dimmed={visible} onClick={this.handlePusherClick} style={{ display: "flex", flexDirection: "column" }} >
                             {this.props.children}

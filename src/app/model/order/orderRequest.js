@@ -1,39 +1,49 @@
 // @flow
+import _ from 'lodash'
+import { BuySell, LotNature } from '../EnumType'
 import { Instrument } from '../staticdata/instrument'
 import { Currency } from '../staticdata/currency'
 import { ExchangeBoardPriceSpread } from '../staticdata/exchangeBoardPriceSpread'
 
 export class OrderRequest {
     side: string;
-    caccOid: string;
+    operationUnitCode: string;
+    tradingAccountCode: string;
     exchangeCode: string;
     instrumentCode: string;
-    quantity: number;
+    channelCode: string;
+    orderTypeCode: string;
+    lotNature: string;
     price: number;
+    quantity: number;
 
-    constructor(side: string, caccOid: string, exchangeCode: string, instrumentCode: string, quantity: number, price: number) {
+    constructor(side: string, operationUnitCode: string, tradingAccountCode: string, exchangeCode: string, instrumentCode: string, channelCode: string, orderTypeCode: string, lotNature: string, price: number, quantity: number) {
         this.side = side
-        this.caccOid = caccOid
+        this.operationUnitCode = operationUnitCode
+        this.tradingAccountCode = tradingAccountCode
         this.exchangeCode = exchangeCode
         this.instrumentCode = instrumentCode
+        this.channelCode = channelCode
+        this.orderTypeCode = orderTypeCode
+        this.lotNature = lotNature
         this.quantity = quantity
         this.price = price
     }
 
     toJson(): Object {
         const rtn = {};
-        Object.assign(rtn, this);
+        Object.assign(rtn, this)
         return rtn        
     }
     
     static fromJson(json: Object): OrderRequest {
         const rtn = this.newInstance()
-        Object.assign(rtn, json)
+        Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
         return rtn
     }
 
     static newInstance(): OrderRequest {
-        return new OrderRequest("","", "", "", 0, 0);
+        return new OrderRequest(BuySell.Buy.value,"", "", "", "", "I", "", LotNature.Board.value, 0, 0);
     }
 
 }

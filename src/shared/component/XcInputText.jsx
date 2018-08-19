@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { Form, Input } from 'semantic-ui-react';
+import { Form, Icon, Input } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import FormGroupContext from './XcFormGroup';
 import { constructLabel, createColumnClass, getRequired, getStringValue } from './XcFormUtil';
@@ -43,7 +43,8 @@ export class XcInputText extends Component<Props, State> {
         const { icon, label, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
         const { mouseOverIcon } = this.state
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
-        const i = icon != null ? { icon: icon.name, iconPosition: "left", onMouseOut: this.handleMouseOut, onMouseOver: this.handleMouseOver } : {};
+        // const i = icon != null ? { icon: icon.name, iconPosition: "left", onMouseOut: this.handleMouseOut, onMouseOver: this.handleMouseOver } : {};
+        const i = icon != null ? { icon: <Icon name={icon.name} onMouseOut={this.handleMouseOut} onClick={this.handleMouseOver} />, iconPosition: "left" } : {};
         const p = Object.assign({}, parseBool(password, false) && !mouseOverIcon ? { type: 'password' } : {}, props)
         const r = parseBool(readonly, false) ? { readOnly: true } : {}
         const float = subLabel ? { style: { float: "left" } } : {}
@@ -74,15 +75,7 @@ export class XcInputText extends Component<Props, State> {
     }
 
     handleMouseOver = (event: SyntheticMouseEvent<>) => {
-        // const { onMouseOver, password } = this.props
-        // if (onMouseOver) {
-        //     this.setState({ mouseOverIcon: true }, () => {
-        //         onMouseOver(event)
-        //     })
-        // }
-        // else if (parseBool(password)) {
-        //     this.setState({ mouseOverIcon: true })
-        // }
+        console.log("handleMouseOver.....")
         this.setState({ mouseOverIcon: true })
     }
 
