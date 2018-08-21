@@ -55,13 +55,14 @@ export class OrderInputForm extends React.Component<Props, State> {
         return (
             <XcForm model={orderRequest} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
                 <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
-                <XcSelect name="side" options={buySellOpt} validation={{ required: true }} />
+                <XcSelect name="buySell" options={buySellOpt} validation={{ required: true }} />
                 <XcInputText name="instrumentCode" onBlur={this.handleSearchStock} subLabel={instrumentName} validation={{ required: true }} />
                 <XcInputNumber name="price" prefix={currencyName} prefixMinWidth="55px" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} />
                 <XcInputNumber name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
                 <XcButtonGroup>
-                    <XcButton onClick={this.handleClick} label="#orderInputForm.reset" />
-                    <XcButton disabled={isNullOrEmpty(orderRequest.exchangeOid) || isNullOrEmpty(orderRequest.stockCode)} primary onClick={this.handleClick} label="#orderInputForm.confirm" />
+                    <XcButton name="reset" onClick={this.handleClick} />
+                    <XcButton disabled={false} 
+                        name="submit" onClick={this.handleCalculateChargeCommission} primary />
                 </XcButtonGroup>
             </XcForm>
         )
@@ -90,5 +91,14 @@ export class OrderInputForm extends React.Component<Props, State> {
             )
         }
     }    
+
+    handleCalculateChargeCommission = (event: SyntheticFocusEvent<>) => {
+        const { orderRequest } = this.state
+        orderService.calculateChargeCommission(orderRequest).then(
+            simpleOrder => {
+                console.log(simpleOrder)
+            }
+        )
+    }
 
 }

@@ -4,9 +4,10 @@ import { BuySell, LotNature } from '../EnumType'
 import { Instrument } from '../staticdata/instrument'
 import { Currency } from '../staticdata/currency'
 import { ExchangeBoardPriceSpread } from '../staticdata/exchangeBoardPriceSpread'
+import { CHANNEL_CODE } from 'app/constant/ApplicationConstant'
 
 export class OrderRequest {
-    side: string;
+    buySell: string;
     operationUnitCode: string;
     tradingAccountCode: string;
     exchangeCode: string;
@@ -17,8 +18,8 @@ export class OrderRequest {
     price: number;
     quantity: number;
 
-    constructor(side: string, operationUnitCode: string, tradingAccountCode: string, exchangeCode: string, instrumentCode: string, channelCode: string, orderTypeCode: string, lotNature: string, price: number, quantity: number) {
-        this.side = side
+    constructor(buySell: string, operationUnitCode: string, tradingAccountCode: string, exchangeCode: string, instrumentCode: string, channelCode: string, orderTypeCode: string, lotNature: string, price: number, quantity: number) {
+        this.buySell = buySell
         this.operationUnitCode = operationUnitCode
         this.tradingAccountCode = tradingAccountCode
         this.exchangeCode = exchangeCode
@@ -43,7 +44,7 @@ export class OrderRequest {
     }
 
     static newInstance(): OrderRequest {
-        return new OrderRequest(BuySell.Buy.value,"", "", "", "", "I", "", LotNature.Board.value, 0, 0);
+        return new OrderRequest("","", "", "", "", CHANNEL_CODE, "", LotNature.Board.value, 0, 0);
     }
 
 }

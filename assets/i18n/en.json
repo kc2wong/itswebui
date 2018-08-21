@@ -61,6 +61,7 @@
         "setup": "Setup"
     },    
     "loginForm": {
+        "login": "Login",
         "password": "Password",
         "username": "Username",
         "welcomeTo": "Welcome To",
@@ -89,14 +90,14 @@
         "title": "Currency Maintenance ({0})"
     },
     "orderInputForm": {        
-        "confirm": "Confirm",
+        "buySell": "Buy / Sell",
         "exchangeCode": "Exchange",
         "instrumentCode": "Stock Code",
         "lotSizeHint": "Lot Size {0}",
         "price": "Price",
         "quantity": "Quantity",
         "reset": "Reset",
-        "side": "Buy / Sell"
+        "submit": "Submit"
     },
     "retailHome": {
         "newOrder": "New Order"

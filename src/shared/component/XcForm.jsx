@@ -7,7 +7,7 @@ import { BaseModel } from 'shared/model';
 
 import './XcForm.css';
 
-type FormContextType = {
+export type FormContextType = {
     name: string,
     model?: Object,
     onSubmit?: () => void,

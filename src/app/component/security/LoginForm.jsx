@@ -57,7 +57,7 @@ class LoginForm extends Component<Props, State> {
                                 <XcSelect label="Language" name="language" options={langOpt} />
                                 <XcCheckbox label="Remember Me" name="rememberMe" />
                                 <p />
-                                <XcButton disabled={isNullOrEmpty(credential.userid) || isNullOrEmpty(credential.password)} fluid primary onClick={this.handleClick} label="Login" />
+                                <XcButton disabled={isNullOrEmpty(credential.userid) || isNullOrEmpty(credential.password)} fluid primary onClick={this.handleClick} name="login" />
                             </XcForm>
                             </XcGrid.Col>
                         </XcGrid.Row>
