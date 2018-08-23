@@ -91,13 +91,19 @@
     },
     "orderInputForm": {        
         "buySell": "Buy / Sell",
+        "charge": "Charge",
+        "commission": "Brokage Fee",
+        "confirmOrderSubmission": "Confirm Order Submission",
         "exchangeCode": "Exchange",
+        "grossAmount": "Gross Amount",
         "instrumentCode": "Stock Code",
         "lotSizeHint": "Lot Size {0}",
+        "netAmount": "Net Amount",
         "price": "Price",
         "quantity": "Quantity",
         "reset": "Reset",
-        "submit": "Submit"
+        "submit": "Submit",
+        "tradingAccount": "Trading Account"
     },
     "retailHome": {
         "newOrder": "New Order"

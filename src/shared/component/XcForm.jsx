@@ -1,4 +1,5 @@
 // @flow
+import _ from 'lodash'
 import * as React from 'react';
 import { Form } from 'semantic-ui-react';
 import update from 'immutability-helper';
@@ -58,8 +59,10 @@ export class XcForm extends React.Component<Props, State> {
             },    
             patchModel: (name: string, delta: number) => { 
                 const newValue = parseFloat(model[name]) + delta
-                const newModel = update(model, {[name]: {$set: newValue}});                
-                onModelUpdate && onModelUpdate(newModel);                
+                if (!_.isNaN(newValue)) {
+                    const newModel = update(model, {[name]: {$set: newValue}});                
+                    onModelUpdate && onModelUpdate(newModel);                    
+                }
             }    
         }; 
         return (

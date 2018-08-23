@@ -1,6 +1,5 @@
 // @flow
 import React, { Component } from 'react';
-// import { Modal } from 'react-bootstrap';
 import { Button, Header, Icon, Modal } from 'semantic-ui-react';
 import { Enum } from 'enumify';
 import { XcButton, XcButtonGroup } from './';
@@ -13,7 +12,8 @@ type Props = {
     confirmOkAction: ?() => void,
     confirmNoAction: ?() => void,
     confirmYesAction: ?() => void,
-    message: string,
+    content: ?React.Component<any, any>,
+    message: ?string,
     title: ?string,
     type: DialogType
 }
@@ -25,7 +25,7 @@ export class XcDialog extends React.Component<Props, State> {
     static Type = DialogType
 
     render() {
-        const { confirmNoAction, confirmOkAction, confirmYesAction, message, type } = this.props;
+        const { confirmNoAction, confirmOkAction, confirmYesAction, content, message, type } = this.props;
 
         const title = nvl(this.props.title, xlate(type == DialogType.Info ?  "general.information" : "general.confirm"))
 
@@ -37,11 +37,12 @@ export class XcDialog extends React.Component<Props, State> {
         const showNo = type == DialogType.YesNo || type == DialogType.YesNoCancel
         const showYes = type == DialogType.YesNo || type == DialogType.YesNoCancel
         
+        console.log(content)
         return (
-            <Modal basic={false} defaultOpen={true}>
+            <Modal basic={false} closeOnDimmerClick={false} closeOnEscape={false} defaultOpen={true}>
                 <Header content={title} />
                 <Modal.Content>
-                    <p>{message}</p>
+                    {content ? content : <p>{message}</p>}
                 </Modal.Content>
                 <Modal.Actions>
                     {showNo && (<Button negative {...onClickForNo}>

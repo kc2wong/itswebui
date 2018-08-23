@@ -44,7 +44,7 @@ export class OrderRequest {
     }
 
     static newInstance(): OrderRequest {
-        return new OrderRequest("","", "", "", "", CHANNEL_CODE, "", LotNature.Board.value, 0, 0);
+        return new OrderRequest("","", "", "", "", CHANNEL_CODE, "E", LotNature.Board.value, 0, 0);
     }
 
 }

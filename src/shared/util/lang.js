@@ -30,3 +30,7 @@ export function setLanguage(language: Language) {
 export function xlate(value: string, param?: Array<string> | Object): string {
     return T.translate(value, param);
 }
+
+export function formatNumber(value: number, thousandSeparator: boolean, decimalPlace: number): string {
+    return value.toString()
+}

@@ -15,7 +15,7 @@ import StmActionMaintenanceForm from 'app/component/staticdata/stmaction/StmActi
 import { Exchange } from 'app/model/staticdata'
 import { SimpleTradingAccount } from 'app/model/client/simpleTradingAccount'
 import { authenticationService, exchangeService, userProfileService } from 'app/service';
-import { OrderInputForm } from 'app/component/order/OrderInputForm';
+import OrderInputForm from 'app/component/order/OrderInputForm';
 
 import './RetailHome.css';
 import { XcLabel } from '../../shared/component/XcLabel';
@@ -27,15 +27,7 @@ export type AccountSelectorContextType = {
     gelectTradingAccount: () => ?SimpleTradingAccount
 }
 
-const defaultAccountSelectorContextType: AccountSelectorContextType = {
-    language: Language.English,
-    selectLanguage: (language: Language) => {},
-    availableTradingAccount: [], 
-    selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => {},
-    gelectTradingAccount: () => { return null}
-}; 
-
-export const AccountSelectorContext = React.createContext(defaultAccountSelectorContextType);
+export const AccountSelectorContext = React.createContext();
 
 type Props = {
     messageService: MessageService,
@@ -104,7 +96,7 @@ class RetailHome extends React.Component<Props, State> {
     }
 
     render() {
-        // const { language } = this.props;
+        const { messageService } = this.props;
         const { language, exchanges, selectedTradingAccount, tradingAccounts, menuOpen, panes, tabIndex } = this.state;
 
         const applicationDate = new Date()
@@ -146,7 +138,7 @@ class RetailHome extends React.Component<Props, State> {
                                 {exchanges.length > 0 && (
                                     <XcCard>
                                         <h3>{xlate("retailHome.newOrder")}</h3>
-                                        <OrderInputForm exchanges={exchanges} />
+                                        <OrderInputForm accountSelector={accountSelectorContextType} messageService={messageService} exchanges={exchanges} />
                                     </XcCard>
                                 )}
                             </div>

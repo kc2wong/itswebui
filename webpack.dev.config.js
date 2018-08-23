@@ -82,6 +82,7 @@ module.exports = {
         inject: 'body'
     })],    
     devServer: {
-        contentBase: './dist'
+        contentBase: './dist',
+        historyApiFallback: true
     }
-};0
+};

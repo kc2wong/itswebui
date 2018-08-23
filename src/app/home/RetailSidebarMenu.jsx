@@ -49,17 +49,19 @@ export class RetailSidebarMenu extends React.Component<Props, State> {
                             inverted
                         >
                             <div style={{ marginLeft: 20, marginTop: 10 }}><Header inverted as="h5"><Icon name="user"/><Header.Content>{xlate(`menu.selectAccount`)}</Header.Content></Header></div>
-                            <List inverted style={{ marginLeft: 20, marginTop: 10 }}>
-                                {(_.map(tradingAccounts, ta =>
-                                    <List.Item key={ta.tradingAccountCode} onClick={this.handleSelectTradingAccount(context, ta)}>
-                                        <List.Icon name={context.gelectTradingAccount() && this.saveGetTradingAccountNo(context.gelectTradingAccount()) == ta.tradingAccountCode ? 'check square outline' : 'square outline'} />
-                                        <List.Content>
-                                            <List.Header>{ta.tradingAccountCode}</List.Header>
-                                            <List.Description>{ta.nameOneDefLang}</List.Description>
-                                        </List.Content>
-                                    </List.Item>
-                                ))}                                
-                            </List>
+                            {context != null && (
+                                <List inverted style={{ marginLeft: 20, marginTop: 10 }}>
+                                    {(_.map(tradingAccounts, ta =>
+                                        <List.Item key={ta.tradingAccountCode} onClick={this.handleSelectTradingAccount(context, ta)}>
+                                            <List.Icon name={context.gelectTradingAccount() && this.saveGetTradingAccountNo(context.gelectTradingAccount()) == ta.tradingAccountCode ? 'check square outline' : 'square outline'} />
+                                            <List.Content>
+                                                <List.Header>{ta.tradingAccountCode}</List.Header>
+                                                <List.Description>{ta.nameOneDefLang}</List.Description>
+                                            </List.Content>
+                                        </List.Item>
+                                    ))}
+                                </List>
+                            )}
                             <Divider />
                             <div style={{ marginLeft: 20, marginTop: 10 }}><Header inverted as="h5"><Icon name="setting"/><Header.Content>{xlate(`home.preference`)}</Header.Content></Header></div>
                             <Divider />

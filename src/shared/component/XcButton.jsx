@@ -39,7 +39,10 @@ export class XcButton extends Component<Props, State> {
                 {btnGrpCtx => (
                     <FormContext.Consumer>
                         {formCtx => (
-                            <Button active={a} fluid={b} onClick={this.handleClick(formCtx.onSubmit)} primary={p} {... this.constructIcon(formCtx, name, icon, label)} {...props}>{this.constructChild(formCtx, name, icon, label)}</Button>
+                            formCtx != null ?
+                            <Button active={a} fluid={b} onClick={this.handleClick(formCtx.onSubmit)} primary={p} {... this.constructIcon(formCtx.name, name, icon, label)} {...props}>{this.constructChild(formCtx, name, icon, label)}</Button>
+                            :
+                            <Button active={a} fluid={b} onClick={this.handleClick(null)} primary={p} {... this.constructIcon(null, name, icon, label)} {...props}>{this.constructChild(formCtx, name, icon, label)}</Button>
                         )}
                     </FormContext.Consumer>
                 )}
@@ -47,7 +50,7 @@ export class XcButton extends Component<Props, State> {
         )
     }
 
-    handleClick = (onSubmit?: () => void) => (event: SyntheticMouseEvent<>) => {
+    handleClick = (onSubmit: ?() => void) => (event: SyntheticMouseEvent<>) => {
         const { onClick } = this.props;
         if (onClick != null) {
             onClick();
@@ -60,8 +63,8 @@ export class XcButton extends Component<Props, State> {
         }
     }
 
-    constructIcon (formContext: FormContextType, fieldName: string, icon: ?XcIconProps, label: ?string): Object {
-         const t = label != null ? (label.startsWith('#') ? xlate(label.substr(1)) : label) : xlate(`${formContext.name}.${fieldName}`)
+    constructIcon (formName: ?string, fieldName: string, icon: ?XcIconProps, label: ?string): Object {
+         const t = label != null ? (label.startsWith('#') ? xlate(label.substr(1)) : label) : (formName != null ? xlate(`${formName}.${fieldName}`) : label)
          return icon != null ? {content: t, icon: icon.name} : {}
     }
     

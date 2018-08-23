@@ -30,6 +30,7 @@ type Props = {
     data: Object[],
     onSelectionChange: ?(number) => {},
     onSort: ?(string, SortDirection) => void;
+    selectable: ?boolean,
     selectedIndex: ?number
 }
 
@@ -45,7 +46,7 @@ export class XcTable extends React.Component<Props, State> {
     }
 
     render() {
-        const { colspec, compact, data, ...props } = this.props;
+        const { colspec, compact, data, selectable, ...props } = this.props;
         const { selectedIndex } = this.state;
 
         const totalWidth = _.sumBy(colspec, (cs) => (
@@ -53,7 +54,7 @@ export class XcTable extends React.Component<Props, State> {
         ));
 
         return (
-            <Table sortable columns={NUM_OF_COL} celled compact selectable size="small">
+            <Table sortable columns={NUM_OF_COL} celled compact selectable={parseBool(selectable, true)} size="small">
                 <Table.Header>
                     <Table.Row>
                         {_.map(colspec, (cs) => (
@@ -75,11 +76,14 @@ export class XcTable extends React.Component<Props, State> {
     }
 
     handleClick = (row: number) => (event: SyntheticMouseEvent<>) => {
-        this.setState({ selectedIndex: row }, () => {
-            if (this.props.onSelectionChange) {
-                this.props.onSelectionChange(row);
-            }
-        });
+        const { selectable } = this.props;
+        if (parseBool(selectable, true)) {
+            this.setState({ selectedIndex: row }, () => {
+                if (this.props.onSelectionChange) {
+                    this.props.onSelectionChange(row);
+                }
+            });    
+        }
     }
     
     handleSort = (nextSortBy: string) => (event: SyntheticMouseEvent<>) => {

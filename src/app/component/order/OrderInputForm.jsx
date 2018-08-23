@@ -1,16 +1,21 @@
 // @flow
 import _ from 'lodash'
 import React, { Component } from 'react';
-import { XcButton, XcButtonGroup, XcCheckbox, XcForm, XcGrid, XcInputText, XcInputNumber, XcLabel } from 'shared/component';
-import { XcMessage, XcOption, XcRadio, XcSelect } from 'shared/component';
-import { Language, xlate } from 'shared/util/lang';
+import { DataType } from 'shared/model';
+import { XcButton, XcButtonGroup, XcDialog, XcForm, XcInputText, XcInputNumber } from 'shared/component';
+import { XcMessage, XcOption, XcRadio, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { formatNumber, Language, xlate } from 'shared/util/lang';
 import { isNullOrEmpty } from 'shared/util/stringUtil';
 import { Currency, Exchange, ExchangeBoardPriceSpread, Instrument } from 'app/model/staticdata'
-import { OrderRequest, OrderInputResourceBundle } from 'app/model/order'
-import { orderService } from 'app/service'
 import { BuySell } from 'app/model/EnumType'
+import { OrderRequest, OrderInputResourceBundle } from 'app/model/order'
+import { AccountSelectorContext, type AccountSelectorContextType } from 'app/home/RetailHome';
+import { MessageContext, MessageService } from 'shared/service';
+import { orderService } from 'app/service'
 
 type Props = {
+    accountSelector: AccountSelectorContextType,
+    messageService: ?MessageService,
     exchanges: Exchange[]
 }
 
@@ -18,24 +23,29 @@ type State = {
     orderRequest: OrderRequest,
     currency: ?Currency,
     instrument: ?Instrument,
-    exchangeBoardPriceSpread: ?ExchangeBoardPriceSpread
+    exchangeBoardPriceSpread: ?ExchangeBoardPriceSpread,
 }
 
 const formName = "orderInputForm"
 
-export class OrderInputForm extends React.Component<Props, State> {
+class OrderInputForm extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
 
         const orderRequest = OrderRequest.newInstance()
-        orderRequest.exchangeOid = props.exchanges[0].exchangeOid
+        const selectedTradingAccount = props.accountSelector.gelectTradingAccount()
+        if (selectedTradingAccount) {
+            orderRequest.operationUnitCode = selectedTradingAccount.operationUnitCode
+            orderRequest.tradingAccountCode = selectedTradingAccount.tradingAccountCode    
+        }
+
         this.state = {
             orderRequest: orderRequest,
             currency: null,
             exchangeBoardPriceSpread: null,
             instrument: null
-}
+        }
     }    
 
     render() {
@@ -61,13 +71,27 @@ export class OrderInputForm extends React.Component<Props, State> {
                 <XcInputNumber name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
                 <XcButtonGroup>
                     <XcButton name="reset" onClick={this.handleClick} />
-                    <XcButton disabled={false} 
+                    <XcButton disabled={false}
                         name="submit" onClick={this.handleCalculateChargeCommission} primary />
                 </XcButtonGroup>
             </XcForm>
         )
     }
 
+    componentDidUpdate(prevProps: Props) {
+        // in case another account is selected, update the account info to orderRequest
+        const { accountSelector } = this.props;
+        const { orderRequest } = this.state;
+        const selectedTradingAccount = accountSelector.gelectTradingAccount()
+        if (selectedTradingAccount && (orderRequest.operationUnitCode != selectedTradingAccount.operationUnitCode || orderRequest.tradingAccountCode != selectedTradingAccount.tradingAccountCode)) {
+            orderRequest.operationUnitCode = selectedTradingAccount.operationUnitCode
+            orderRequest.tradingAccountCode = selectedTradingAccount.tradingAccountCode
+            this.setState({
+                orderRequest: orderRequest
+            })
+        }
+    }
+            
     handleModelUpdate = (model: Object) => {
         this.setState({
             orderRequest: OrderRequest.fromJson(model)
@@ -93,12 +117,50 @@ export class OrderInputForm extends React.Component<Props, State> {
     }    
 
     handleCalculateChargeCommission = (event: SyntheticFocusEvent<>) => {
-        const { orderRequest } = this.state
+        const { messageService } = this.props
+        const { currency, orderRequest, instrument } = this.state
+        const instrumentName = instrument ? instrument.getDescription(Language.English) : ""
+        const currencyName = currency ? currency.getDescription(Language.English) : ""
+        const decimalPoint = currency ? currency.decimalPoint : 2
+        
+        if (messageService) {
+            messageService.showLoading()
+        }
         orderService.calculateChargeCommission(orderRequest).then(
-            simpleOrder => {
-                console.log(simpleOrder)
+            chargeCommission => {
+                if (messageService) {
+                    const keyCol = new XcTableColSpec("key", DataType.String, "", 5, null)
+                    const valueCol = new XcTableColSpec("value", DataType.String, "", 5, null)
+                    const data = [
+                        { key: xlate(`${formName}.tradingAccount`), value: orderRequest.tradingAccountCode },
+                        { key: xlate(`${formName}.exchangeCode`), value: orderRequest.exchangeCode },
+                        { key: xlate(`${formName}.instrumentCode`), value: `${orderRequest.instrumentCode} ${instrumentName}` },
+                        { key: xlate(`${formName}.price`), value: `${currencyName} ${formatNumber(orderRequest.price, true, decimalPoint)}` },
+                        { key: xlate(`${formName}.quantity`), value: orderRequest.quantity },
+                        { key: xlate(`${formName}.grossAmount`), value: `${currencyName} ${formatNumber(chargeCommission.grossAmount, true, decimalPoint)}` },
+                        { key: xlate(`${formName}.charge`), value: `${currencyName} ${formatNumber(chargeCommission.chargeAmount, true, decimalPoint)}` },
+                        { key: xlate(`${formName}.commission`), value: `${currencyName} ${formatNumber(chargeCommission.commissionAmount, true, decimalPoint)}` },
+                        { key: xlate(`${formName}.netAmount`), value: `${currencyName} ${formatNumber(chargeCommission.netAmount, true, decimalPoint)}` }
+                    ]
+                    const content = <XcTable colspec={[keyCol, valueCol]} data={data} selectable={false}></XcTable>
+
+                    const dialog = <XcDialog confirmYesAction={() => { }}
+                        confirmNoAction={() => { messageService && messageService.hideDialog() }}
+                        content={content}
+                        title={xlate(`${formName}.confirmOrderSubmission`)}
+                        type={XcDialog.Type.YesNo} />
+
+                    messageService.hideLoading()                
+                    messageService.showDialog(dialog);
+                }
             }
         )
     }
 
 }
+
+export default (props: Props) => (
+    <MessageContext.Consumer>
+        {messageService => <OrderInputForm {...props} messageService={messageService} />}
+    </MessageContext.Consumer>
+);

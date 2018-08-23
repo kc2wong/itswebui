@@ -1,7 +1,7 @@
 // @flow
 import _ from 'lodash';
 import { SERVER_API_URL } from 'app/constant/ApplicationConstant';
-import { OrderInputResourceBundle, OrderRequest, SimpleOrder } from 'app/model/order/'
+import { ChargeCommission, OrderInputResourceBundle, OrderRequest } from 'app/model/order/'
 import { httpGet, httpPost } from 'shared/util/networkUtil';
 
 const eApiContextPath = `${SERVER_API_URL}/eapi/order/order-request-bundles`
@@ -23,12 +23,12 @@ class OrderService {
         )
     }
 
-    calculateChargeCommission(orderRequest: OrderRequest): Promise<SimpleOrder> {
+    calculateChargeCommission(orderRequest: OrderRequest): Promise<ChargeCommission> {
         let url = `${contextPath}/simulations`
         return httpPost(url, null, orderRequest).then(
             msg => {
                 const json = msg.json
-                return SimpleOrder.fromJson(json)
+                return ChargeCommission.fromJson(json)
             },
             error => {
                 console.error(error)
