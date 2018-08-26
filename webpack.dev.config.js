@@ -62,7 +62,8 @@ module.exports = {
                     multiple: [
                        { search: '@SERVER_API_URL', replace: 'http://localhost:8080', strict: true },
                        { search: '@SERVER_TIMEOUT_VALUE', replace: '50000', strict: true },
-                       { search: '@CHANNEL_CODE', replace: 'I', strict: true }
+                       { search: '@CHANNEL_CODE', replace: 'I', strict: true },
+                       { search: '@BASE_CURRENCY', replace: 'HKD', strict: true }
                     ]
                 }
             },

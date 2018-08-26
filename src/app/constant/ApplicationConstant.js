@@ -5,11 +5,13 @@
  let _SERVER_API_URL = '@SERVER_API_URL'; // This value will be overwritten by Webpack
  let _SERVER_TIMEOUT_VALUE = '@SERVER_TIMEOUT_VALUE'; // This value will be overwritten by Webpack
  let _CHANNEL_CODE = '@CHANNEL_CODE'; // This value will be overwritten by Webpack
+ let _BASE_CURRENCY = '@BASE_CURRENCY'; // This value will be overwritten by Webpack
 
  /* tslint:enable */
 export const SERVER_API_URL = _SERVER_API_URL
 export const SERVER_TIMEOUT_VALUE = Number.parseInt(_SERVER_TIMEOUT_VALUE)
 export const CHANNEL_CODE = _CHANNEL_CODE
+export const BASE_CURRENCY = _BASE_CURRENCY
 
 // first one is default
 export const PAGE_SIZE_OPTION = [10, 20, 40]
