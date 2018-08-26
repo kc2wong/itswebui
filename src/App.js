@@ -6,14 +6,26 @@ import { Grid, Segment, Tab } from 'semantic-ui-react'
 import { XcButton, XcCheckbox, XcForm, XcInputText, XcLabel, XcSelect, XcNavigationTab } from 'shared/component';
 import { XcDialog, XcLoader, XcOption } from 'shared/component';
 import { Language, xlate } from 'shared/util/lang';
-import { Currency } from 'app/model/staticdata';
-import { MessageContext, MessageService } from 'shared/service';
+import { MessageService } from 'shared/service';
 import { AppToolbar, navigator, SidebarMenu } from 'app/home';
-// import Home from 'app/home/Home';
-import Home from 'app/home/RetailHome';
+import RetailHome from 'app/home/RetailHome';
 import { userProfileService } from 'app/service';
-
+import { ApplicationContext, type ApplicationContextType } from 'app/context'
 import LoginForm from 'app/component/security/LoginForm';
+
+// export type ApplicationContextType = {
+//     messageService: MessageService
+// }
+
+// export const ApplicationContext = React.createContext({
+//     messageService: {
+//         hideLoading: () => {},
+//         showLoading: () => {},
+//         dismissDialog: () => {},
+//         showDialog: (dialog: XcDialog) => {},
+//         isDialogShowing: () => {return false}    
+//     }    
+// });
 
 type Props = {
 }
@@ -46,7 +58,7 @@ class App extends React.Component<Props, State> {
             showLoading: () => {
                 this.setState({ loading: this.state.loading + 1 })
             },
-            hideDialog: (dialog: XcDialog) => {
+            dismissDialog: (dialog: XcDialog) => {
                 this.setState({ dialog: dialog })
             },
             showDialog: (dialog: XcDialog) => {
@@ -60,26 +72,27 @@ class App extends React.Component<Props, State> {
         
         const applicationDate = new Date()
 
+        const retailHome = <RetailHome language={Language.English}/>
         return (
             <React.Fragment>
-                <MessageContext.Provider value={messageService}>
+                <ApplicationContext.Provider value={{messageService: messageService}}>
                     {loading > 0 && (<XcLoader message={xlate("general.loadingIndicator")} />)}
                     {dialog != null && (dialog)}
                     <Router history={navigator}>
                         <Switch>
-                            <PrivateRoute exact path="/" component={Home} />
+                            <PrivateRoute exact path="/" component={RetailHome} />
                             <Route path={loginPath} render={(props) => (
                                 <LoginForm onLoginSuccess={this.handleLoginSuccess} />
                             )} />
                         </Switch>
                     </Router>
-                </MessageContext.Provider>
+                </ApplicationContext.Provider>
             </React.Fragment>
         )
     }
 
-    handleLoginSuccess = () => {
-        navigator.push("/")
+    handleLoginSuccess = (language: Language) => {
+        navigator.push("/", {language: language.value})
     }
 
     handleLogout = () => {

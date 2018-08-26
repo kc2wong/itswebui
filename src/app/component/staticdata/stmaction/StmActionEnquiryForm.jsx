@@ -83,7 +83,8 @@ export class StmActionEnquiryForm extends Component<Props, State> {
                                 data={searchResult.data} 
                                 onSort={this.handleSort} 
                                 onSelectionChange={this.handleSelectionChange} 
-                                selectedIndex={selectedIndex} />
+                                selectedIndex={selectedIndex} 
+                                size={XcTable.Size.Small} />
                         </XcPanel.Body>
                         <XcPanel.Footer>
                             <XcGrid>

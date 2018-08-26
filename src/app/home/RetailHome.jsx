@@ -7,9 +7,11 @@ import { Pagable } from 'shared/model';
 import { XcCard, XcNavigationTab } from 'shared/component';
 import { Language, xlate } from 'shared/util/lang';
 import { getCurrentUserid } from 'shared/util/sessionUtil';
-import { MessageContext, MessageService } from 'shared/service';
-import { RetailAppToolbar, navigator, RetailSidebarMenu } from 'app/home';
+import { MessageService } from 'shared/service';
+import { RetailAppToolbar, navigator } from 'app/home';
+import RetailSidebarMenu from 'app/home/RetailSidebarMenu';
 import { MenuHierarchy } from 'app/model/security/menuHierarchy'
+import { ApplicationContext, SessionContext, type SessionContextType } from 'app/context'
 import CurrencyMaintenanceForm from 'app/component/staticdata/currency/CurrencyMaintenanceForm';
 import StmActionMaintenanceForm from 'app/component/staticdata/stmaction/StmActionMaintenanceForm';
 import { Exchange } from 'app/model/staticdata'
@@ -18,20 +20,32 @@ import { authenticationService, exchangeService, userProfileService } from 'app/
 import OrderInputForm from 'app/component/order/OrderInputForm';
 
 import './RetailHome.css';
-import { XcLabel } from '../../shared/component/XcLabel';
 
-export type AccountSelectorContextType = {
-    language: Language,
-    availableTradingAccount: Array<SimpleTradingAccount>,
-    selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => void,
-    gelectTradingAccount: () => ?SimpleTradingAccount
-}
+// export type SessionContextType = {
+//     language: Language,
+//     selectLanguage: (Language) => void,
+//     accountContext: {
+//         availableTradingAccount: Array<SimpleTradingAccount>,
+//         selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => void,
+//         gelectTradingAccount: () => ?SimpleTradingAccount    
+//     }
+// }
 
-export const AccountSelectorContext = React.createContext();
+// export const SessionContext = React.createContext({
+//     language: Language.English,
+//     selectLanguage: (language: Language) => {},
+//     accountContext: {
+//         availableTradingAccount: [],
+//         selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => {},
+//         gelectTradingAccount: () => null    
+//     }
+// });
 
 type Props = {
-    messageService: MessageService,
-    language: Language
+}
+
+type IntProps = {
+    messageService: MessageService
 }
 
 type State = {
@@ -55,9 +69,9 @@ class DummyForm extends React.Component<{}, {}> {
     }
 }
 
-class RetailHome extends React.Component<Props, State> {
+class RetailHome extends React.Component<IntProps, State> {
 
-    constructor(props: Props) {
+    constructor(props: IntProps) {
         super(props)
 
         let panes = []
@@ -68,7 +82,9 @@ class RetailHome extends React.Component<Props, State> {
 
         this.state = {
             exchanges: [],
-            language: props.language,
+            language: _.find(Language.enumValues, (e) => (
+                e.value == navigator.location.state.language
+            )),
             selectedTradingAccount: null,
             tradingAccounts: [],
             menuOpen: false,
@@ -101,36 +117,39 @@ class RetailHome extends React.Component<Props, State> {
 
         const applicationDate = new Date()
 
-        const accountSelectorContextType: AccountSelectorContextType = {
-            language: language,
-            selectLanguage: (language: Language) => {
-                this.setState({
-                    language: language
-                })
-            },
-            availableTradingAccount: tradingAccounts,
-            selectTradingAccount: (simpleTradingAccount: SimpleTradingAccount) => {
-                console.log('hihi')
-                if (_.findIndex(tradingAccounts, ta => ta.tradingAccountCode == simpleTradingAccount.tradingAccountCode) > -1) {
+        const sessionContext: SessionContextType = {
+            languageContext: {
+                language: language,
+                selectLanguage: (language: Language) => {
                     this.setState({
-                        menuOpen: false,
-                        selectedTradingAccount: simpleTradingAccount,
+                        language: language
                     })
-                }
-                else {
-                    this.setState({
-                        menuOpen: false
-                    })
-                }
+                },    
             },
-            gelectTradingAccount: () => { return selectedTradingAccount ? selectedTradingAccount : tradingAccounts.length > 0 ? tradingAccounts[0] : null}
+            accountContext: {
+                availableTradingAccount: tradingAccounts,
+                selectTradingAccount: (simpleTradingAccount: SimpleTradingAccount) => {
+                    if (_.findIndex(tradingAccounts, ta => ta.tradingAccountCode == simpleTradingAccount.tradingAccountCode) > -1) {
+                        this.setState({
+                            menuOpen: false,
+                            selectedTradingAccount: simpleTradingAccount,
+                        })
+                    }
+                    else {
+                        this.setState({
+                            menuOpen: false
+                        })
+                    }
+                },
+                gelectTradingAccount: () => { return selectedTradingAccount ? selectedTradingAccount : tradingAccounts.length > 0 ? tradingAccounts[0] : null}    
+            }
         }; 
 
         let userid = getCurrentUserid()
         return (
-            <AccountSelectorContext.Provider value={accountSelectorContextType}>
+            <SessionContext.Provider value={sessionContext}>
                 <React.Fragment>
-                    {(<RetailSidebarMenu onClose={this.closeMenu} onSelectAccount={this.handleSelectAccount} open={menuOpen} tradingAccounts={tradingAccounts}>
+                    {(<RetailSidebarMenu onClose={this.closeMenu} onSelectAccount={this.handleSelectAccount} open={menuOpen}>
                         <RetailAppToolbar applicationDate={applicationDate} language={language != null ? language : Language.English} menuOpen={menuOpen}
                             onLanguageChange={this.handleChangeLanguage} onLogout={this.handleLogout} onMenuClick={this.toggleMenu} username={userid ? userid : ""} />
                         <div style={{ flex: 1 }}>
@@ -138,7 +157,7 @@ class RetailHome extends React.Component<Props, State> {
                                 {exchanges.length > 0 && (
                                     <XcCard>
                                         <h3>{xlate("retailHome.newOrder")}</h3>
-                                        <OrderInputForm accountSelector={accountSelectorContextType} messageService={messageService} exchanges={exchanges} />
+                                        <OrderInputForm exchanges={exchanges} />
                                     </XcCard>
                                 )}
                             </div>
@@ -148,10 +167,10 @@ class RetailHome extends React.Component<Props, State> {
                                     {panes}
                                 </XcNavigationTab>
                             </div>
-                        </div >
-                    </RetailSidebarMenu>)}
+                        </div >                       
+                    </RetailSidebarMenu>)} 
                 </React.Fragment>
-            </AccountSelectorContext.Provider>            
+            </SessionContext.Provider>            
         )
     }
 
@@ -190,7 +209,7 @@ class RetailHome extends React.Component<Props, State> {
 }
 
 export default (props: Props) => (
-    <MessageContext.Consumer>
-        {messageService => <RetailHome {...props} messageService={messageService} />}
-    </MessageContext.Consumer>
+    <ApplicationContext.Consumer>
+        {applicationContext => <RetailHome {...props} messageService={applicationContext.messageService} />}
+    </ApplicationContext.Consumer>
 );

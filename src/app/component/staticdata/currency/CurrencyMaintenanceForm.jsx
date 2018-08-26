@@ -3,7 +3,7 @@
 import _ from 'lodash';
 import React, { Component } from 'react';
 import { Mode, PageResult, SortOrder } from 'shared/model';
-import { ButtonVisibility, XcDialog, XcDivider } from 'shared/component';
+import { createConfirmationDialog, ButtonVisibility, XcDivider } from 'shared/component';
 import { xlate } from 'shared/util/lang';
 import { Pageable } from 'shared/model/BaseModel';
 import { Toolbar } from 'app/component/common/Toolbar';
@@ -82,7 +82,7 @@ class CurrencyMaintenanceForm extends Component<Props, State> {
 
     handleCloseDialog = () => {
         const { messageService } = this.props;
-        messageService && messageService.hideDialog();
+        messageService && messageService.dismissDialog();
     }
 
     handleDeleteRecord = () => {
@@ -107,10 +107,11 @@ class CurrencyMaintenanceForm extends Component<Props, State> {
         const selectedRecord = (searchResult && selectedIndex != -1) ? searchResult.data[selectedIndex].toJson() : {} 
 
         if (!_.isEqual(selectedRecord, workingRecord)) {
-            const dialog = <XcDialog confirmYesAction={this.handleGetOneRecord}
-                confirmNoAction={this.handleCloseDialog}
-                message={xlate('general.discardChangeQuestion')}
-                type={XcDialog.Type.YesNo} />
+            const dialog = createConfirmationDialog(this.handleGetOneRecord, this.handleCloseDialog, null, xlate('general.discardChangeQuestion'))
+            // const dialog = <XcDialog confirmYesAction={this.handleGetOneRecord}
+            //     confirmNoAction={this.handleCloseDialog}
+            //     message={xlate('general.discardChangeQuestion')}
+            //     type={XcDialog.Type.YesNo} />
             messageService && messageService.showDialog(dialog);
         }
         else {
@@ -120,10 +121,11 @@ class CurrencyMaintenanceForm extends Component<Props, State> {
 
     handleSaveRecord = () => {
         const { messageService } = this.props;
-        const dialog = <XcDialog confirmYesAction={this.handleCloseDialog}
-            confirmNoAction={this.handleCloseDialog}
-            message={xlate('general.saveChangeQuestion')}
-            type={XcDialog.Type.YesNo} />
+        const dialog = createConfirmationDialog(this.handleCloseDialog, this.handleCloseDialog, null, xlate('general.saveChangeQuestion'))
+        // const dialog = <XcDialog confirmYesAction={this.handleCloseDialog}
+        //     confirmNoAction={this.handleCloseDialog}
+        //     message={xlate('general.saveChangeQuestion')}
+        //     type={XcDialog.Type.YesNo} />
         
         messageService && messageService.showDialog(dialog);
     }
@@ -179,11 +181,11 @@ class CurrencyMaintenanceForm extends Component<Props, State> {
             messageService && messageService.showLoading()
             currencyService.getOne(selectedRecord.getId()).then(
                 result => {
-                    messageService && messageService.hideLoading()
+                    // messageService && messageService.dismissDialog()
                     // this.setState({ mode: (newMode != null ? newMode : mode), selectedRecord: result, workingRecord: result }, () => {
                     this.setState({ mode: (newMode != null ? newMode : mode), workingRecord: result.toJson() }, () => {
                         if (messageService && messageService.isDialogShowing()) {
-                            messageService.hideDialog()
+                            messageService.dismissDialog()
                         }
                     })
                 }

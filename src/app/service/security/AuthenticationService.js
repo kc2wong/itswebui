@@ -34,7 +34,6 @@ class AuthenticationService {
                 const passwordHashHex = shaObj.digest().toHex()
         
                 const useridHex = this.stringToHex(userid)
-                console.log(useridHex)
 
                 // SHA(USERID + SHA(PASSWORD))
                 shaObj = forge.md.sha1.create()
@@ -101,7 +100,6 @@ class AuthenticationService {
     stringToHex(str: string): string {
         let arr = []; // []
         _.forEach(str, c => {
-            console.log(c)
             const hex = Number(c.charCodeAt(0)).toString(16);
             arr.push(hex);  
         })

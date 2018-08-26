@@ -1,6 +1,7 @@
 // @flow
 import _ from 'lodash';
 import * as React from 'react';
+import { Enum } from 'enumify';
 import { Table } from 'semantic-ui-react';
 
 import { DataType, SortDirection } from 'shared/model';
@@ -22,16 +23,19 @@ export class XcTableColSpec {
     }
 }
 
+class TableSize extends Enum {}
+TableSize.initEnum({ Small: { value: 'small' }, Large: { value: 'large' } });
+
 const NUM_OF_COL = 16
 
 type Props = {
     colspec: XcTableColSpec[],
-    compact: ?bool,
     data: Object[],
     onSelectionChange: ?(number) => {},
     onSort: ?(string, SortDirection) => void;
     selectable: ?boolean,
-    selectedIndex: ?number
+    selectedIndex: ?number,
+    size: ?TableSize
 }
 
 type State = {
@@ -39,6 +43,7 @@ type State = {
 }
 
 export class XcTable extends React.Component<Props, State> {
+    static Size = TableSize
 
     constructor(props: Props) {
         super(props);
@@ -46,15 +51,15 @@ export class XcTable extends React.Component<Props, State> {
     }
 
     render() {
-        const { colspec, compact, data, selectable, ...props } = this.props;
+        const { colspec, data, selectable, size, ...props } = this.props;
         const { selectedIndex } = this.state;
-
+        const s = size ? { size: size.value } : {}
         const totalWidth = _.sumBy(colspec, (cs) => (
             cs.width
         ));
 
         return (
-            <Table sortable columns={NUM_OF_COL} celled compact selectable={parseBool(selectable, true)} size="small">
+            <Table sortable columns={NUM_OF_COL} celled compact selectable={parseBool(selectable, true)} {...s} >
                 <Table.Header>
                     <Table.Row>
                         {_.map(colspec, (cs) => (

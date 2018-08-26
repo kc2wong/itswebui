@@ -9,14 +9,18 @@ import { isNullOrEmpty } from 'shared/util/stringUtil';
 import { Currency, Exchange, ExchangeBoardPriceSpread, Instrument } from 'app/model/staticdata'
 import { BuySell } from 'app/model/EnumType'
 import { OrderRequest, OrderInputResourceBundle } from 'app/model/order'
-import { AccountSelectorContext, type AccountSelectorContextType } from 'app/home/RetailHome';
-import { MessageContext, MessageService } from 'shared/service';
+import { MessageService } from 'shared/service';
 import { orderService } from 'app/service'
+import { ApplicationContext, type AccountContextType, type LanguageContextType, SessionContext, type SessionContextType } from 'app/context'
 
 type Props = {
-    accountSelector: AccountSelectorContextType,
-    messageService: ?MessageService,
     exchanges: Exchange[]
+}
+
+type IntProps = {
+    exchanges: Exchange[],
+    messageService: MessageService,
+    sessionContext: SessionContextType
 }
 
 type State = {    
@@ -28,13 +32,13 @@ type State = {
 
 const formName = "orderInputForm"
 
-class OrderInputForm extends React.Component<Props, State> {
+class OrderInputForm extends React.Component<IntProps, State> {
 
-    constructor(props: Props) {
+    constructor(props: IntProps) {
         super(props);
 
         const orderRequest = OrderRequest.newInstance()
-        const selectedTradingAccount = props.accountSelector.gelectTradingAccount()
+        const selectedTradingAccount = props.sessionContext.accountContext.gelectTradingAccount()
         if (selectedTradingAccount) {
             orderRequest.operationUnitCode = selectedTradingAccount.operationUnitCode
             orderRequest.tradingAccountCode = selectedTradingAccount.tradingAccountCode    
@@ -49,8 +53,9 @@ class OrderInputForm extends React.Component<Props, State> {
     }    
 
     render() {
-        const { exchanges } = this.props
+        const { exchanges, sessionContext } = this.props
         const { currency, instrument, orderRequest } = this.state
+        const languageContext: LanguageContextType = sessionContext.languageContext
 
         const exchangeOpt = _.map(exchanges, (e) => (
             new XcOption(e.exchangeCode, e.shortNameDefLang)
@@ -59,9 +64,10 @@ class OrderInputForm extends React.Component<Props, State> {
             new XcOption(e.value, xlate(`enum.buySell.${e.value}`))
         ))
 
-        const currencyName = currency ? currency.getDescription(Language.English) : ""
-        const instrumentName = instrument ? instrument.getDescription(Language.English) : null
+        const instrumentName = instrument ? instrument.getDescription(languageContext.language) : ""
+        const currencyName = currency ? currency.getDescription(languageContext.language) : ""
         const lotSizeHint = instrument ? xlate(`${formName}.lotSizeHint`, [instrument.lotSize]) : null
+
         return (
             <XcForm model={orderRequest} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
                 <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
@@ -78,11 +84,11 @@ class OrderInputForm extends React.Component<Props, State> {
         )
     }
 
-    componentDidUpdate(prevProps: Props) {
+    componentDidUpdate(prevProps: IntProps) {
         // in case another account is selected, update the account info to orderRequest
-        const { accountSelector } = this.props;
+        const { sessionContext } = this.props;
         const { orderRequest } = this.state;
-        const selectedTradingAccount = accountSelector.gelectTradingAccount()
+        const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
         if (selectedTradingAccount && (orderRequest.operationUnitCode != selectedTradingAccount.operationUnitCode || orderRequest.tradingAccountCode != selectedTradingAccount.tradingAccountCode)) {
             orderRequest.operationUnitCode = selectedTradingAccount.operationUnitCode
             orderRequest.tradingAccountCode = selectedTradingAccount.tradingAccountCode
@@ -117,10 +123,12 @@ class OrderInputForm extends React.Component<Props, State> {
     }    
 
     handleCalculateChargeCommission = (event: SyntheticFocusEvent<>) => {
-        const { messageService } = this.props
+        const { messageService, sessionContext } = this.props
         const { currency, orderRequest, instrument } = this.state
-        const instrumentName = instrument ? instrument.getDescription(Language.English) : ""
-        const currencyName = currency ? currency.getDescription(Language.English) : ""
+
+        const languageContext: LanguageContextType = sessionContext.languageContext
+        const instrumentName = instrument ? instrument.getDescription(languageContext.language) : ""
+        const currencyName = currency ? currency.getDescription(languageContext.language) : ""
         const decimalPoint = currency ? currency.decimalPoint : 2
         
         if (messageService) {
@@ -142,10 +150,12 @@ class OrderInputForm extends React.Component<Props, State> {
                         { key: xlate(`${formName}.commission`), value: `${currencyName} ${formatNumber(chargeCommission.commissionAmount, true, decimalPoint)}` },
                         { key: xlate(`${formName}.netAmount`), value: `${currencyName} ${formatNumber(chargeCommission.netAmount, true, decimalPoint)}` }
                     ]
-                    const content = <XcTable colspec={[keyCol, valueCol]} data={data} selectable={false}></XcTable>
-
+                    const content = <XcTable colspec={[keyCol, valueCol]} compact={false} data={data} selectable={false} size={XcTable.Size.Large}></XcTable>
+                    const positiveButton = <XcButton icon={{name: 'checkmark'}} label={xlate("general.confirm")} primary onClick={() => {}} />
+                    const negativeButton = <XcButton icon={{name: 'remove'}} label={xlate("general.cancel")} onClick={() => {messageService && messageService.dismissDialog()}} />
+                                
                     const dialog = <XcDialog confirmYesAction={() => { }}
-                        confirmNoAction={() => { messageService && messageService.hideDialog() }}
+                        negativeButton={negativeButton} positiveButton={positiveButton}
                         content={content}
                         title={xlate(`${formName}.confirmOrderSubmission`)}
                         type={XcDialog.Type.YesNo} />
@@ -160,7 +170,11 @@ class OrderInputForm extends React.Component<Props, State> {
 }
 
 export default (props: Props) => (
-    <MessageContext.Consumer>
-        {messageService => <OrderInputForm {...props} messageService={messageService} />}
-    </MessageContext.Consumer>
+    <ApplicationContext.Consumer>
+        {applicationContext =>
+            <SessionContext.Consumer>
+                {sessionContext => <OrderInputForm {...props} messageService={applicationContext.messageService} sessionContext={sessionContext} />}
+            </SessionContext.Consumer>
+        }
+    </ApplicationContext.Consumer>
 );

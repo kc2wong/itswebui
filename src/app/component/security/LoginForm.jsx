@@ -6,33 +6,41 @@ import { XcMessage, XcOption } from 'shared/component';
 import { createColumnClass } from 'shared/component/XcFormUtil';
 import { Language, xlate } from 'shared/util/lang';
 import { isNullOrEmpty } from 'shared/util/stringUtil';
-import { MessageContext, MessageService } from 'shared/service';
+import { MessageService } from 'shared/service';
 import { BaseModel } from 'shared/model';
-import { authenticationService } from 'app/service/security/AuthenticationService';
+import { ApplicationContext } from 'app/context'
+import { authenticationService } from 'app/service/security/AuthenticationService'
+
 import './LoginForm.css';
 
 type Props = {
-    messageService?: MessageService,
-    onLoginSuccess?: () => void
+    onLoginSuccess?: (language: Language) => void
+}
+
+type IntProps = {
+    messageService: MessageService,
+    onLoginSuccess?: (language: Language) => void
 }
 
 type State = {
     credential: Credential,
+    language: Language,
     error?: Object
 }
 
-class LoginForm extends Component<Props, State> {
+class LoginForm extends Component<IntProps, State> {
 
-    constructor(props: Props) {
+    constructor(props: IntProps) {
         super(props);
 
         this.state = {
-            credential: new Credential()
+            credential: new Credential(),
+            language: Language.English
         }
     }
 
     render() {
-        const { credential, error } = this.state;
+        const { credential, language, error } = this.state;
         const langOpt = _.map(Language.enumValues, (e) => (
             new XcOption(e.value, xlate(`home.lang.${e.value}`))
         ))
@@ -54,7 +62,7 @@ class LoginForm extends Component<Props, State> {
                                 </div>
                                 <XcInputText icon={{ name: "user" }} label="#loginForm.username" name="userid" validation={{ required: true }} />
                                 <XcInputText icon={{ name: "lock" }} label="Password" name="password" password validation={{ required: true }} />
-                                <XcSelect label="Language" name="language" options={langOpt} />
+                                <XcSelect label="Language" name="language" onChange={this.handleChangeLanguage} options={langOpt} value={language.value} />
                                 <XcCheckbox label="Remember Me" name="rememberMe" />
                                 <p />
                                 <XcButton disabled={isNullOrEmpty(credential.userid) || isNullOrEmpty(credential.password)} fluid primary onClick={this.handleClick} name="login" />
@@ -82,22 +90,30 @@ class LoginForm extends Component<Props, State> {
         })
     }
 
+    handleChangeLanguage = (event: SyntheticInputEvent<>, target: any) => {
+        const lang = _.find(Language.enumValues, (e) => (
+            e.value == target.value
+        ))
+        this.setState({
+            language: lang
+        })
+    }
+
     handleClick = (event: SyntheticMouseEvent<>) => {
         const { messageService, onLoginSuccess } = this.props
         const { userid, password } = this.state.credential
+        const { language } = this.state
 
-        messageService && messageService.showLoading()
+        messageService.showLoading()
         authenticationService.login(userid, password).then(
             result => {
-                messageService && messageService.hideLoading()
-                console.log(result);
+                messageService.hideLoading()
                 if (onLoginSuccess) {
-                    onLoginSuccess()
+                    onLoginSuccess(language)
                 }
             },
             error => {
-                messageService && messageService.hideLoading()
-                console.log(error)
+                messageService.hideLoading()
                 this.setState({error: error})
             }
         )
@@ -109,7 +125,6 @@ class Credential implements BaseModel {
     userid: string;
     password: string;
     rememberMe: bool;
-    language: string;
 
     static fromJson(json: Object): Credential {
         let rtn = new Credential()
@@ -121,7 +136,6 @@ class Credential implements BaseModel {
         this.userid = "";
         this.password = "";
         this.rememberMe = false;
-        this.language = Language.English.value;
     }
 
     toJson() {
@@ -132,7 +146,7 @@ class Credential implements BaseModel {
 }
 
 export default (props: Props) => (
-    <MessageContext.Consumer>
-        {messageService => <LoginForm {...props} messageService={messageService} />}
-    </MessageContext.Consumer>
+    <ApplicationContext.Consumer>
+        {applicationContext => <LoginForm {...props} messageService={applicationContext.messageService} />}
+    </ApplicationContext.Consumer>
 );

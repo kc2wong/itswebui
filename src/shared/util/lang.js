@@ -32,5 +32,6 @@ export function xlate(value: string, param?: Array<string> | Object): string {
 }
 
 export function formatNumber(value: number, thousandSeparator: boolean, decimalPlace: number): string {
-    return value.toString()
+    const v = new Number(value)
+    return thousandSeparator ? v.toFixed(decimalPlace).replace(/(\d)(?=(\d{3})+\b)/g,'$1,') : v.toFixed(decimalPlace)
 }

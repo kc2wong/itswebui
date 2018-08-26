@@ -13,6 +13,7 @@ type Props = {
     name: string,
     numeric: ?bool,
     options: [XcOption],
+    onChange: ?(SyntheticInputEvent<>, any) => void,
     placeholder: ?string,
     readonly: ?bool,
     validation: ?XcSelectConstraint,
@@ -31,7 +32,7 @@ export class XcSelect extends Component<Props, State> {
     };
 
     render() {
-        const { label, name, options, numeric, placeholder, readonly, validation, value, width, ...props } = this.props
+        const { label, name, options, numeric, onChange, placeholder, readonly, validation, value, width, ...props } = this.props
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const className = parseBool(readonly, false) ? { className: "xc-select-readonly" } : {}
         return (
@@ -56,18 +57,23 @@ export class XcSelect extends Component<Props, State> {
     handleChange = (updateModel: any) => (event: SyntheticInputEvent<>, target: any) => {
         event && event.preventDefault()        
 
-        const { options, readonly } = this.props;
+        const { onChange, options, readonly } = this.props;
         if (!parseBool(readonly, false)) {
             const value = target.value;
             console.debug(`XcSelect.handleChanged(), name=${this.props.name}, value=${value}`);
             const numeric = parseBool(this.props.numeric, false);
-        
-            if (value != null) {
-                updateModel(this.props.name, numeric ? Number(value) : value);
+
+            if (onChange) {
+                onChange(event, target)
             }
             else {
-                updateModel(this.props.name, null);
-            }    
+                if (value != null) {
+                    updateModel(this.props.name, numeric ? Number(value) : value);
+                }
+                else {
+                    updateModel(this.props.name, null);
+                }    
+            }
         }
     }
 

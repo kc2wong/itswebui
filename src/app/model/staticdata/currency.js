@@ -40,6 +40,7 @@ export class Currency implements BaseModel, MultiLingual {
         if (language == Language.TraditionalChinese ) {
             rtn = this.descpt2ndLang
         }
+        console.log(rtn)
         if (!rtn) {
             rtn = this.currencyCode
         }
