@@ -125,9 +125,9 @@ export class TradingAccountPortfolio {
     static fromJson(json: Object): TradingAccountPortfolio {
         const rtn = TradingAccountPortfolio.newInstance()
         Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
-        rtn.securityPositionSummary = _.map(json.securityPositionSummary, (e) => {
+        rtn.securityPositionSummary = _.map(json.securityPositionSummary, (e) =>
             SecurityPositionSummary.fromJson(e)
-        })
+        )
         return rtn
     }
 

@@ -16,6 +16,7 @@ type Props = {
     onChange: ?(SyntheticInputEvent<>, any) => void,
     placeholder: ?string,
     readonly: ?bool,
+    subLabel?: string,
     validation: ?XcSelectConstraint,
     value: ?string,
     width?: number
@@ -32,7 +33,7 @@ export class XcSelect extends Component<Props, State> {
     };
 
     render() {
-        const { label, name, options, numeric, onChange, placeholder, readonly, validation, value, width, ...props } = this.props
+        const { label, name, options, numeric, onChange, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const className = parseBool(readonly, false) ? { className: "xc-select-readonly" } : {}
         return (

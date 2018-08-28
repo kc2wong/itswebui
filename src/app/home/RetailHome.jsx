@@ -18,28 +18,9 @@ import { Exchange } from 'app/model/staticdata'
 import { SimpleTradingAccount } from 'app/model/client/simpleTradingAccount'
 import { authenticationService, exchangeService, userProfileService } from 'app/service';
 import OrderInputForm from 'app/component/order/OrderInputForm';
+import PortfolioEnquiryForm from 'app/component/client/PortfolioEnquiryForm';
 
 import './RetailHome.css';
-
-// export type SessionContextType = {
-//     language: Language,
-//     selectLanguage: (Language) => void,
-//     accountContext: {
-//         availableTradingAccount: Array<SimpleTradingAccount>,
-//         selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => void,
-//         gelectTradingAccount: () => ?SimpleTradingAccount    
-//     }
-// }
-
-// export const SessionContext = React.createContext({
-//     language: Language.English,
-//     selectLanguage: (language: Language) => {},
-//     accountContext: {
-//         availableTradingAccount: [],
-//         selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => {},
-//         gelectTradingAccount: () => null    
-//     }
-// });
 
 type Props = {
 }
@@ -65,7 +46,7 @@ const pathMapping = new Map()
 
 class DummyForm extends React.Component<{}, {}> {
     render() {
-        return null
+        return <div style={{ height: "100vh" }}><p>Hello</p></div >
     }
 }
 
@@ -75,10 +56,10 @@ class RetailHome extends React.Component<IntProps, State> {
         super(props)
 
         let panes = []
-        const dummyForm = <DummyForm />
-        panes.push(<XcNavigationTab.Pane key={'Portfolio'} id={'Portfolio'} label={'Account Portfolio'} component={dummyForm} ></XcNavigationTab.Pane>)
-        panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={'Order Journal'} component={dummyForm} ></XcNavigationTab.Pane>)
-        panes.push(<XcNavigationTab.Pane key={'AccountInfo'} id={'AccountInfo'} label={'Account Information'} component={dummyForm} ></XcNavigationTab.Pane>)
+        // const dummyForm = <DummyForm />
+        // panes.push(<XcNavigationTab.Pane key={'Portfolio'} id={'Portfolio'} label={'Account Portfolio'} component={<PortfolioEnquiryForm/>} ></XcNavigationTab.Pane>)
+        // panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={'Order Journal'} component={dummyForm} ></XcNavigationTab.Pane>)
+        // panes.push(<XcNavigationTab.Pane key={'AccountInfo'} id={'AccountInfo'} label={'Account 11Information'} component={dummyForm} ></XcNavigationTab.Pane>)
 
         this.state = {
             exchanges: [],
@@ -104,7 +85,14 @@ class RetailHome extends React.Component<IntProps, State> {
 
         messageService.showLoading()
         Promise.all(promises).then(result => {
-            this.setState({ exchanges: _.sortBy(result[0].data, ['sequence']), tradingAccounts: result[1] }, () => {
+            const exchanges = _.sortBy(result[0].data, ['sequence'])
+            let panes = []
+            const dummyForm = <DummyForm/>
+            panes.push(<XcNavigationTab.Pane key={'Portfolio'} id={'Portfolio'} label={'Account Portfolio'} component={<PortfolioEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
+            panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={'Order Journal'} component={dummyForm} ></XcNavigationTab.Pane>)
+            panes.push(<XcNavigationTab.Pane key={'AccountInfo'} id={'AccountInfo'} label={'Account 11Information'} component={dummyForm} ></XcNavigationTab.Pane>)
+    
+            this.setState({ exchanges: exchanges, panes: panes, tradingAccounts: result[1] }, () => {
                 messageService.hideLoading()
             })
         });

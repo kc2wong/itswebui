@@ -25,21 +25,6 @@ export class XcButtonGroup extends React.Component<Props, {}> {
         const buttonGroupContextType: ButtonGroupContextType = {
         };
 
-        // return (
-        //     <ButtonGroupContext.Provider value={buttonGroupContextType}>
-        //         {group && (
-        //             <ButtonGroup {...className} >
-        //                 {this.props.children}
-        //             </ButtonGroup>
-        //         )}
-        //         {!group && (
-        //             <ButtonToolbar {...className} >
-        //                 {this.props.children}
-        //             </ButtonToolbar>
-        //         )}
-        //     </ButtonGroupContext.Provider>
-        // )
-        
         return (
             <ButtonGroupContext.Provider value={buttonGroupContextType}>
                 {!toolbar && (

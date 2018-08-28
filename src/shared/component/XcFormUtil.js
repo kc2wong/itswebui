@@ -5,7 +5,10 @@ import { IFieldConstraint } from './validation/XcFieldConstraint';
 const DEFAULT_COL_NUM = 12;
 
 export function constructLabel (formName: string, fieldName: string, label?: string, subLabel?: string): string {
-    const mainLabel = label != null ? (label.startsWith('#') ? xlate(label.substr(1)) : label) : xlate(`${formName}.${fieldName}`);
+    let mainLabel = label != null ? (label.startsWith('#') ? xlate(label.substr(1)) : label) : xlate(`${formName}.${fieldName}`);
+    if (formName == null) {
+        mainLabel = mainLabel + "&nbsp;&nbsp;&nbsp;&nbsp;"
+    }
     return subLabel ? `${mainLabel} <span>${subLabel}</span>` : mainLabel
 }
 

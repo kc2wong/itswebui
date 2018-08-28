@@ -106,6 +106,16 @@
         "submit": "Submit",
         "tradingAccount": "Trading Account"
     },
+    "portfolioEnquiryForm": {
+        "closingPrice": "Reference Price", 
+        "exchange": "Exchange",
+        "instrumentCode": "Stock Code", 
+        "instrumentName": "Stock Name", 
+        "marketValue": "Market Value",
+        "sellableQuantity": "Sellable Quantity", 
+        "totalQuantity": "Total Quantity", 
+        "totalMarketValue": "Total Market Value : {0}"
+    },
     "retailHome": {
         "newOrder": "New Order"
     },    

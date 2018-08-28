@@ -48,6 +48,7 @@ export class XcNavigationTab extends React.Component<Props, State> {
         const { onTabChange, tabIndex, ...props } = this.props
         const tabIdx = tabIndex != null ? tabIndex : this.state.tabIdx
         console.log(`tabIndex = ${tabIndex != null ? tabIndex : 'null'}, tabIdx = ${tabIdx}`)
+        console.log(_.size(this.props.children))
         const tabPanes = _.map(this.props.children, (p, idx) => {
             const { component, id, label } = p.props
             const className = tabIdx == idx ? { className: "xcActiveTabMenu" } : {}
