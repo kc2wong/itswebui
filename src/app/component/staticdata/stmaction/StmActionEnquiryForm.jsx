@@ -190,14 +190,7 @@ export class StmActionEnquiryForm extends Component<Props, State> {
         const resultColDataType = [DataType.String, DataType.String, DataType.String, DataType.String]
         const resultColLength = [3, 7, 3, 3]
         return _.map(resultColName, (c, idx) => {
-            return new XcTableColSpec(c, resultColDataType[idx], xlate(`stmActionEditForm.${c}`), resultColLength[idx], sortBy == c ? sortDirection : null)
+            return new XcTableColSpec(c, resultColDataType[idx], xlate(`stmActionEditForm.${c}`), resultColLength[idx], null, null, sortBy == c ? sortDirection : null)
         })
-        // const searchResultColStmActionCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`stmActionEditForm.${resultColName[0]}`), 3, true, sortBy == resultColName[0] ? sortDirection : null)
-        // const searchResultColDesct = new XcTableColSpec(resultColName[1], DataType.String, xlate(`stmActionEditForm.${resultColName[1]}`), 7, true, sortBy == resultColName[1] ? sortDirection : null)
-        // const searchResultColDescpt2ndLang = new XcTableColSpec(resultColName[2], DataType.String, xlate(`stmActionEditForm.${resultColName[2]}`), 3, true, sortBy == resultColName[2] ? sortDirection : null)
-        // const searchResultColDescpt3rdLang = new XcTableColSpec(resultColName[3], DataType.String, xlate(`stmActionEditForm.${resultColName[3]}`), 3, true, sortBy == resultColName[3] ? sortDirection : null)
-        // return [
-        //     searchResultColCode, searchResultColDescptDefLang, searchResultColDescpt2ndLang, searchResultColDescpt3rdLang
-        // ]
     }
 }

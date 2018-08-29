@@ -137,8 +137,8 @@ class OrderInputForm extends React.Component<IntProps, State> {
         orderService.calculateChargeCommission(orderRequest).then(
             chargeCommission => {
                 if (messageService) {
-                    const keyCol = new XcTableColSpec("key", DataType.String, "", 5, null)
-                    const valueCol = new XcTableColSpec("value", DataType.String, "", 5, null)
+                    const keyCol = new XcTableColSpec("key", DataType.String, "", 5)
+                    const valueCol = new XcTableColSpec("value", DataType.String, "", 5)
                     const data = [
                         { key: xlate(`${formName}.tradingAccount`), value: orderRequest.tradingAccountCode },
                         { key: xlate(`${formName}.exchangeCode`), value: orderRequest.exchangeCode },

@@ -7,18 +7,25 @@ import { Table } from 'semantic-ui-react';
 import { DataType, SortDirection } from 'shared/model';
 import { parseBool, xlate } from 'shared/util/lang';
 
+class TableTextAlign extends Enum {}
+TableTextAlign.initEnum({ Left: { value: 'left' }, Center: { value: 'center' }, Right: { value: 'right' } });
+
 export class XcTableColSpec {
     dataType: DataType;
     label: string;
     name: string;
     sortDirection : ?SortDirection;
+    horizontalAlign: ?TableTextAlign;
+    footerHorizontalAlign: ?TableTextAlign;
     width: number;
 
-    constructor(name: string, dataType: DataType, label: string, width: number, sortDirection: ?SortDirection = null) {
+    constructor(name: string, dataType: DataType, label: string, width: number, horizontalAlign: ?TableTextAlign = null, footerHorizontalAlign: ?TableTextAlign = null, sortDirection: ?SortDirection = null) {
         this.dataType = dataType;
         this.label = label;
         this.name = name;
         this.width = width;
+        this.horizontalAlign = horizontalAlign;
+        this.footerHorizontalAlign = footerHorizontalAlign;
         this.sortDirection = sortDirection;
     }
 }
@@ -35,6 +42,7 @@ type Props = {
     onSort: ?(string, SortDirection) => void;
     selectable: ?boolean,
     selectedIndex: ?number,
+    summary: ?Object,
     size: ?TableSize
 }
 
@@ -44,6 +52,7 @@ type State = {
 
 export class XcTable extends React.Component<Props, State> {
     static Size = TableSize
+    static TextAlign = TableTextAlign
 
     constructor(props: Props) {
         super(props);
@@ -51,7 +60,7 @@ export class XcTable extends React.Component<Props, State> {
     }
 
     render() {
-        const { colspec, data, selectable, size, ...props } = this.props;
+        const { colspec, data, selectable, size, summary, ...props } = this.props;
         const { selectedIndex } = this.state;
         const s = size ? { size: size.value } : {}
         const totalWidth = _.sumBy(colspec, (cs) => (
@@ -76,6 +85,15 @@ export class XcTable extends React.Component<Props, State> {
                         </Table.Row>
                     ))}
                 </Table.Body>
+                {summary && (
+                    <Table.Footer>
+                        <Table.Row>
+                            {_.map(colspec, (cs) => (
+                                <Table.HeaderCell key={cs.name} {... cs.footerHorizontalAlign ? {textAlign: cs.footerHorizontalAlign.value} : {}} width={cs.width}>{summary[cs.name]}</Table.HeaderCell>
+                            ))}
+                        </Table.Row>
+                    </Table.Footer>
+                )}
             </Table>
         )
     }

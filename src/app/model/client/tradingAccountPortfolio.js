@@ -155,9 +155,9 @@ export class TradingAccountPortfolioBundle {
 
     static fromJson(json: Object): TradingAccountPortfolioBundle {
         const tradingAccountPortfolio = TradingAccountPortfolio.fromJson(json.tradingAccountPortfolio)
-        const instruments = _.map(json.instruments, (e) => {
+        const instruments = _.map(json.instruments, (e) =>
             Instrument.fromJson(e)
-        })
+        )
         return new TradingAccountPortfolioBundle(tradingAccountPortfolio, instruments)
     }
 

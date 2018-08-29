@@ -190,9 +190,9 @@ export class CurrencyEnquiryForm extends Component<Props, State> {
     createResultColSpec = (sortBy: string, sortDirection: SortDirection): XcTableColSpec[] => {
         const resultColName = ["currencyCode", "descptDefLang", "descpt2ndLang", "descpt3rdLang"]
         const searchResultColCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`currencyEditForm.${resultColName[0]}`), 3, sortBy == resultColName[0] ? sortDirection : null)
-        const searchResultColDescptDefLang = new XcTableColSpec(resultColName[1], DataType.String, xlate(`currencyEditForm.${resultColName[1]}`), 5, sortBy == resultColName[1] ? sortDirection : null)
-        const searchResultColDescpt2ndLang = new XcTableColSpec(resultColName[2], DataType.String, xlate(`currencyEditForm.${resultColName[2]}`), 4, sortBy == resultColName[2] ? sortDirection : null)
-        const searchResultColDescpt3rdLang = new XcTableColSpec(resultColName[3], DataType.String, xlate(`currencyEditForm.${resultColName[3]}`), 4, sortBy == resultColName[3] ? sortDirection : null)
+        const searchResultColDescptDefLang = new XcTableColSpec(resultColName[1], DataType.String, xlate(`currencyEditForm.${resultColName[1]}`), 5, null, null, sortBy == resultColName[1] ? sortDirection : null)
+        const searchResultColDescpt2ndLang = new XcTableColSpec(resultColName[2], DataType.String, xlate(`currencyEditForm.${resultColName[2]}`), 4, null, null, sortBy == resultColName[2] ? sortDirection : null)
+        const searchResultColDescpt3rdLang = new XcTableColSpec(resultColName[3], DataType.String, xlate(`currencyEditForm.${resultColName[3]}`), 4, null, null, sortBy == resultColName[3] ? sortDirection : null)
         return [
             searchResultColCode, searchResultColDescptDefLang, searchResultColDescpt2ndLang, searchResultColDescpt3rdLang
         ]

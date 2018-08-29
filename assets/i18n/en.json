@@ -114,7 +114,7 @@
         "marketValue": "Market Value",
         "sellableQuantity": "Sellable Quantity", 
         "totalQuantity": "Total Quantity", 
-        "totalMarketValue": "Total Market Value : {0}"
+        "totalMarketValue": "Total"
     },
     "retailHome": {
         "newOrder": "New Order"
