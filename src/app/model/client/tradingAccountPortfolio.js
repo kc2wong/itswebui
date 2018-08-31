@@ -1,6 +1,6 @@
 // @flow
 import _ from 'lodash'
-import { Instrument } from 'app/model/staticdata'
+import { Currency, Instrument } from 'app/model/staticdata'
 
 export class SecurityPositionSummary {
 
@@ -138,13 +138,14 @@ export class TradingAccountPortfolio {
 }
 
 export class TradingAccountPortfolioBundle {
-    tradingAccountPortfolio: TradingAccountPortfolio;
+    currencies: Array<Currency>;
     instruments: Array<Instrument>;
+    tradingAccountPortfolio: TradingAccountPortfolio;
 
-    constructor(tradingAccountPortfolio: TradingAccountPortfolio, instruments: Array<Instrument>
-    ) {
-        this.tradingAccountPortfolio = tradingAccountPortfolio
+    constructor(currencies: Array<Currency>, instruments: Array<Instrument>, tradingAccountPortfolio: TradingAccountPortfolio) {
+        this.currencies = currencies
         this.instruments = instruments
+        this.tradingAccountPortfolio = tradingAccountPortfolio
     }    
 
     toJson(): Object {
@@ -158,11 +159,14 @@ export class TradingAccountPortfolioBundle {
         const instruments = _.map(json.instruments, (e) =>
             Instrument.fromJson(e)
         )
-        return new TradingAccountPortfolioBundle(tradingAccountPortfolio, instruments)
+        const currencies = _.map(json.currencies, (e) =>
+            Currency.fromJson(e)
+        )
+        return new TradingAccountPortfolioBundle(currencies, instruments, tradingAccountPortfolio)
     }
 
     static newInstance(): TradingAccountPortfolioBundle {
-        return new TradingAccountPortfolioBundle(TradingAccountPortfolio.newInstance(), []);
+        return new TradingAccountPortfolioBundle([], [], TradingAccountPortfolio.newInstance());
     }
 
 }

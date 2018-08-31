@@ -12,6 +12,7 @@ TableTextAlign.initEnum({ Left: { value: 'left' }, Center: { value: 'center' }, 
 
 export class XcTableColSpec {
     dataType: DataType;
+    formatter: ?(Object, string) => string;
     label: string;
     name: string;
     sortDirection : ?SortDirection;
@@ -19,13 +20,13 @@ export class XcTableColSpec {
     footerHorizontalAlign: ?TableTextAlign;
     width: number;
 
-    constructor(name: string, dataType: DataType, label: string, width: number, horizontalAlign: ?TableTextAlign = null, footerHorizontalAlign: ?TableTextAlign = null, sortDirection: ?SortDirection = null) {
+    constructor(name: string, dataType: DataType, label: string, width: number, sortDirection: ?SortDirection = null) {
         this.dataType = dataType;
         this.label = label;
         this.name = name;
         this.width = width;
-        this.horizontalAlign = horizontalAlign;
-        this.footerHorizontalAlign = footerHorizontalAlign;
+        // this.horizontalAlign = horizontalAlign;
+        // this.footerHorizontalAlign = footerHorizontalAlign;
         this.sortDirection = sortDirection;
     }
 }
@@ -37,6 +38,7 @@ const NUM_OF_COL = 16
 
 type Props = {
     colspec: XcTableColSpec[],
+    colorStripeProvider: ?(Object, number) => string;
     data: Object[],
     onSelectionChange: ?(number) => {},
     onSort: ?(string, SortDirection) => void;
@@ -60,7 +62,7 @@ export class XcTable extends React.Component<Props, State> {
     }
 
     render() {
-        const { colspec, data, selectable, size, summary, ...props } = this.props;
+        const { colorStripeProvider, colspec, data, selectable, size, summary, ...props } = this.props;
         const { selectedIndex } = this.state;
         const s = size ? { size: size.value } : {}
         const totalWidth = _.sumBy(colspec, (cs) => (
@@ -72,7 +74,8 @@ export class XcTable extends React.Component<Props, State> {
                 <Table.Header>
                     <Table.Row>
                         {_.map(colspec, (cs) => (
-                            <Table.HeaderCell key={cs.name} onClick={this.handleSort(`${cs.name}`)} sorted={cs.sortDirection? this.sortDirectionValue(cs.sortDirection) : null} width={cs.width}>{cs.label}</Table.HeaderCell>
+                            <Table.HeaderCell key={cs.name} onClick={this.handleSort(`${cs.name}`)} sorted={cs.sortDirection ? this.sortDirectionValue(cs.sortDirection) : null}
+                                {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}} width={cs.width}>{cs.label}</Table.HeaderCell>
                         ))}
                     </Table.Row>
                 </Table.Header>            
@@ -80,7 +83,10 @@ export class XcTable extends React.Component<Props, State> {
                     {_.map(data, (row, rowIdx) => (
                         <Table.Row active={selectedIndex === rowIdx} onClick={this.handleClick(rowIdx)} key={rowIdx}>
                             {_.map(colspec, (cs, colIdx) => (
-                                <Table.Cell key={colIdx} width={cs.width}>{row[cs.name]}</Table.Cell>
+                                colIdx == 0 && colorStripeProvider != null ? 
+                                <Table.Cell key={colIdx} width={cs.width} {... cs.horizontalAlign ? {textAlign: cs.horizontalAlign.value} : {}}><div style={{borderLeft: "6px solid red"}}>&nbsp;&nbsp;{cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name]}</div></Table.Cell>
+                                :
+                                <Table.Cell key={colIdx} width={cs.width} {... cs.horizontalAlign ? {textAlign: cs.horizontalAlign.value} : {}}>{cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name]}</Table.Cell>
                             ))}
                         </Table.Row>
                     ))}

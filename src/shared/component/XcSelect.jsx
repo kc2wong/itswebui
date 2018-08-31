@@ -67,7 +67,7 @@ export class XcSelect extends Component<Props, State> {
             if (onChange) {
                 onChange(event, target)
             }
-            else {
+            if (!parseBool(event.defaultPrevented, false)) {
                 if (value != null) {
                     updateModel(this.props.name, numeric ? Number(value) : value);
                 }

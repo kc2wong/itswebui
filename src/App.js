@@ -53,7 +53,9 @@ class App extends React.Component<Props, State> {
 
         const messageService: MessageService = {
             hideLoading: () => {
-                this.setState({ loading: this.state.loading - 1 })        
+                if (this.state.loading > 0) {
+                    this.setState({ loading: this.state.loading - 1 })
+                }
             },
             showLoading: () => {
                 this.setState({ loading: this.state.loading + 1 })

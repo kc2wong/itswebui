@@ -3,6 +3,7 @@
 import _ from 'lodash';
 import T from 'i18n-react';
 import { Enum } from 'enumify';
+import numeral from 'numeral'
 
 export class Language extends Enum { }
 Language.initEnum({ English: { value: 'en' }, TraditionalChinese: { value: 'zh' } });
@@ -31,7 +32,15 @@ export function xlate(value: string, param?: Array<string> | Object): string {
     return T.translate(value, param);
 }
 
-export function formatNumber(value: number, thousandSeparator: boolean, decimalPlace: number): string {
-    const v = new Number(value)
-    return thousandSeparator ? v.toFixed(decimalPlace).replace(/(\d)(?=(\d{3})+\b)/g,'$1,') : v.toFixed(decimalPlace)
+export function createNumberFormat(thousandSeparator: boolean, decimalPoint: number): string {
+    return (parseBool(thousandSeparator, true) == true ? '0,0.' : (decimalPoint > 0 ? '0.' : '0')) + _.repeat('0', decimalPoint);
+}
+
+export function formatNumber(value: number | string, format: string): string {
+    if (typeof value === 'number') {
+        return numeral(value).format(format);
+    } else {
+        const num = new Number(value)
+        return _.isNaN(num) ? value : numeral(num).format(format);
+    }
 }

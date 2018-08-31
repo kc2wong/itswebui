@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { DataType } from 'shared/model';
 import { XcButton, XcButtonGroup, XcDialog, XcForm, XcInputText, XcInputNumber } from 'shared/component';
 import { XcMessage, XcOption, XcRadio, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
-import { formatNumber, Language, xlate } from 'shared/util/lang';
+import { createNumberFormat, formatNumber, Language, xlate } from 'shared/util/lang';
 import { isNullOrEmpty } from 'shared/util/stringUtil';
 import { Currency, Exchange, ExchangeBoardPriceSpread, Instrument } from 'app/model/staticdata'
 import { BuySell } from 'app/model/EnumType'
@@ -129,11 +129,11 @@ class OrderInputForm extends React.Component<IntProps, State> {
         const languageContext: LanguageContextType = sessionContext.languageContext
         const instrumentName = instrument ? instrument.getDescription(languageContext.language) : ""
         const currencyName = currency ? currency.getDescription(languageContext.language) : ""
-        const decimalPoint = currency ? currency.decimalPoint : 2
-        
+        const numberFormat = createNumberFormat(true, currency ? currency.decimalPoint : 2)
+
         if (messageService) {
             messageService.showLoading()
-        }
+        }        
         orderService.calculateChargeCommission(orderRequest).then(
             chargeCommission => {
                 if (messageService) {
@@ -143,12 +143,12 @@ class OrderInputForm extends React.Component<IntProps, State> {
                         { key: xlate(`${formName}.tradingAccount`), value: orderRequest.tradingAccountCode },
                         { key: xlate(`${formName}.exchangeCode`), value: orderRequest.exchangeCode },
                         { key: xlate(`${formName}.instrumentCode`), value: `${orderRequest.instrumentCode} ${instrumentName}` },
-                        { key: xlate(`${formName}.price`), value: `${currencyName} ${formatNumber(orderRequest.price, true, decimalPoint)}` },
+                        { key: xlate(`${formName}.price`), value: `${currencyName} ${formatNumber(orderRequest.price, numberFormat)}` },
                         { key: xlate(`${formName}.quantity`), value: orderRequest.quantity },
-                        { key: xlate(`${formName}.grossAmount`), value: `${currencyName} ${formatNumber(chargeCommission.grossAmount, true, decimalPoint)}` },
-                        { key: xlate(`${formName}.charge`), value: `${currencyName} ${formatNumber(chargeCommission.chargeAmount, true, decimalPoint)}` },
-                        { key: xlate(`${formName}.commission`), value: `${currencyName} ${formatNumber(chargeCommission.commissionAmount, true, decimalPoint)}` },
-                        { key: xlate(`${formName}.netAmount`), value: `${currencyName} ${formatNumber(chargeCommission.netAmount, true, decimalPoint)}` }
+                        { key: xlate(`${formName}.grossAmount`), value: `${currencyName} ${formatNumber(chargeCommission.grossAmount, numberFormat)}` },
+                        { key: xlate(`${formName}.charge`), value: `${currencyName} ${formatNumber(chargeCommission.chargeAmount, numberFormat)}` },
+                        { key: xlate(`${formName}.commission`), value: `${currencyName} ${formatNumber(chargeCommission.commissionAmount, numberFormat)}` },
+                        { key: xlate(`${formName}.netAmount`), value: `${currencyName} ${formatNumber(chargeCommission.netAmount, numberFormat)}` }
                     ]
                     const content = <XcTable colspec={[keyCol, valueCol]} compact={false} data={data} selectable={false} size={XcTable.Size.Large}></XcTable>
                     const positiveButton = <XcButton icon={{name: 'checkmark'}} label={xlate("general.confirm")} primary onClick={() => {}} />
