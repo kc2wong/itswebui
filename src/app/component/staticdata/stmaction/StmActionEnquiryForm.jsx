@@ -190,7 +190,7 @@ export class StmActionEnquiryForm extends Component<Props, State> {
         const resultColDataType = [DataType.String, DataType.String, DataType.String, DataType.String]
         const resultColLength = [3, 7, 3, 3]
         return _.map(resultColName, (c, idx) => {
-            return new XcTableColSpec(c, resultColDataType[idx], xlate(`stmActionEditForm.${c}`), resultColLength[idx], null, null, sortBy == c ? sortDirection : null)
+            return new XcTableColSpec(c, resultColDataType[idx], xlate(`stmActionEditForm.${c}`), resultColLength[idx], sortBy == c ? sortDirection : null)
         })
     }
 }

@@ -52,21 +52,21 @@ class LoginForm extends Component<IntProps, State> {
                     <XcGrid>
                         <XcGrid.Row centered>
                             <XcGrid.Col>
-                            <XcForm model={credential} name="loginForm" onModelUpdate={this.handleModelUpdate} style={{ "marginLeft": "20px", "marginRight": "20px" }}>
-                                <div className={createColumnClass()}>
-                                    <header>
-                                        <div style={{ "margin": 0, "padding": 0 }}>{xlate("loginForm.welcomeTo")}</div>
-                                        <h2 style={{ "margin": 0, "padding": 0 }}>{xlate("applicationName")}</h2>
-                                    </header>
-                                    <br />
-                                </div>
-                                <XcInputText icon={{ name: "user" }} label="#loginForm.username" name="userid" validation={{ required: true }} />
-                                <XcInputText icon={{ name: "lock" }} label="Password" name="password" password validation={{ required: true }} />
-                                <XcSelect label="Language" name="language" onChange={this.handleChangeLanguage} options={langOpt} value={language.value} />
-                                <XcCheckbox label="Remember Me" name="rememberMe" />
-                                <p />
-                                <XcButton disabled={isNullOrEmpty(credential.userid) || isNullOrEmpty(credential.password)} fluid primary onClick={this.handleClick} name="login" />
-                            </XcForm>
+                                <XcForm model={credential} name="loginForm" onModelUpdate={this.handleModelUpdate} style={{ "marginLeft": "20px", "marginRight": "20px" }}>
+                                    <div className={createColumnClass()}>
+                                        <header>
+                                            <div style={{ "margin": 0, "padding": 0 }}>{xlate("loginForm.welcomeTo")}</div>
+                                            <h2 style={{ "margin": 0, "padding": 0 }}>{xlate("applicationName")}</h2>
+                                        </header>
+                                        <br />
+                                    </div>
+                                    <XcInputText icon={{ name: "user" }} label="#loginForm.username" name="userid" validation={{ required: true }} />
+                                    <XcInputText icon={{ name: "lock" }} label="Password" name="password" password validation={{ required: true }} />
+                                    <XcSelect label="Language" name="language" onChange={this.handleChangeLanguage} options={langOpt} value={language.value} />
+                                    <XcCheckbox label="Remember Me" name="rememberMe" />
+                                    <p />
+                                    <XcButton disabled={isNullOrEmpty(credential.userid) || isNullOrEmpty(credential.password)} fluid primary onClick={this.handleClick} name="login" />
+                                </XcForm>
                             </XcGrid.Col>
                         </XcGrid.Row>
                         {error && (

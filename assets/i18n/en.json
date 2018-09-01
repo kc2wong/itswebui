@@ -48,10 +48,14 @@
         "yes": "Yes"        
     },
     "home": {
+        "accountInformation": "Account Information",
+        "accountPortfolio": "Account Portfolio",
         "changePassword": "Change Password",
         "greeting": "Welcome, {name}",
         "language": "Language",
         "logout": "Logout",
+        "orderJournal": "Order Journal",
+        "orderHistory": "Order History",
         "versionToolTip": "Env : {env} \n Version : {ver}",
         "lang" : {
             "en": "English",
@@ -112,7 +116,14 @@
         "instrumentCode": "Stock Code", 
         "instrumentName": "Stock Name", 
         "marketValue": "Market Value",
+        "quoteButton": "Go",
+        "quoteHint": "Enquire market data",
+        "quoteTitle": "Quote Express",
         "sellableQuantity": "Sellable Quantity", 
+        "sellOutHint": "Sell all current shares",
+        "sellOutTitle": "Sell Out",
+        "topUpHint": "Buy additional shares",
+        "topUpTitle": "Top Up",
         "totalQuantity": "Total Quantity", 
         "totalMarketValue": "Total"
     },

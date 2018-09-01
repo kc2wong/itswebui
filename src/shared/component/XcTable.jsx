@@ -2,15 +2,17 @@
 import _ from 'lodash';
 import * as React from 'react';
 import { Enum } from 'enumify';
-import { Table } from 'semantic-ui-react';
+import { Popup, Table } from 'semantic-ui-react';
 
 import { DataType, SortDirection } from 'shared/model';
 import { parseBool, xlate } from 'shared/util/lang';
+import { XcGrid } from './XcGrid'
 
 class TableTextAlign extends Enum {}
 TableTextAlign.initEnum({ Left: { value: 'left' }, Center: { value: 'center' }, Right: { value: 'right' } });
 
 export class XcTableColSpec {
+    actionSheetProvider: ?(Object, string) => XcGrid;
     dataType: DataType;
     formatter: ?(Object, string) => string;
     label: string;
@@ -25,8 +27,6 @@ export class XcTableColSpec {
         this.label = label;
         this.name = name;
         this.width = width;
-        // this.horizontalAlign = horizontalAlign;
-        // this.footerHorizontalAlign = footerHorizontalAlign;
         this.sortDirection = sortDirection;
     }
 }
@@ -40,6 +40,7 @@ type Props = {
     colspec: XcTableColSpec[],
     colorStripeProvider: ?(Object, number) => string;
     data: Object[],
+    highlightedIndex: ?number,
     onSelectionChange: ?(number) => {},
     onSort: ?(string, SortDirection) => void;
     selectable: ?boolean,
@@ -62,7 +63,7 @@ export class XcTable extends React.Component<Props, State> {
     }
 
     render() {
-        const { colorStripeProvider, colspec, data, selectable, size, summary, ...props } = this.props;
+        const { colorStripeProvider, colspec, data, highlightedIndex, selectable, size, summary, ...props } = this.props;
         const { selectedIndex } = this.state;
         const s = size ? { size: size.value } : {}
         const totalWidth = _.sumBy(colspec, (cs) => (
@@ -81,12 +82,9 @@ export class XcTable extends React.Component<Props, State> {
                 </Table.Header>            
                 <Table.Body>
                     {_.map(data, (row, rowIdx) => (
-                        <Table.Row active={selectedIndex === rowIdx} onClick={this.handleClick(rowIdx)} key={rowIdx}>
+                        <Table.Row active={selectedIndex === rowIdx} warning={highlightedIndex === rowIdx} onClick={this.handleClick(rowIdx)} key={rowIdx}>
                             {_.map(colspec, (cs, colIdx) => (
-                                colIdx == 0 && colorStripeProvider != null ? 
-                                <Table.Cell key={colIdx} width={cs.width} {... cs.horizontalAlign ? {textAlign: cs.horizontalAlign.value} : {}}><div style={{borderLeft: "6px solid red"}}>&nbsp;&nbsp;{cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name]}</div></Table.Cell>
-                                :
-                                <Table.Cell key={colIdx} width={cs.width} {... cs.horizontalAlign ? {textAlign: cs.horizontalAlign.value} : {}}>{cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name]}</Table.Cell>
+                                this.columnContent(row, cs, rowIdx, colIdx, colorStripeProvider)
                             ))}
                         </Table.Row>
                     ))}
@@ -139,5 +137,12 @@ export class XcTable extends React.Component<Props, State> {
 
     sortDirectionValue(sortDirection: SortDirection): string {
         return sortDirection == SortDirection.Descending ? "descending" : "ascending"
+    }
+
+    columnContent(row: Object, cs: XcTableColSpec, rowIdx: number, colIdx: number, colorStripeProvider: ?(Object, number) => string): Table.Cell {
+        const colContent = colIdx == 0 && colorStripeProvider != null ? <div style={{ borderLeft: `6px solid ${colorStripeProvider(row, rowIdx)}` }}>&nbsp;&nbsp;{cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name]}</div> : (cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name])
+        const popup = cs.actionSheetProvider != null ? <Popup position="right center" trigger={<div>{colContent}</div>} flowing hoverable>{cs.actionSheetProvider(row, cs.name)}</Popup> : <React.Fragment>{colContent}</React.Fragment>
+        const cell = <Table.Cell key={colIdx} width={cs.width} {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}}>{popup}</Table.Cell>        
+        return cell
     }
 }

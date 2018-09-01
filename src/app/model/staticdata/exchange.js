@@ -9,12 +9,14 @@ export class Exchange implements BaseModel {
     shortNameDefLang: string;
     shortName2ndLang: ?string;
     shortName3rdLang: ?string;
+    baseCurrencyCode: string;
     sequence: number;
 
-    constructor(exchangeCode: string, nameDefLang: string, shortNameDefLang: string, sequence: number) {
+    constructor(exchangeCode: string, nameDefLang: string, shortNameDefLang: string, baseCurrencyCode: string, sequence: number) {
         this.exchangeCode = exchangeCode;
         this.nameDefLang = nameDefLang;
         this.shortNameDefLang = shortNameDefLang;
+        this.baseCurrencyCode = baseCurrencyCode;
         this.sequence = sequence;
     }
 
@@ -37,7 +39,7 @@ export class Exchange implements BaseModel {
     }
 
     static newInstance(): Exchange {
-        return new Exchange("", "", "", 0);        
+        return new Exchange("", "", "", "", 0);        
     }
 
     static getId(json: Object): Object {

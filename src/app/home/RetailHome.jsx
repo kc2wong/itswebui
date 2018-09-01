@@ -88,9 +88,9 @@ class RetailHome extends React.Component<IntProps, State> {
             const exchanges = _.sortBy(result[0].data, ['sequence'])
             let panes = []
             const dummyForm = <DummyForm/>
-            panes.push(<XcNavigationTab.Pane key={'Portfolio'} id={'Portfolio'} label={'Account Portfolio'} component={<PortfolioEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
-            panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={'Order Journal'} component={dummyForm} ></XcNavigationTab.Pane>)
-            panes.push(<XcNavigationTab.Pane key={'AccountInfo'} id={'AccountInfo'} label={'Account 11Information'} component={dummyForm} ></XcNavigationTab.Pane>)
+            panes.push(<XcNavigationTab.Pane key={'Portfolio'} id={'Portfolio'} label={xlate('home.accountPortfolio')} component={<PortfolioEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
+            panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={xlate('home.orderJournal')} component={dummyForm} ></XcNavigationTab.Pane>)
+            panes.push(<XcNavigationTab.Pane key={'OrderHistory'} id={'AccountInfo'} label={xlate('home.orderHistory')} component={dummyForm} ></XcNavigationTab.Pane>)
     
             this.setState({ exchanges: exchanges, panes: panes, tradingAccounts: result[1] }, () => {
                 messageService.hideLoading()

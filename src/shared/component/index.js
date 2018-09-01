@@ -1,3 +1,4 @@
+export * from './XaPieChart';
 export * from './XcButton';
 export * from './XcButtonGroup';
 export * from './XcCard';

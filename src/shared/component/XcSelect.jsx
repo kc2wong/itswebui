@@ -9,7 +9,8 @@ import { parseBool, xlate } from 'shared/util/lang';
 import './XcSelect.css';
 
 type Props = {
-    label: ?string,
+    inline: ?bool,
+    label: ?string,    
     name: string,
     numeric: ?bool,
     options: [XcOption],
@@ -33,13 +34,14 @@ export class XcSelect extends Component<Props, State> {
     };
 
     render() {
-        const { label, name, options, numeric, onChange, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props
+        const { inline, label, name, options, numeric, onChange, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const className = parseBool(readonly, false) ? { className: "xc-select-readonly" } : {}
         return (
             <FormContext.Consumer>
                 {context =>
                     <Form.Select
+                        inline={parseBool(inline, false)}
                         label={constructLabel(context.name, name, label)}
                         onChange={this.handleChange(context.updateModel)}
                         options={this.createOptions(options, readonly, getStringValue(value, context.model, name))}
@@ -56,18 +58,17 @@ export class XcSelect extends Component<Props, State> {
     }
 
     handleChange = (updateModel: any) => (event: SyntheticInputEvent<>, target: any) => {
-        event && event.preventDefault()        
-
         const { onChange, options, readonly } = this.props;
         if (!parseBool(readonly, false)) {
             const value = target.value;
             console.debug(`XcSelect.handleChanged(), name=${this.props.name}, value=${value}`);
+            console.log(event.defaultPrevented)
             const numeric = parseBool(this.props.numeric, false);
 
             if (onChange) {
                 onChange(event, target)
             }
-            if (!parseBool(event.defaultPrevented, false)) {
+            if (parseBool(event.defaultPrevented, false) != true) {
                 if (value != null) {
                     updateModel(this.props.name, numeric ? Number(value) : value);
                 }
@@ -76,6 +77,7 @@ export class XcSelect extends Component<Props, State> {
                 }    
             }
         }
+        event && event.preventDefault()        
     }
 
     createOptions = (options: [XcOption], readonly: bool, value: string): [Object] => {
