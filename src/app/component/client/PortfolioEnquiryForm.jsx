@@ -12,7 +12,8 @@ import { XaPieChart, XcButton, XcButtonGroup, XcForm, XcFormGroup, XcGrid, XcGri
 import { XcOption, XcPagination, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { BaseModel, DataType, Language, Pageable, PageResult, SortDirection } from 'shared/model';
 import { MessageService } from 'shared/service'
-import { createNumberFormat, formatNumber, xlate } from 'shared/util/lang'
+import { createNumberFormat, formatNumber, roundNumber, xlate } from 'shared/util/lang'
+import { formatDateTime } from 'shared/util/dateUtil'
 import { Header, Button, Popup, Grid } from 'semantic-ui-react'
 
 import randomColor from 'randomcolor'
@@ -31,11 +32,12 @@ type State = {
     chartColors: Map<string, string>,
     chartFocusData: ?Object,
     exchangeCode: string,
+    lastUpdate: ?Date,
     sortBy: string,
     sortDirection: SortDirection,
     securityPositionSummary: Array<Object>,
     currencyList: Array<Currency>,
-    instrumentList: Array<Instrument>
+    instrumentMap: Map<string, Array<Instrument>>
 }
 
 const formName = "portfolioEnquiryForm"
@@ -60,19 +62,29 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
         ))
         const language = sessionContext.languageContext.language
 
-        const { chartColors, chartFocusData, currencyList, exchangeCode, instrumentList, securityPositionSummary, sortBy, sortDirection } = this.state;
-        const instrumentMap = _.keyBy(_.filter(instrumentList, e => e.exchangeCode == exchangeCode), 'instrumentCode')
+        const { chartColors, chartFocusData, currencyList, exchangeCode, instrumentMap, lastUpdate, securityPositionSummary, sortBy, sortDirection } = this.state;
         const currencyMap = _.keyBy(currencyList, 'currencyCode')
         const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)
         const exchangeCurrency = currencyMap[exchange.baseCurrencyCode]
         const baseCurrency = currencyMap[BASE_CURRENCY]
-        const data = _.filter(securityPositionSummary, e => e.exchangeCode == exchangeCode)
+
+        const exchangeSecPosSum = _.filter(securityPositionSummary, sps => sps.exchangeCode == exchangeCode)
+        const totalMarketValueBaseCcy = _.sumBy(exchangeSecPosSum, "marketValueBaseCurrency")
+        const data = _.map(exchangeSecPosSum, 
+            e => Object.assign({instrumentName: instrumentMap[e.exchangeCode][e.instrumentCode].getDescription(language), 
+                marketValuePercent: roundNumber(e.marketValueBaseCurrency * 100 / totalMarketValueBaseCcy, 2) }, e))    
+        const percentageAdj = 100 - _.sumBy(data, "marketValuePercent")
+        if (percentageAdj > 0 && _.size(data) > 1) {
+            const maxEntry = _.maxBy(data, e => new Number(e.marketValuePercent)) 
+            maxEntry.marketValuePercent = roundNumber(maxEntry.marketValuePercent + percentageAdj, 2)
+        }
+
         const chartData = _.map(data, (d, idx) => new XaPieChart.Data(d.instrumentCode, d.marketValueBaseCurrency, null, chartColors.get(`${d.exchangeCode}.${d.instrumentCode}`)))
         const highlightedIndex = chartFocusData != null ? _.findIndex(data, d => d.instrumentCode == chartFocusData.key) : -1
 
         const instrumentCurrencies = new Set(_.map(data, e => e.currencyCode))
         const singleCurrency = _.size(instrumentCurrencies) == 1 && instrumentCurrencies.has(exchange.baseCurrencyCode)
-        const totalMarketValue =  singleCurrency ? _.sumBy(data, "marketValue") : _.sumBy(data, "marketValueBaseCurrency")
+        const totalMarketValue =  singleCurrency ? _.sumBy(data, "marketValue") : totalMarketValueBaseCcy
         const marketValueCurrency = singleCurrency ? exchangeCurrency : baseCurrency
 
         const dpOpt = _.map(_.range(4), (i) => {
@@ -86,8 +98,9 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
         const numberFormat = createNumberFormat(true, exchangeCurrency != null ? exchangeCurrency.decimalPoint : 2)
         const searchResultColSpec = this.createResultColSpec(language, exchange, currencyMap, sortBy, sortDirection)
         const summary = {
-            [searchResultColSpec[_.size(searchResultColSpec) - 2].name]: xlate(`${formName}.totalMarketValue`),
-            [searchResultColSpec[_.size(searchResultColSpec) - 1].name]: marketValueCurrency != null ? `${marketValueCurrency.getDescription(language)}  ${formatNumber(totalMarketValue, numberFormat)}` : formatNumber(totalMarketValue, numberFormat)
+            [searchResultColSpec[_.size(searchResultColSpec) - 3].name]: xlate(`${formName}.totalMarketValue`),
+            [searchResultColSpec[_.size(searchResultColSpec) - 2].name]: marketValueCurrency != null ? `${marketValueCurrency.getDescription(language)}  ${formatNumber(totalMarketValue, numberFormat)}` : formatNumber(totalMarketValue, numberFormat),
+            [searchResultColSpec[_.size(searchResultColSpec) - 1].name]: formatNumber(_.sumBy(data, "marketValuePercent"), "0.00")
         }
 
         return (
@@ -101,7 +114,7 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                             </XcForm>
                         </XcGrid.Col>
                         <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}>
-                            <XcButton icon={{ name: "refresh" }} label="#general.refresh" onClick={this.search} primary />
+                            <div>{lastUpdate != null ? xlate("general.lastUpdate", [formatDateTime(lastUpdate)]) : ""}&nbsp;&nbsp;<XcButton icon={{ name: "refresh" }} label="#general.refresh" onClick={this.search} primary /></div>
                         </XcGrid.Col>
                     </XcGrid.Row>
                 </XcGrid>
@@ -110,9 +123,16 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                     <XcPanel.Body>
                         <XcGrid>
                             <XcGrid.Row verticalAlign={XcGrid.VerticalAlign.Top}>
-                                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center} width={4}>
+                                <XcGrid.Col width={4}>
                                     {_.size(chartData) > 0 && (
-                                        <XaPieChart data={chartData} onMouseOut={this.handlePieMouseOut} onMouseOver={this.handlePieMouseOver} />
+                                        <React.Fragment>
+                                            <div>{xlate(`${formName}.portfolioDistribution`)}</div>
+                                            <br/>
+                                            <XaPieChart data={chartData} onMouseOut={this.handlePieMouseOut} onMouseOver={this.handlePieMouseOver} />
+                                        </React.Fragment>
+                                    )}
+                                    {_.size(chartData) == 0 && (
+                                        <div>{xlate(`${formName}.noHolding`)}</div>
                                     )}
                                 </XcGrid.Col>
                                 <XcGrid.Col width={12}>
@@ -129,12 +149,6 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                 </XcPanel>
             </div>
         )
-    }
-
-    handleClearForm = (event: SyntheticMouseEvent<>) => {
-        // this.setState(this.resetState(), () => {
-        //     this.props.onClear()
-        // })
     }
 
     handleSearch = (event: SyntheticMouseEvent<>) => {
@@ -160,23 +174,6 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
         }
     }
 
-    handleSelectionChange = (index: number) => {
-        // const { onRecordSelect, searchResult } = this.props
-        // if (searchResult != null) {
-        //     onRecordSelect(searchResult.data[index])
-        // }
-    }
-
-    handleUpdatePageNum = (pageNum: number) => {
-        // const { pageSize } = this.state
-        // this.search(pageNum, pageSize)
-    }
-    
-    handleUpdatePageSize = (pageSize: number) => (event: SyntheticMouseEvent<>) => {
-        // const { pageNum } = this.state
-        // this.search(pageNum, pageSize)
-    }
-
     handleSelectExchange = (event: SyntheticEvent<>, target: any) => {
         event.preventDefault()
         this.setState({ exchangeCode: target.value })
@@ -192,12 +189,9 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
             if (promise) {
                 promise.then(
                     result => {
-                        const language = sessionContext.languageContext.language
                         const instrumentMap = new Object()
                         _.forEach(exchanges, e => instrumentMap[e.exchangeCode] = _.keyBy(_.filter(result.instruments, i => e.exchangeCode == i.exchangeCode), 'instrumentCode'))
-                        const data = _.map(result.tradingAccountPortfolio.securityPositionSummary, 
-                            e => Object.assign({instrumentName: instrumentMap[e.exchangeCode][e.instrumentCode].getDescription(sessionContext.languageContext.language)}, e))    
-                        let securityPositionSummary = _.sortBy(data, [sortBy])
+                        let securityPositionSummary = _.sortBy(result.tradingAccountPortfolio.securityPositionSummary, [sortBy])
                         if (sortDirection == SortDirection.Descending) {
                             securityPositionSummary = _.reverse(securityPositionSummary)
                         }
@@ -207,7 +201,7 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                         })
                         const colorMap = new Map()
                         _.forEach(securityPositionSummary, (s, idx) => {colorMap.set(`${s.exchangeCode}.${s.instrumentCode}`, colors[idx])})
-                        this.setState({ chartColors: colorMap, currencyList: result.currencies, instrumentList: result.instruments, securityPositionSummary: securityPositionSummary }, () => {
+                        this.setState({ chartColors: colorMap, currencyList: result.currencies, instrumentMap: instrumentMap, lastUpdate: new Date(), securityPositionSummary: securityPositionSummary }, () => {
                             messageService.hideLoading()
                         })
                     },
@@ -229,7 +223,7 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
             sortDirection: SortDirection.Ascending,
             securityPositionSummary: [],
             currencyList: [],
-            instrumentList: []
+            instrumentMap: new Map()
         }
     }
 
@@ -262,17 +256,20 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
             return currency == baseCurrency ? `${formatNumber(model[fieldName], createNumberFormat(true, currency.decimalPoint))}` :
                 currency != null ? `${currency.getDescription(language)}  ${formatNumber(model[fieldName], createNumberFormat(true, currency.decimalPoint))}` : model[fieldName]
         }
+        const percentFormatter = (model: Object, fieldName: string) => {
+            return formatNumber(model[fieldName], createNumberFormat(true, 2))
+        }
         const contentProvider = (model: Object, fieldName: string) => {
             return this.portfolioActionSheet(model)
         }
-        const resultColName = ["instrumentCode", "instrumentName", "sellableQuantity", "totalQuantity", "closingPrice", "marketValue"]
+        const resultColName = ["instrumentCode", "instrumentName", "sellableQuantity", "totalQuantity", "closingPrice", "marketValue", "marketValuePercent"]
         const searchResultColInstrumentCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`portfolioEnquiryForm.${resultColName[0]}`), 2, sortBy == resultColName[0] ? sortDirection : null)
         searchResultColInstrumentCode.actionSheetProvider = contentProvider
         const searchResultColInstrumentName = new XcTableColSpec(resultColName[1], DataType.String, xlate(`portfolioEnquiryForm.${resultColName[1]}`), 3, sortBy == resultColName[1] ? sortDirection : null)
-        const searchResultColSellableQuantity = new XcTableColSpec(resultColName[2], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[2]}`), 3, sortBy == resultColName[2] ? sortDirection : null)
+        const searchResultColSellableQuantity = new XcTableColSpec(resultColName[2], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[2]}`), 2, sortBy == resultColName[2] ? sortDirection : null)
         searchResultColSellableQuantity.formatter = quantityFormatter
         searchResultColSellableQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColTotalQuantity = new XcTableColSpec(resultColName[3], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[3]}`), 3, sortBy == resultColName[3] ? sortDirection : null)
+        const searchResultColTotalQuantity = new XcTableColSpec(resultColName[3], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[3]}`), 2, sortBy == resultColName[3] ? sortDirection : null)
         searchResultColTotalQuantity.formatter = quantityFormatter
         searchResultColTotalQuantity.horizontalAlign = XcTable.TextAlign.Right
         const searchResultColClosingPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`portfolioEnquiryForm.${resultColName[4]}`)}${baseCurrency != null ? ` (${baseCurrency.getDescription(language)})` : ""}`, 2, sortBy == resultColName[4] ? sortDirection : null)
@@ -283,16 +280,20 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
         searchResultColMarketValue.formatter = priceFormatter
         searchResultColMarketValue.horizontalAlign = XcTable.TextAlign.Right
         searchResultColMarketValue.footerHorizontalAlign = XcTable.TextAlign.Right
+        const searchResultColMarketValuePercent = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[6]}`), 2, sortBy == resultColName[6] ? sortDirection : null)
+        searchResultColMarketValuePercent.formatter = percentFormatter
+        searchResultColMarketValuePercent.horizontalAlign = XcTable.TextAlign.Right
+        searchResultColMarketValuePercent.footerHorizontalAlign = XcTable.TextAlign.Right
         return [
-            searchResultColInstrumentCode, searchResultColInstrumentName, searchResultColSellableQuantity, searchResultColTotalQuantity, searchResultColClosingPrice, searchResultColMarketValue
+            searchResultColInstrumentCode, searchResultColInstrumentName, searchResultColSellableQuantity, searchResultColTotalQuantity, searchResultColClosingPrice, searchResultColMarketValue, searchResultColMarketValuePercent
         ]
     }
 
-    handlePieMouseOver = (event: SyntheticEvent<>, data: Array<any>, dataIndex: number) => {
-        this.setState({ chartFocusData: data[dataIndex] })
+    handlePieMouseOver = (event: SyntheticEvent<>, data: any) => {
+        this.setState({ chartFocusData: data })
     }
 
-    handlePieMouseOut = (event: SyntheticEvent<>, data: Array<any>, dataIndex: number) => {
+    handlePieMouseOut = (event: SyntheticEvent<>, data: any) => {
         this.setState({ chartFocusData: null })
     }
 

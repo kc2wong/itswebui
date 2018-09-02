@@ -44,3 +44,7 @@ export function formatNumber(value: number | string, format: string): string {
         return _.isNaN(num) ? value : numeral(num).format(format);
     }
 }
+
+export function roundNumber(value: number, decimalPlace: number): number {
+    return new Number(value.toFixed(decimalPlace))
+}

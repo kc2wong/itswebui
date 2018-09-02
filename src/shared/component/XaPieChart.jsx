@@ -35,8 +35,22 @@ export class XaPieChart extends React.Component<XaPieChartProps, XaPieChartState
         const chartData = _.sortBy(_.map(data, (d) => Object.assign({key: d.key, value: d.value, color: d.color})), "key")
 
         return (
-            <PieChart animate data={chartData} onMouseOut={onMouseOut} onMouseOver={onMouseOver} />
+            <PieChart data={chartData} labels onMouseOut={this.handleMouseOut} onMouseOver={this.handleMouseOver} />
         )
+    }
+
+    handleMouseOut = (event: SyntheticEvent<>, data: any, index: number) => {
+        const { onMouseOut } = this.props
+        if (onMouseOut) {
+            onMouseOut(event, data[index])
+        } 
+    }
+
+    handleMouseOver = (event: SyntheticEvent<>, data: any, index: number) => {
+        const { onMouseOver } = this.props
+        if (onMouseOver) {
+            onMouseOver(event, data[index])
+        } 
     }
 
 }

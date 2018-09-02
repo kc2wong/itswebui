@@ -32,6 +32,7 @@
         "edit": "Edit",        
         "delete": "Delete",        
         "enquiry": "Enquiry",        
+        "lastUpdate": "Last Update : {0}",
         "loadingIndicator": "Loading ...",
         "new": "New",        
         "no": "No",
@@ -111,11 +112,14 @@
         "tradingAccount": "Trading Account"
     },
     "portfolioEnquiryForm": {
-        "closingPrice": "Reference Price", 
+        "closingPrice": "Ref. Price", 
         "exchange": "Exchange",
         "instrumentCode": "Stock Code", 
         "instrumentName": "Stock Name", 
         "marketValue": "Market Value",
+        "marketValuePercent": "Percentage",
+        "noHolding": "No holding found",
+        "portfolioDistribution": "Portfolio Distribution :",
         "quoteButton": "Go",
         "quoteHint": "Enquire market data",
         "quoteTitle": "Quote Express",
