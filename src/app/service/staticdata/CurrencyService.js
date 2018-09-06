@@ -36,16 +36,13 @@ class CurrencyService implements StaticDataService<Currency> {
         )
     }
 
-    getPage(pageable: ?Pageable, criteria: Object, sortOrder: Map<string, SortOrder>): Promise<PageResult<Currency>> {
+    getPage(pageable: ?Pageable, criteria: Object, sortOrder: ?Map<string, SortOrder>): Promise<PageResult<Currency>> {
         const sort = ( pageable && pageable.sortBy && pageable.sortDirection ) ? {sort: `${pageable.sortBy},${pageable.sortDirection.value}`} : {} 
         const param = Object.assign(pageable ? {page: pageable.pageNumber - 1, size: pageable.pageSize} : {}, criteria, sort)   // pageNumber starts with 0 in server side
-        console.debug(`CurrencyService.getPage(), param = ${param.toString()}`)
         return httpGet(`${contextPath}`, param).then(
             msg => {
                 const json = msg.json
-                const data = _.map(json.content, (d) =>
-                    Currency.fromJson(d)
-                );
+                const data = _.map(json.content, (d) => Currency.fromJson(d))
                 const rtn = Promise.resolve(new PageResult(criteria, json.currentPage + 1, json.pageSize, json.totalPage, json.totalCount, data));
                 return rtn
             },

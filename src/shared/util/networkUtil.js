@@ -1,4 +1,5 @@
 // @flow
+import moment from 'moment-es6';
 import { nvl } from './lang';
 import { ErrorCode } from '../constant/ErrorCode';
 import { getAuthenticationToken } from './sessionUtil';
@@ -6,6 +7,21 @@ import { getAuthenticationToken } from './sessionUtil';
 export const AUTHENTICATION_TOKEN_HEADER = 'authenticationToken'
 
 const DEFAULT_TIMEOUT = 5000;
+
+const dateFormat = /^\d{4}\/\d{2}\/\d{2}$/
+const dateTimeFormat = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/
+
+function dateHandler(key: string, value: any): any {
+    if (typeof value === "string" && key != 'syncstr') {
+        if (dateTimeFormat.test(value)) {
+            return moment(value, "YYYY/MM/DD HH:mm:ss").toDate()
+        }
+        else if (dateFormat.test(value)) {
+            return moment(value, "YYYY/MM/DD").toDate()
+        }
+    }
+    return value;
+}
 
 function getQueryString(params: Object, extraQueryParam: ?string) {
     const esc = encodeURIComponent;
@@ -77,7 +93,7 @@ export function handleJsonResponse(response: Response): Object {
         const headers = response.headers ? response.headers : {} 
         const code = headers.get('X-its-alert')
         const param = headers.get('X-its-params')
-        const json = text.length > 0 ? JSON.parse(text) : {};
+        const json = text.length > 0 ? JSON.parse(text, dateHandler) : {};
         if (code) {
             return Promise.resolve({ message: { code, param }, json });   // message code and param from header, json from body
         }

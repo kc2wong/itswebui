@@ -39,7 +39,6 @@ class ExchangeService implements StaticDataService<Exchange> {
     getPage(pageable: ?Pageable, criteria: Object): Promise<PageResult<Exchange>> {
         const sort = ( pageable && pageable.sortBy && pageable.sortDirection ) ? {sort: `${pageable.sortBy},${pageable.sortDirection.value}`} : {} 
         const param = Object.assign(pageable ? {page: pageable.pageNumber - 1, size: pageable.pageSize} : {}, criteria, sort)   // pageNumber starts with 0 in server side
-        console.debug(`ExchangeService.getPage(), param = ${param.toString()}`)
         return httpGet(`${contextPath}`, param).then(
             msg => {
                 const json = msg.json

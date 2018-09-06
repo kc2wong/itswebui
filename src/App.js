@@ -13,20 +13,6 @@ import { userProfileService } from 'app/service';
 import { ApplicationContext, type ApplicationContextType } from 'app/context'
 import LoginForm from 'app/component/security/LoginForm';
 
-// export type ApplicationContextType = {
-//     messageService: MessageService
-// }
-
-// export const ApplicationContext = React.createContext({
-//     messageService: {
-//         hideLoading: () => {},
-//         showLoading: () => {},
-//         dismissDialog: () => {},
-//         showDialog: (dialog: XcDialog) => {},
-//         isDialogShowing: () => {return false}    
-//     }    
-// });
-
 type Props = {
 }
 

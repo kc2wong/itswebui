@@ -14,10 +14,11 @@ import { MenuHierarchy } from 'app/model/security/menuHierarchy'
 import { ApplicationContext, SessionContext, type SessionContextType } from 'app/context'
 import CurrencyMaintenanceForm from 'app/component/staticdata/currency/CurrencyMaintenanceForm';
 import StmActionMaintenanceForm from 'app/component/staticdata/stmaction/StmActionMaintenanceForm';
-import { Exchange } from 'app/model/staticdata'
+import { Currency, Exchange } from 'app/model/staticdata'
 import { SimpleTradingAccount } from 'app/model/client/simpleTradingAccount'
-import { authenticationService, exchangeService, userProfileService } from 'app/service';
+import { authenticationService, currencyService, exchangeService, userProfileService } from 'app/service';
 import OrderInputForm from 'app/component/order/OrderInputForm';
+import OrderEnquiryForm from 'app/component/order/OrderEnquiryForm';
 import PortfolioEnquiryForm from 'app/component/client/PortfolioEnquiryForm';
 
 import './RetailHome.css';
@@ -30,6 +31,7 @@ type IntProps = {
 }
 
 type State = {
+    currencies: Array<Currency>,
     exchanges: Array<Exchange>,
     language: Language,
     tradingAccounts: Array<SimpleTradingAccount>,
@@ -38,11 +40,6 @@ type State = {
     panes: XcNavigationTab.Pane[],
     tabIndex: number
 }
-
-const pathMapping = new Map()
-    .set('currencyMaintenance', <CurrencyMaintenanceForm />)
-    .set('actionCodeMaintenance', <StmActionMaintenanceForm />)
-    ;
 
 class DummyForm extends React.Component<{}, {}> {
     render() {
@@ -62,6 +59,7 @@ class RetailHome extends React.Component<IntProps, State> {
         // panes.push(<XcNavigationTab.Pane key={'AccountInfo'} id={'AccountInfo'} label={'Account 11Information'} component={dummyForm} ></XcNavigationTab.Pane>)
 
         this.state = {
+            currencies: [],
             exchanges: [],
             language: _.find(Language.enumValues, (e) => (
                 e.value == navigator.location.state.language
@@ -76,23 +74,24 @@ class RetailHome extends React.Component<IntProps, State> {
 
     componentDidMount() {
         const { messageService } = this.props
-        const { exchanges, tradingAccounts } = this.state
+        const { currencies, exchanges, tradingAccounts } = this.state
 
         var promises = [
+            currencies.length > 0 ? Promise.resolve({ data: currencies }) : currencyService.getPage(null, {}),
             exchanges.length > 0 ? Promise.resolve({ data: exchanges }) : exchangeService.getPage(null, {}),
             tradingAccounts.length > 0 ? Promise.resolve(tradingAccounts) : userProfileService.getOwnedTradingAccount()
         ]
 
         messageService.showLoading()
         Promise.all(promises).then(result => {
-            const exchanges = _.sortBy(result[0].data, ['sequence'])
+            const exchanges = _.sortBy(result[1].data, ['sequence'])
             let panes = []
             const dummyForm = <DummyForm/>
             panes.push(<XcNavigationTab.Pane key={'Portfolio'} id={'Portfolio'} label={xlate('home.accountPortfolio')} component={<PortfolioEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
-            panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={xlate('home.orderJournal')} component={dummyForm} ></XcNavigationTab.Pane>)
+            panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={xlate('home.orderJournal')} component={<OrderEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
             panes.push(<XcNavigationTab.Pane key={'OrderHistory'} id={'AccountInfo'} label={xlate('home.orderHistory')} component={dummyForm} ></XcNavigationTab.Pane>)
     
-            this.setState({ exchanges: exchanges, panes: panes, tradingAccounts: result[1] }, () => {
+            this.setState({ currencies: result[0].data, exchanges: exchanges, panes: panes, tradingAccounts: result[2] }, () => {
                 messageService.hideLoading()
             })
         });
@@ -101,11 +100,17 @@ class RetailHome extends React.Component<IntProps, State> {
 
     render() {
         const { messageService } = this.props;
-        const { language, exchanges, selectedTradingAccount, tradingAccounts, menuOpen, panes, tabIndex } = this.state;
+        const { language, currencies, exchanges, selectedTradingAccount, tradingAccounts, menuOpen, panes, tabIndex } = this.state;
 
         const applicationDate = new Date()
 
         const sessionContext: SessionContextType = {
+            cacheContext: {
+                getCurrency: (currencyCode: string): ?Currency => {
+                    const rtn = _.find(currencies, c => c.currencyCode == currencyCode)
+                    return rtn
+                },    
+            },
             languageContext: {
                 language: language,
                 selectLanguage: (language: Language) => {

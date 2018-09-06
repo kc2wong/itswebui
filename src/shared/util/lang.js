@@ -46,5 +46,5 @@ export function formatNumber(value: number | string, format: string): string {
 }
 
 export function roundNumber(value: number, decimalPlace: number): number {
-    return new Number(value.toFixed(decimalPlace))
+    return Number.parseFloat(value.toFixed(decimalPlace))
 }

@@ -8,15 +8,12 @@ import { SecurityPositionSummary, TradingAccountPortfolio, TradingAccountPortfol
 import { ApplicationContext, type AccountContextType, type CacheContextType, type LanguageContextType, SessionContext, type SessionContextType } from 'app/context'
 import { tradingAccountService } from 'app/service';
 
-import { XaPieChart, XcButton, XcButtonGroup, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
-import { XcOption, XcPagination, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { XcButton, XcButtonGroup, XcCheckbox, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
+import { XcOption, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { BaseModel, DataType, Language, Pageable, PageResult, SortDirection } from 'shared/model';
 import { MessageService } from 'shared/service'
 import { createNumberFormat, formatNumber, roundNumber, xlate } from 'shared/util/lang'
 import { formatDateTime } from 'shared/util/dateUtil'
-import { Header, Button, Popup, Grid } from 'semantic-ui-react'
-
-import randomColor from 'randomcolor'
 
 type Props = {
     exchanges: Exchange[]
@@ -29,19 +26,18 @@ type IntProps = {
 }
 
 type State = {
-    chartColors: Map<string, string>,
-    chartFocusData: ?Object,
     exchangeCode: string,
     lastUpdate: ?Date,
+    outstandingOrder: boolean,
     sortBy: string,
     sortDirection: SortDirection,
     securityPositionSummary: Array<Object>,
     instrumentMap: Map<string, Array<Instrument>>
 }
 
-const formName = "portfolioEnquiryForm"
+const formName = "orderEnquiryForm"
 
-class PortfolioEnquiryForm extends Component<IntProps, State> {
+class OrderEnquiryForm extends Component<IntProps, State> {
 
     constructor(props: IntProps) {
         super(props);
@@ -60,7 +56,7 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
         const cacheContext = sessionContext.cacheContext
         const language = sessionContext.languageContext.language
 
-        const { chartColors, chartFocusData, exchangeCode, instrumentMap, lastUpdate, securityPositionSummary, sortBy, sortDirection } = this.state;
+        const { exchangeCode, instrumentMap, lastUpdate, outstandingOrder, securityPositionSummary, sortBy, sortDirection } = this.state;
         const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)
         const exchangeCurrency = cacheContext.getCurrency(exchange.baseCurrencyCode)
         const baseCurrency = cacheContext.getCurrency(BASE_CURRENCY)
@@ -76,9 +72,6 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
             maxEntry.marketValuePercent = roundNumber(maxEntry.marketValuePercent + percentageAdj, 2)
         }
 
-        const chartData = _.map(data, (d, idx) => new XaPieChart.Data(d.instrumentCode, d.marketValueBaseCurrency, null, chartColors.get(`${d.exchangeCode}.${d.instrumentCode}`)))
-        const highlightedIndex = chartFocusData != null ? _.findIndex(data, d => d.instrumentCode == chartFocusData.key) : -1
-
         const instrumentCurrencies = new Set(_.map(data, e => e.currencyCode))
         const singleCurrency = _.size(instrumentCurrencies) == 1 && instrumentCurrencies.has(exchange.baseCurrencyCode)
         const totalMarketValue =  singleCurrency ? _.sumBy(data, "marketValue") : totalMarketValueBaseCcy
@@ -88,10 +81,6 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
             return new XcOption(`${i}`, `${i}`)
         });
 
-        const colorStripeProvider = (model: Object, rowNum: number): string => {
-            const rtn = chartColors.get(`${model["exchangeCode"]}.${model["instrumentCode"]}`)
-            return rtn != null ? rtn : ""
-        }
         const numberFormat = createNumberFormat(true, exchangeCurrency != null ? exchangeCurrency.decimalPoint : 2)
         const searchResultColSpec = this.createResultColSpec(cacheContext, language, exchange, sortBy, sortDirection)
         const summary = {
@@ -107,7 +96,10 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                     <XcGrid.Row>
                         <XcGrid.Col>
                             <XcForm name={formName}>
-                                <XcSelect inline name="exchange" onChange={this.handleSelectExchange} options={exchangeOpt} value={exchangeCode} />
+                                <XcFormGroup>
+                                    <XcSelect inline name="exchange" onChange={this.handleSelectExchange} options={exchangeOpt} value={exchangeCode} />
+                                    <XcCheckbox inline name="outstandingOrderOnly" onChange={this.handleToggleOutstandOrder} style={XcCheckbox.Style.Toggle} value={outstandingOrder} />
+                                </XcFormGroup>
                             </XcForm>
                         </XcGrid.Col>
                         <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}>
@@ -120,22 +112,9 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                     <XcPanel.Body>
                         <XcGrid>
                             <XcGrid.Row verticalAlign={XcGrid.VerticalAlign.Top}>
-                                <XcGrid.Col width={4}>
-                                    {_.size(chartData) > 0 && (
-                                        <React.Fragment>
-                                            <div>{xlate(`${formName}.portfolioDistribution`)}</div>
-                                            <br/>
-                                            <XaPieChart data={chartData} onMouseOut={this.handlePieMouseOut} onMouseOver={this.handlePieMouseOver} />
-                                        </React.Fragment>
-                                    )}
-                                    {_.size(chartData) == 0 && (
-                                        <div>{xlate(`${formName}.noHolding`)}</div>
-                                    )}
-                                </XcGrid.Col>
-                                <XcGrid.Col width={12}>
-                                    <XcTable colorStripeProvider={colorStripeProvider} colspec={searchResultColSpec}
+                                <XcGrid.Col width={16}>
+                                    <XcTable colspec={searchResultColSpec}
                                         data={data}
-                                        highlightedIndex={highlightedIndex}
                                         onSort={this.handleSort}
                                         size={XcTable.Size.Small} summary={summary} />
                                 </XcGrid.Col>
@@ -175,6 +154,11 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
         this.setState({ exchangeCode: target.value })
     }
 
+    handleToggleOutstandOrder = (event: SyntheticEvent<>, target: any) => {
+        event.preventDefault()
+        this.setState({ outstandingOrder: !this.state.outstandingOrder })
+    }
+
     search = () => {
         const { exchanges, messageService, sessionContext } = this.props
         const { exchangeCode, sortBy, sortDirection } = this.state
@@ -191,14 +175,7 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                         if (sortDirection == SortDirection.Descending) {
                             securityPositionSummary = _.reverse(securityPositionSummary)
                         }
-                        const colors = randomColor({
-                            count: _.size(securityPositionSummary),
-                            hue: 'blue'
-                        })
-                        
-                        const colorMap = new Map()
-                        _.forEach(securityPositionSummary, (s, idx) => {colorMap.set(`${s.exchangeCode}.${s.instrumentCode}`, colors[idx])})
-                        this.setState({ chartColors: colorMap, instrumentMap: instrumentMap, lastUpdate: new Date(), securityPositionSummary: securityPositionSummary }, () => {
+                        this.setState({ instrumentMap: instrumentMap, lastUpdate: new Date(), securityPositionSummary: securityPositionSummary }, () => {
                             messageService.hideLoading()
                         })
                     },
@@ -213,9 +190,9 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
 
     resetState = (): Object => {
         return {
-            chartColors: new Map(),
-            chartFocusData: null,
             exchangeCode: this.props.exchanges[0].exchangeCode,
+            lastUpdate: null,
+            outstandingOrder: false,        
             sortBy: "instrumentCode",
             sortDirection: SortDirection.Ascending,
             securityPositionSummary: [],
@@ -289,15 +266,6 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
             searchResultColInstrumentCode, searchResultColInstrumentName, searchResultColSellableQuantity, searchResultColTotalQuantity, searchResultColClosingPrice, searchResultColMarketValue, searchResultColMarketValuePercent
         ]
     }
-
-    handlePieMouseOver = (event: SyntheticEvent<>, data: any) => {
-        this.setState({ chartFocusData: data })
-    }
-
-    handlePieMouseOut = (event: SyntheticEvent<>, data: any) => {
-        this.setState({ chartFocusData: null })
-    }
-
 }
 
 
@@ -305,7 +273,7 @@ export default (props: Props) => (
     <ApplicationContext.Consumer>
         {applicationContext =>
             <SessionContext.Consumer>
-                {sessionContext => <PortfolioEnquiryForm {...props} messageService={applicationContext.messageService} sessionContext={sessionContext} />}
+                {sessionContext => <OrderEnquiryForm {...props} messageService={applicationContext.messageService} sessionContext={sessionContext} />}
             </SessionContext.Consumer>
         }
     </ApplicationContext.Consumer>
