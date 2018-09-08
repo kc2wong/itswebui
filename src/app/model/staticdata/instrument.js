@@ -65,6 +65,7 @@ export class Instrument implements BaseModel, MultiLingual {
     static fromJson(json: Object): Instrument {
         const rtn = Instrument.newInstance()
         Object.assign(rtn, json);
+        rtn.suspend = (json.suspend == "Y")
         return rtn
     }
 

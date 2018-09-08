@@ -1,4 +1,5 @@
 // @flow
+import _ from 'lodash'
 import { BaseModel } from 'shared/model/BaseModel';
 
 export class Exchange implements BaseModel {
@@ -11,13 +12,15 @@ export class Exchange implements BaseModel {
     shortName3rdLang: ?string;
     baseCurrencyCode: string;
     sequence: number;
+    tradeDate: ?Date;
 
-    constructor(exchangeCode: string, nameDefLang: string, shortNameDefLang: string, baseCurrencyCode: string, sequence: number) {
+    constructor(exchangeCode: string, nameDefLang: string, shortNameDefLang: string, baseCurrencyCode: string, sequence: number, tradeDate: Date) {
         this.exchangeCode = exchangeCode;
         this.nameDefLang = nameDefLang;
         this.shortNameDefLang = shortNameDefLang;
         this.baseCurrencyCode = baseCurrencyCode;
         this.sequence = sequence;
+        this.tradeDate = tradeDate;
     }
 
     getId(): Object {
@@ -34,12 +37,12 @@ export class Exchange implements BaseModel {
     
     static fromJson(json: Object): Exchange {
         const rtn = Exchange.newInstance()
-        Object.assign(rtn, json);
+        Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
         return rtn
     }
 
     static newInstance(): Exchange {
-        return new Exchange("", "", "", "", 0);        
+        return new Exchange("", "", "", "", 0, new Date());        
     }
 
     static getId(json: Object): Object {

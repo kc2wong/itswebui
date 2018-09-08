@@ -4,16 +4,17 @@ import React, { Component, Fragment } from 'react';
 import { Toolbar } from 'app/component/common/Toolbar';
 import { BASE_CURRENCY, PAGE_SIZE_OPTION } from 'app/constant/ApplicationConstant';
 import { Currency, Exchange, Instrument } from 'app/model/staticdata'
-import { SecurityPositionSummary, TradingAccountPortfolio, TradingAccountPortfolioBundle } from 'app/model/client';
+import { BuySell, LotNature, OrderStatus } from 'app/model/EnumType'
+import { OrderEnquirySearchResult, SimpleOrder } from 'app/model/order';
 import { ApplicationContext, type AccountContextType, type CacheContextType, type LanguageContextType, SessionContext, type SessionContextType } from 'app/context'
-import { tradingAccountService } from 'app/service';
+import { orderService, simpleOrderService, tradingAccountService } from 'app/service';
 
 import { XcButton, XcButtonGroup, XcCheckbox, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
 import { XcOption, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { BaseModel, DataType, Language, Pageable, PageResult, SortDirection } from 'shared/model';
 import { MessageService } from 'shared/service'
 import { createNumberFormat, formatNumber, roundNumber, xlate } from 'shared/util/lang'
-import { formatDateTime } from 'shared/util/dateUtil'
+import { currentDate, formatDateTime, minDate } from 'shared/util/dateUtil'
 
 type Props = {
     exchanges: Exchange[]
@@ -31,12 +32,13 @@ type State = {
     outstandingOrder: boolean,
     sortBy: string,
     sortDirection: SortDirection,
-    securityPositionSummary: Array<Object>,
-    instrumentMap: Map<string, Array<Instrument>>
+    orders: [SimpleOrder],
+    instrumentMap: Map<string, Instrument>
 }
 
 const formName = "orderEnquiryForm"
 
+const OUTSTANDING_ORDER_STATUS = new Set([OrderStatus.Pending, OrderStatus.New, OrderStatus.Reserved, OrderStatus.WaitForApprove, OrderStatus.Queued, OrderStatus.PartialExecuted])
 class OrderEnquiryForm extends Component<IntProps, State> {
 
     constructor(props: IntProps) {
@@ -56,38 +58,16 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         const cacheContext = sessionContext.cacheContext
         const language = sessionContext.languageContext.language
 
-        const { exchangeCode, instrumentMap, lastUpdate, outstandingOrder, securityPositionSummary, sortBy, sortDirection } = this.state;
+        const { exchangeCode, instrumentMap, lastUpdate, outstandingOrder, orders, sortBy, sortDirection } = this.state;
         const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)
         const exchangeCurrency = cacheContext.getCurrency(exchange.baseCurrencyCode)
         const baseCurrency = cacheContext.getCurrency(BASE_CURRENCY)
 
-        const exchangeSecPosSum = _.filter(securityPositionSummary, sps => sps.exchangeCode == exchangeCode)
-        const totalMarketValueBaseCcy = _.sumBy(exchangeSecPosSum, "marketValueBaseCurrency")
-        const data = _.map(exchangeSecPosSum, 
-            e => Object.assign({instrumentName: instrumentMap[e.exchangeCode][e.instrumentCode].getDescription(language), 
-                marketValuePercent: roundNumber(e.marketValueBaseCurrency * 100 / totalMarketValueBaseCcy, 2) }, e))    
-        const percentageAdj = 100 - _.sumBy(data, "marketValuePercent")
-        if (percentageAdj > 0 && _.size(data) > 1) {
-            const maxEntry = _.maxBy(data, e => new Number(e.marketValuePercent)) 
-            maxEntry.marketValuePercent = roundNumber(maxEntry.marketValuePercent + percentageAdj, 2)
-        }
-
-        const instrumentCurrencies = new Set(_.map(data, e => e.currencyCode))
-        const singleCurrency = _.size(instrumentCurrencies) == 1 && instrumentCurrencies.has(exchange.baseCurrencyCode)
-        const totalMarketValue =  singleCurrency ? _.sumBy(data, "marketValue") : totalMarketValueBaseCcy
-        const marketValueCurrency = singleCurrency ? exchangeCurrency : baseCurrency
-
-        const dpOpt = _.map(_.range(4), (i) => {
-            return new XcOption(`${i}`, `${i}`)
-        });
+        const exchangeOrder = _.filter(orders, o => o.exchangeCode == exchangeCode && (!outstandingOrder || OUTSTANDING_ORDER_STATUS.has(o.getOrderStatus())) )
+        const data = _.map(exchangeOrder, e => Object.assign({instrumentName: instrumentMap.get(e.orderNumber).getDescription(language)}, e))
 
         const numberFormat = createNumberFormat(true, exchangeCurrency != null ? exchangeCurrency.decimalPoint : 2)
-        const searchResultColSpec = this.createResultColSpec(cacheContext, language, exchange, sortBy, sortDirection)
-        const summary = {
-            [searchResultColSpec[_.size(searchResultColSpec) - 3].name]: xlate(`${formName}.totalMarketValue`),
-            [searchResultColSpec[_.size(searchResultColSpec) - 2].name]: marketValueCurrency != null ? `${marketValueCurrency.getDescription(language)}  ${formatNumber(totalMarketValue, numberFormat)}` : formatNumber(totalMarketValue, numberFormat),
-            [searchResultColSpec[_.size(searchResultColSpec) - 1].name]: formatNumber(_.sumBy(data, "marketValuePercent"), "0.00")
-        }
+        const searchResultColSpec = this.createResultColSpec(cacheContext, language, exchange, instrumentMap, sortBy, sortDirection)
 
         return (
             <div style={{ height: "100vh" }}>
@@ -116,7 +96,7 @@ class OrderEnquiryForm extends Component<IntProps, State> {
                                     <XcTable colspec={searchResultColSpec}
                                         data={data}
                                         onSort={this.handleSort}
-                                        size={XcTable.Size.Small} summary={summary} />
+                                        size={XcTable.Size.Small}/>
                                 </XcGrid.Col>
                             </XcGrid.Row>
                         </XcGrid>
@@ -132,20 +112,22 @@ class OrderEnquiryForm extends Component<IntProps, State> {
     }
 
     handleSort = (sortBy: string, sortDirection : SortDirection) => {
-        // const { pageNum, pageSize } = this.state
+        const { sessionContext } = this.props
         const currentSortBy = this.state.sortBy
         const currentSortDirection = this.state.sortDirection
-        let { securityPositionSummary } = this.state
+        const { orders, instrumentMap } = this.state
+ 
         if (currentSortBy == sortBy) {
-            // reverse ony
-            this.setState({ sortDirection: sortDirection, securityPositionSummary: _.reverse(securityPositionSummary) })
+            // reverse only
+            this.setState({ sortDirection: sortDirection, orders: _.reverse(orders) })
         }
         else {
-            securityPositionSummary = _.sortBy(securityPositionSummary, [sortBy])
+            const language = sessionContext.languageContext.language
+            let data = _.sortBy(_.map(orders, e => Object.assign({instrumentName: instrumentMap.get(e.orderNumber).getDescription(language)}, e)), [sortBy])
             if (sortDirection == SortDirection.Descending) {
-                securityPositionSummary = _.reverse(securityPositionSummary)
-            }
-            this.setState({ sortBy: sortBy, sortDirection: sortDirection, securityPositionSummary: securityPositionSummary })
+                data = _.reverse(data)
+            }            
+            this.setState({ sortBy: sortBy, sortDirection: sortDirection, orders: _.map(data, d => _.find(orders, o => o.orderNumber == d.orderNumber)) })
         }
     }
 
@@ -165,17 +147,22 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
         if (selectedTradingAccount) {
             messageService.showLoading()
-            const promise = tradingAccountService.getAccountPortfolio(selectedTradingAccount.tradingAccountCode, BASE_CURRENCY)
+            const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)
+            const startTradeDate = exchange != null ? minDate(currentDate(), exchange.tradeDate) : currentDate()
+            const promise = simpleOrderService.enquireOrder(selectedTradingAccount.tradingAccountCode, exchangeCode, startTradeDate, null)
             if (promise) {
                 promise.then(
-                    result => {
+                    orderEnquirySearchResult => {
+                        console.log(orderEnquirySearchResult)
+                        let orders = orderEnquirySearchResult.simpleOrders
+                        const instruments = orderEnquirySearchResult.instruments
+                        const orderInstrumentIndex = orderEnquirySearchResult.orderInstrumentIndex
                         const instrumentMap = new Map()
-                        _.forEach(exchanges, e => instrumentMap[e.exchangeCode] = _.keyBy(_.filter(result.instruments, i => e.exchangeCode == i.exchangeCode), 'instrumentCode'))
-                        let securityPositionSummary = _.sortBy(result.tradingAccountPortfolio.securityPositionSummary, [sortBy])
+                        orderInstrumentIndex.forEach((value, key) => instrumentMap.set(key, instruments[value]))
                         if (sortDirection == SortDirection.Descending) {
-                            securityPositionSummary = _.reverse(securityPositionSummary)
+                            orders = _.reverse(orders)
                         }
-                        this.setState({ instrumentMap: instrumentMap, lastUpdate: new Date(), securityPositionSummary: securityPositionSummary }, () => {
+                        this.setState({ instrumentMap: instrumentMap, lastUpdate: new Date(), orders: orders }, () => {
                             messageService.hideLoading()
                         })
                     },
@@ -193,7 +180,7 @@ class OrderEnquiryForm extends Component<IntProps, State> {
             exchangeCode: this.props.exchanges[0].exchangeCode,
             lastUpdate: null,
             outstandingOrder: false,        
-            sortBy: "instrumentCode",
+            sortBy: "orderNumber",
             sortDirection: SortDirection.Ascending,
             securityPositionSummary: [],
             instrumentMap: new Map()
@@ -219,18 +206,22 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         </XcGrid>
     )
         
-    createResultColSpec = (cacheContext: CacheContextType, language: Language, exchange: Exchange, sortBy: string, sortDirection: SortDirection): XcTableColSpec[] => {
+    createResultColSpec = (cacheContext: CacheContextType, language: Language, exchange: Exchange, instrumentMap: Map<string, Instrument>, sortBy: string, sortDirection: SortDirection): XcTableColSpec[] => {
         const exchangeCurrency = cacheContext.getCurrency(exchange["baseCurrencyCode"])
+        const buySellFormatter = (model: Object, fieldName: string) => {
+            return xlate(`enum.buySell.${model[fieldName]}`)
+        }
         const quantityFormatter = (model: Object, fieldName: string) => {
             return formatNumber(model[fieldName], createNumberFormat(true, 0))
         }
         const priceFormatter = (model: Object, fieldName: string) => {
             // Do not show currency code if equals to exchange currency
-            if (model["currencyCode"] == exchange["baseCurrencyCode"]) {
+            const orderCurrency = instrumentMap.get(model["orderNumber"]).tradingCurrencyCode
+            if (orderCurrency == exchange["baseCurrencyCode"]) {
                 return exchangeCurrency != null ? `${formatNumber(model[fieldName], createNumberFormat(true, exchangeCurrency.decimalPoint))}` : model[fieldName]
             }
             else {
-                const currency = cacheContext.getCurrency(model["currencyCode"])
+                const currency = cacheContext.getCurrency(orderCurrency)
                 return currency != null ? `${currency.getDescription(language)}  ${formatNumber(model[fieldName], createNumberFormat(true, currency.decimalPoint))}` : model[fieldName]
             }
         }
@@ -240,30 +231,25 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         const contentProvider = (model: Object, fieldName: string) => {
             return this.portfolioActionSheet(model)
         }
-        const resultColName = ["instrumentCode", "instrumentName", "sellableQuantity", "totalQuantity", "closingPrice", "marketValue", "marketValuePercent"]
-        const searchResultColInstrumentCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`portfolioEnquiryForm.${resultColName[0]}`), 2, sortBy == resultColName[0] ? sortDirection : null)
-        searchResultColInstrumentCode.actionSheetProvider = contentProvider
-        const searchResultColInstrumentName = new XcTableColSpec(resultColName[1], DataType.String, xlate(`portfolioEnquiryForm.${resultColName[1]}`), 3, sortBy == resultColName[1] ? sortDirection : null)
-        const searchResultColSellableQuantity = new XcTableColSpec(resultColName[2], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[2]}`), 2, sortBy == resultColName[2] ? sortDirection : null)
-        searchResultColSellableQuantity.formatter = quantityFormatter
-        searchResultColSellableQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColTotalQuantity = new XcTableColSpec(resultColName[3], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[3]}`), 2, sortBy == resultColName[3] ? sortDirection : null)
-        searchResultColTotalQuantity.formatter = quantityFormatter
-        searchResultColTotalQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColClosingPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`portfolioEnquiryForm.${resultColName[4]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 2, sortBy == resultColName[4] ? sortDirection : null)
-        searchResultColClosingPrice.formatter = priceFormatter
-        searchResultColClosingPrice.horizontalAlign = XcTable.TextAlign.Right
-        searchResultColClosingPrice.footerHorizontalAlign = XcTable.TextAlign.Right
-        const searchResultColMarketValue = new XcTableColSpec(resultColName[5], DataType.Number, `${xlate(`portfolioEnquiryForm.${resultColName[5]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 3, sortBy == resultColName[5] ? sortDirection : null)
-        searchResultColMarketValue.formatter = priceFormatter
-        searchResultColMarketValue.horizontalAlign = XcTable.TextAlign.Right
-        searchResultColMarketValue.footerHorizontalAlign = XcTable.TextAlign.Right
-        const searchResultColMarketValuePercent = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[6]}`), 2, sortBy == resultColName[6] ? sortDirection : null)
-        searchResultColMarketValuePercent.formatter = percentFormatter
-        searchResultColMarketValuePercent.horizontalAlign = XcTable.TextAlign.Right
-        searchResultColMarketValuePercent.footerHorizontalAlign = XcTable.TextAlign.Right
+        const resultColName = ["orderNumber", "buySell", "instrumentCode", "instrumentName", "price", "quantity", "executedQuantity", "orderStatus"]
+        const searchResultColOrderNumber = new XcTableColSpec(resultColName[0], DataType.String, xlate(`${formName}.${resultColName[0]}`), 1, sortBy == resultColName[0] ? sortDirection : null)
+        searchResultColOrderNumber.actionSheetProvider = contentProvider
+        const searchResultColBuySell = new XcTableColSpec(resultColName[1], DataType.String, xlate(`${formName}.${resultColName[1]}`), 1, sortBy == resultColName[1] ? sortDirection : null)
+        searchResultColBuySell.formatter = buySellFormatter
+        const searchResultColInstrumentCode = new XcTableColSpec(resultColName[2], DataType.String, xlate(`${formName}.${resultColName[2]}`), 1, sortBy == resultColName[2] ? sortDirection : null)
+        const searchResultColInstrumentName = new XcTableColSpec(resultColName[3], DataType.String, xlate(`${formName}.${resultColName[3]}`), 2, sortBy == resultColName[3] ? sortDirection : null)
+        const searchResultColPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`${formName}.${resultColName[4]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 1, sortBy == resultColName[4] ? sortDirection : null)
+        searchResultColPrice.formatter = priceFormatter
+        searchResultColPrice.horizontalAlign = XcTable.TextAlign.Right
+        const searchResultColQuantity = new XcTableColSpec(resultColName[5], DataType.Number, xlate(`${formName}.${resultColName[5]}`), 1, sortBy == resultColName[5] ? sortDirection : null)
+        searchResultColQuantity.formatter = quantityFormatter
+        searchResultColQuantity.horizontalAlign = XcTable.TextAlign.Right
+        const searchResultColExecutedQuantity = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`${formName}.${resultColName[6]}`), 1, sortBy == resultColName[6] ? sortDirection : null)
+        searchResultColExecutedQuantity.formatter = quantityFormatter
+        searchResultColExecutedQuantity.horizontalAlign = XcTable.TextAlign.Right
+        const searchResultColOrderStatus = new XcTableColSpec(resultColName[7], DataType.String, xlate(`${formName}.${resultColName[7]}`), 1, sortBy == resultColName[7] ? sortDirection : null)
         return [
-            searchResultColInstrumentCode, searchResultColInstrumentName, searchResultColSellableQuantity, searchResultColTotalQuantity, searchResultColClosingPrice, searchResultColMarketValue, searchResultColMarketValuePercent
+            searchResultColOrderNumber, searchResultColBuySell, searchResultColInstrumentCode, searchResultColInstrumentName, searchResultColPrice, searchResultColQuantity, searchResultColExecutedQuantity, searchResultColOrderStatus
         ]
     }
 }

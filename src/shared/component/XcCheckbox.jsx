@@ -6,13 +6,14 @@ import FormContext from './XcForm';
 import { parseBool, xlate } from 'shared/util/lang';
 import { constructLabel, createColumnClass, getRequired } from './XcFormUtil';
 
-import './XcInputText.css';
+import './XcComponent.css';
 
 class Style extends Enum { }
 Style.initEnum(['Checkbox', 'Toggle']);
 
 
 type Props = {
+    inline: ?bool,
     label: string,
     name: string,
     onChange: ?(SyntheticInputEvent<>, any) => void,
@@ -31,20 +32,11 @@ export class XcCheckbox extends Component<Props, State> {
     render() {
         const { label, name, style, value, ...props } = this.props
         const toggle = (style != null && style == Style.Toggle) ? { toggle: true } : {}
-        // return (
-        //     <FormContext.Consumer>
-        //         {context =>
-        //             <FormGroup className={createColumnClass()} controlId={`${context.name}_${name}`}>
-        //                 <Checkbox checked={value} onChange={this.handleChanged(context.updateModel)}>{constructLabel(context.name, name, label)}</Checkbox>
-        //             </FormGroup>
-        //         }
-        //     </FormContext.Consumer>
-        // )
-
+        const styles = parseBool(this.props.inline) == true ? {style: {marginTop:"auto", marginBottom:"auto"}} : {}
         return (
             <FormContext.Consumer>
                 {context =>
-                    <Checkbox checked={value} label={constructLabel(context.name, name, label)} onChange={this.handleChange(context.updateModel)} {...toggle} />
+                    <Checkbox checked={value} label={constructLabel(context.name, name, label)} onChange={this.handleChange(context.updateModel)} {...styles} {...toggle} />
                 }
             </FormContext.Consumer>
         )

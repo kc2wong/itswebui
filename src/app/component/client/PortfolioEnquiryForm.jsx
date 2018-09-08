@@ -84,10 +84,6 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
         const totalMarketValue =  singleCurrency ? _.sumBy(data, "marketValue") : totalMarketValueBaseCcy
         const marketValueCurrency = singleCurrency ? exchangeCurrency : baseCurrency
 
-        const dpOpt = _.map(_.range(4), (i) => {
-            return new XcOption(`${i}`, `${i}`)
-        });
-
         const colorStripeProvider = (model: Object, rowNum: number): string => {
             const rtn = chartColors.get(`${model["exchangeCode"]}.${model["instrumentCode"]}`)
             return rtn != null ? rtn : ""
@@ -107,7 +103,9 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                     <XcGrid.Row>
                         <XcGrid.Col>
                             <XcForm name={formName}>
-                                <XcSelect inline name="exchange" onChange={this.handleSelectExchange} options={exchangeOpt} value={exchangeCode} />
+                                <XcFormGroup>
+                                    <XcSelect inline name="exchange" onChange={this.handleSelectExchange} options={exchangeOpt} value={exchangeCode} />
+                                </XcFormGroup>
                             </XcForm>
                         </XcGrid.Col>
                         <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}>
@@ -153,23 +151,31 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
     }
 
     handleSort = (sortBy: string, sortDirection : SortDirection) => {
-        // const { pageNum, pageSize } = this.state
+        const { sessionContext } = this.props
         const currentSortBy = this.state.sortBy
         const currentSortDirection = this.state.sortDirection
-        let { securityPositionSummary } = this.state
+        const { securityPositionSummary, instrumentMap } = this.state
+ 
         if (currentSortBy == sortBy) {
-            // reverse ony
+            // reverse only
             this.setState({ sortDirection: sortDirection, securityPositionSummary: _.reverse(securityPositionSummary) })
         }
         else {
-            securityPositionSummary = _.sortBy(securityPositionSummary, [sortBy])
+            const language = sessionContext.languageContext.language
+
+            // Sort by marketValuePercent should be same as marketValueBaseCurrency, so no need to calculate percentage
+            let data = _.sortBy(_.map(securityPositionSummary, 
+                e => Object.assign({instrumentName: instrumentMap[e.exchangeCode][e.instrumentCode].getDescription(language), 
+                    marketValuePercent: e.marketValueBaseCurrency }, e)), [sortBy])
+    
             if (sortDirection == SortDirection.Descending) {
-                securityPositionSummary = _.reverse(securityPositionSummary)
-            }
-            this.setState({ sortBy: sortBy, sortDirection: sortDirection, securityPositionSummary: securityPositionSummary })
+                data = _.reverse(data)
+            }            
+            this.setState({ sortBy: sortBy, sortDirection: sortDirection, securityPositionSummary: _.map(data, d => _.find(securityPositionSummary, o => o.instrumentCode == d.instrumentCode)) })
         }
     }
 
+     
     handleSelectExchange = (event: SyntheticEvent<>, target: any) => {
         event.preventDefault()
         this.setState({ exchangeCode: target.value })

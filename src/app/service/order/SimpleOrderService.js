@@ -1,27 +1,21 @@
 // @flow
 import _ from 'lodash';
 import { SERVER_API_URL } from 'app/constant/ApplicationConstant';
-import { SimpleOrder } from 'app/model/order/'
+import { OrderEnquirySearchResult, SimpleOrder } from 'app/model/order/'
 import { httpGet, httpPost } from 'shared/util/networkUtil';
+import { formatDate } from 'shared/util/dateUtil'
 
-const contextPath = `${SERVER_API_URL}/sapi/simple-orders`
+const contextPath = `${SERVER_API_URL}/papi/simple-orders`
 
 class SimplOrderService {
 
-    enquireOrder(tradingAccountCode: string, exchangeCode: string, startTradeDate: ?Date, endTradeDate: ?Date): Promise<[SimpleOrder]> {
-        let url = `${contextPath}/trading-accounts/${tradingAccountCode}/exchanges/${exchangeCode}?`
-        if (startTradeDate != null) {
-            url = url + `startTradeDate=${startTradeDate.toString()}&`
-        }
-        if (endTradeDate != null) {
-            url = url + `endTradeDate=${endTradeDate.toString()}&`
-        }
-        url = url.substr(0, url.length - 1)
-        console.log(url)
-        return httpGet(url, {}).then(
+    enquireOrder(tradingAccountCode: string, exchangeCode: string, startTradeDate: ?Date, endTradeDate: ?Date): Promise<OrderEnquirySearchResult> {
+        let url = `${contextPath}/trading-accounts/${tradingAccountCode}/exchanges/${exchangeCode}`
+        const paramDate = { startTradeDate: startTradeDate != null ? formatDate(startTradeDate) : null, endTradeDate: endTradeDate != null ? formatDate(endTradeDate) : null }
+        return httpGet(url, paramDate).then(
             msg => {
                 const json = msg.json
-                return _.map(json, d => SimpleOrder.fromJson(d))
+                return OrderEnquirySearchResult.fromJson(json)
             },
             error => {
                 console.error(error)
@@ -32,4 +26,4 @@ class SimplOrderService {
 
 }
 
-export const orderService = new SimplOrderService();
+export const simpleOrderService = new SimplOrderService();

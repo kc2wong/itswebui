@@ -71,7 +71,7 @@ export class XcTable extends React.Component<Props, State> {
         ));
 
         return (
-            <Table sortable columns={NUM_OF_COL} celled compact selectable={parseBool(selectable, true)} {...s} >
+            <Table celled columns={totalWidth} compact fixed selectable={parseBool(selectable, true)} sortable {...s} >
                 <Table.Header>
                     <Table.Row>
                         {_.map(colspec, (cs) => (

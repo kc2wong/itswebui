@@ -3,21 +3,23 @@ import moment from 'moment-es6';
 import { nvl } from './lang';
 import { ErrorCode } from '../constant/ErrorCode';
 import { getAuthenticationToken } from './sessionUtil';
+import { DATE_FORMAT, DATETIME_FORMAT, formatDate, formatDateTime } from 'shared/util/dateUtil'
+import { removeNull } from 'shared/util/lang'
 
 export const AUTHENTICATION_TOKEN_HEADER = 'authenticationToken'
 
 const DEFAULT_TIMEOUT = 5000;
 
-const dateFormat = /^\d{4}\/\d{2}\/\d{2}$/
-const dateTimeFormat = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/
+const dateFormatRegularExp = /^\d{4}-\d{2}-\d{2}$/
+const dateTimeFormatRegularExp = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/
 
 function dateHandler(key: string, value: any): any {
     if (typeof value === "string" && key != 'syncstr') {
-        if (dateTimeFormat.test(value)) {
-            return moment(value, "YYYY/MM/DD HH:mm:ss").toDate()
+        if (dateTimeFormatRegularExp.test(value)) {
+            return moment(value, DATETIME_FORMAT).toDate()
         }
-        else if (dateFormat.test(value)) {
-            return moment(value, "YYYY/MM/DD").toDate()
+        else if (dateFormatRegularExp.test(value)) {
+            return moment(value, DATE_FORMAT).toDate()
         }
     }
     return value;
@@ -25,7 +27,7 @@ function dateHandler(key: string, value: any): any {
 
 function getQueryString(params: Object, extraQueryParam: ?string) {
     const esc = encodeURIComponent;
-    const base = Object.keys(params)
+    const base = Object.keys(removeNull(params))
         .map(k => esc(k) + '=' + esc(params[k]))
         .join('&');
 

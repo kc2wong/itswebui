@@ -48,3 +48,8 @@ export function formatNumber(value: number | string, format: string): string {
 export function roundNumber(value: number, decimalPlace: number): number {
     return Number.parseFloat(value.toFixed(decimalPlace))
 }
+
+export function removeNull(obj: Object): Object {
+    Object.keys(obj).forEach((k) => (!obj[k] && obj[k] !== undefined) && delete obj[k]);
+    return obj;
+}

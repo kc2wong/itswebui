@@ -30,7 +30,6 @@ export class ExchangeBoardPriceSpread implements BaseModel {
         const rtn = ExchangeBoardPriceSpread.newInstance()
         Object.assign(rtn, json);
         rtn.exchangeBoardPriceSpreadDetail = _.sortBy(_.map(json.exchangeBoardPriceSpreadDetail, d => ExchangeBoardPriceSpreadDetail.fromJson(d)), ['priceFrom'])
-        console.log(rtn)
         return rtn
     }
 

@@ -112,25 +112,16 @@
         "tradingAccount": "Trading Account"
     },
     "orderEnquiryForm": {
-        "closingPrice": "Ref. Price", 
+        "buySell": "Buy / Sell",
         "exchange": "Exchange",
+        "executedQuantity": "Executed Quantity",
         "instrumentCode": "Stock Code", 
         "instrumentName": "Stock Name", 
-        "marketValue": "Market Value",
-        "marketValuePercent": "Percentage",
-        "noHolding": "No holding found",
+        "orderNumber": "Order Number",
+        "orderStatus": "Order Status",
         "outstandingOrderOnly": "Outstanding Order Only",
-        "portfolioDistribution": "Portfolio Distribution :",
-        "quoteButton": "Go",
-        "quoteHint": "Enquire market data",
-        "quoteTitle": "Quote Express",
-        "sellableQuantity": "Sellable Quantity", 
-        "sellOutHint": "Sell all current shares",
-        "sellOutTitle": "Sell Out",
-        "topUpHint": "Buy additional shares",
-        "topUpTitle": "Top Up",
-        "totalQuantity": "Total Quantity", 
-        "totalMarketValue": "Total"
+        "price": "Price",
+        "quantity": "Quantity"
     },
     "portfolioEnquiryForm": {
         "closingPrice": "Ref. Price", 
