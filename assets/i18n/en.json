@@ -9,6 +9,17 @@
             "I": "Instrument",
             "C": "Client"
         },
+        "externalOrderStatus" : {
+            "PDN": "Processing",
+            "NEW": "Processing",
+            "WA": "Processing",
+            "RD": "Processing",
+            "Q": "Processing",
+            "PEX": "Partial Executed",
+            "FEX": "Fullly Executed",
+            "CAN": "Cancelled",
+            "REJ": "Rejected"
+        },
         "stmActionType" : {
             "I": "Information",
             "R": "Rejection"
@@ -112,7 +123,13 @@
         "tradingAccount": "Trading Account"
     },
     "orderEnquiryForm": {
+        "amendHint": "Amend quantity or price",
+        "amendTitle": "Amend",
         "buySell": "Buy / Sell",
+        "cancelHint": "Cancel order",
+        "cancelTitle": "Cancel",
+        "detailHint": "View order detail",
+        "detailTitle": "Detail",
         "exchange": "Exchange",
         "executedQuantity": "Executed Quantity",
         "instrumentCode": "Stock Code", 

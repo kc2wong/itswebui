@@ -64,7 +64,11 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         const baseCurrency = cacheContext.getCurrency(BASE_CURRENCY)
 
         const exchangeOrder = _.filter(orders, o => o.exchangeCode == exchangeCode && (!outstandingOrder || OUTSTANDING_ORDER_STATUS.has(o.getOrderStatus())) )
-        const data = _.map(exchangeOrder, e => Object.assign({instrumentName: instrumentMap.get(e.orderNumber).getDescription(language)}, e))
+        // const data = _.map(exchangeOrder, e => Object.assign({instrumentName: instrumentMap.get(e.orderNumber).getDescription(language)}, e))
+        const data = _.map(exchangeOrder, (e) => {
+            const instrument: Instrument = instrumentMap.get(e.orderNumber)
+            return Object.assign({instrumentName: instrument != null ? instrument.getDescription(language) : ""}, e, {orderStatus: xlate(`enum.externalOrderStatus.${e.orderStatus}`)})
+        })
 
         const numberFormat = createNumberFormat(true, exchangeCurrency != null ? exchangeCurrency.decimalPoint : 2)
         const searchResultColSpec = this.createResultColSpec(cacheContext, language, exchange, instrumentMap, sortBy, sortDirection)
@@ -72,17 +76,15 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         return (
             <div style={{ height: "100vh" }}>
                 <br />
-                <XcGrid evenly>
+                <XcGrid>
                     <XcGrid.Row>
-                        <XcGrid.Col>
-                            <XcForm name={formName}>
-                                <XcFormGroup>
-                                    <XcSelect inline name="exchange" onChange={this.handleSelectExchange} options={exchangeOpt} value={exchangeCode} />
-                                    <XcCheckbox inline name="outstandingOrderOnly" onChange={this.handleToggleOutstandOrder} style={XcCheckbox.Style.Toggle} value={outstandingOrder} />
-                                </XcFormGroup>
-                            </XcForm>
+                        <XcGrid.Col width={4}>
+                            <XcSelect inline label={xlate(`${formName}.exchange`)} onChange={this.handleSelectExchange} options={exchangeOpt} value={exchangeCode} />
                         </XcGrid.Col>
-                        <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}>
+                        <XcGrid.Col width={4}>
+                            <XcCheckbox inline label={xlate(`${formName}.outstandingOrderOnly`)} onChange={this.handleToggleOutstandOrder} style={XcCheckbox.Style.Toggle} value={outstandingOrder} />
+                        </XcGrid.Col>
+                        <XcGrid.Col width={8} horizontalAlign={XcGrid.HorizontalAlign.Right}>
                             <div>{lastUpdate != null ? xlate("general.lastUpdate", [formatDateTime(lastUpdate)]) : ""}&nbsp;&nbsp;<XcButton icon={{ name: "refresh" }} label="#general.refresh" onClick={this.search} primary /></div>
                         </XcGrid.Col>
                     </XcGrid.Row>
@@ -123,7 +125,10 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         }
         else {
             const language = sessionContext.languageContext.language
-            let data = _.sortBy(_.map(orders, e => Object.assign({instrumentName: instrumentMap.get(e.orderNumber).getDescription(language)}, e)), [sortBy])
+            let data = _.sortBy(_.map(orders, (e) => {
+                let instrument: Instrument = instrumentMap.get(e.orderNumber)
+                return Object.assign({instrumentName: instrument != null ? instrument.getDescription(language) : ""}, e, {orderStatus: xlate(`enum.externalOrderStatus.${e.orderStatus}`)})
+            }), [sortBy, "orderNumber"])
             if (sortDirection == SortDirection.Descending) {
                 data = _.reverse(data)
             }            
@@ -153,7 +158,6 @@ class OrderEnquiryForm extends Component<IntProps, State> {
             if (promise) {
                 promise.then(
                     orderEnquirySearchResult => {
-                        console.log(orderEnquirySearchResult)
                         let orders = orderEnquirySearchResult.simpleOrders
                         const instruments = orderEnquirySearchResult.instruments
                         const orderInstrumentIndex = orderEnquirySearchResult.orderInstrumentIndex
@@ -188,19 +192,19 @@ class OrderEnquiryForm extends Component<IntProps, State> {
     }
 
     portfolioActionSheet = (model: Object) => (
-        <XcGrid evenly divider>
+        <XcGrid evenly divider style={{width: "40em"}}>
             <XcGrid.Row>
-                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.topUpTitle`)}</h4>
-                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.topUpHint`)}</p>
-                    <XcButton label={xlate(`${formName}.topUpTitle`)} primary />
+                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.detailTitle`)}</h4>
+                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.detailHint`)}</p>
+                    <XcButton label={xlate(`${formName}.detailTitle`)} primary />
                 </XcGrid.Col>
-                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.sellOutTitle`)}</h4>
-                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.sellOutHint`)}</p>
-                    <XcButton label={xlate(`${formName}.sellOutTitle`)} primary />
+                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.amendTitle`)}</h4>
+                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.amendHint`)}</p>
+                    <XcButton label={xlate(`${formName}.amendTitle`)} primary />
                 </XcGrid.Col>
-                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.quoteTitle`)}</h4>
-                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.quoteHint`)}</p>
-                    <XcButton label={xlate(`${formName}.quoteButton`)} primary />
+                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.cancelTitle`)}</h4>
+                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.cancelHint`)}</p>
+                    <XcButton label={xlate(`${formName}.cancelTitle`)} primary />
                 </XcGrid.Col>
             </XcGrid.Row>
         </XcGrid>
@@ -216,7 +220,8 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         }
         const priceFormatter = (model: Object, fieldName: string) => {
             // Do not show currency code if equals to exchange currency
-            const orderCurrency = instrumentMap.get(model["orderNumber"]).tradingCurrencyCode
+            const instrument = instrumentMap.get(model["orderNumber"])
+            const orderCurrency = instrument != null ? instrument.tradingCurrencyCode : exchange["baseCurrencyCode"]    // instrument should never be null
             if (orderCurrency == exchange["baseCurrencyCode"]) {
                 return exchangeCurrency != null ? `${formatNumber(model[fieldName], createNumberFormat(true, exchangeCurrency.decimalPoint))}` : model[fieldName]
             }

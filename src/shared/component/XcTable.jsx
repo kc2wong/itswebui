@@ -2,7 +2,7 @@
 import _ from 'lodash';
 import * as React from 'react';
 import { Enum } from 'enumify';
-import { Popup, Table } from 'semantic-ui-react';
+import { Popup, Icon, Table } from 'semantic-ui-react';
 
 import { DataType, SortDirection } from 'shared/model';
 import { parseBool, xlate } from 'shared/util/lang';
@@ -50,6 +50,7 @@ type Props = {
 }
 
 type State = {
+    mouseOverIndex: number,
     selectedIndex: number
 }
 
@@ -64,14 +65,14 @@ export class XcTable extends React.Component<Props, State> {
 
     render() {
         const { colorStripeProvider, colspec, data, highlightedIndex, selectable, size, summary, ...props } = this.props;
-        const { selectedIndex } = this.state;
+        const { mouseOverIndex, selectedIndex } = this.state;
         const s = size ? { size: size.value } : {}
         const totalWidth = _.sumBy(colspec, (cs) => (
             cs.width
         ));
 
         return (
-            <Table celled columns={totalWidth} compact fixed selectable={parseBool(selectable, true)} sortable {...s} >
+            <Table celled onMouseLeave={this.handleMouseLeave} columns={totalWidth} compact fixed selectable={parseBool(selectable, true)} sortable {...s} >
                 <Table.Header>
                     <Table.Row>
                         {_.map(colspec, (cs) => (
@@ -84,7 +85,7 @@ export class XcTable extends React.Component<Props, State> {
                     {_.map(data, (row, rowIdx) => (
                         <Table.Row active={selectedIndex === rowIdx} warning={highlightedIndex === rowIdx} onClick={this.handleClick(rowIdx)} key={rowIdx}>
                             {_.map(colspec, (cs, colIdx) => (
-                                this.columnContent(row, cs, rowIdx, colIdx, colorStripeProvider)
+                                this.columnContent(row, cs, mouseOverIndex, rowIdx, colIdx, colorStripeProvider)
                             ))}
                         </Table.Row>
                     ))}
@@ -100,6 +101,14 @@ export class XcTable extends React.Component<Props, State> {
                 )}
             </Table>
         )
+    }
+
+    handleMouseOver = (row: number) => (event: SyntheticMouseEvent<>) => {
+        this.setState({ mouseOverIndex: row })
+    }
+
+    handleMouseLeave = (event: SyntheticMouseEvent<>) => {
+        this.setState({ mouseOverIndex: -1 })
     }
 
     handleClick = (row: number) => (event: SyntheticMouseEvent<>) => {
@@ -123,14 +132,13 @@ export class XcTable extends React.Component<Props, State> {
                 // same column, reverse direction
                 nextDirection = SortDirection.Ascending == sortField.sortDirection ? SortDirection.Descending : SortDirection.Ascending
             }
-            console.log(sortField)
-            console.log(nextDirection)
             onSort(nextSortBy, nextDirection)
         }
     }
 
     defaultState(props: Props): State {
         return {
+            mouseOverIndex: -1,         
             selectedIndex: props.selectedIndex != null ? props.selectedIndex : -1
         }
     }
@@ -139,10 +147,14 @@ export class XcTable extends React.Component<Props, State> {
         return sortDirection == SortDirection.Descending ? "descending" : "ascending"
     }
 
-    columnContent(row: Object, cs: XcTableColSpec, rowIdx: number, colIdx: number, colorStripeProvider: ?(Object, number) => string): Table.Cell {
-        const colContent = colIdx == 0 && colorStripeProvider != null ? <div style={{ borderLeft: `6px solid ${colorStripeProvider(row, rowIdx)}` }}>&nbsp;&nbsp;{cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name]}</div> : (cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name])
-        const popup = cs.actionSheetProvider != null ? <Popup position="right center" trigger={<div>{colContent}</div>} flowing hoverable>{cs.actionSheetProvider(row, cs.name)}</Popup> : <React.Fragment>{colContent}</React.Fragment>
-        const cell = <Table.Cell key={colIdx} width={cs.width} {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}}>{popup}</Table.Cell>        
+    columnContent(row: Object, cs: XcTableColSpec, mouseOverIdx: number, rowIdx: number, colIdx: number, colorStripeProvider: ?(Object, number) => string): Table.Cell {
+        const icon = (cs.actionSheetProvider != null && mouseOverIdx == rowIdx) ? <Popup flowing hoverable position="right center" trigger={<Icon name="ellipsis vertical" style={{ float: "right" }} />} >{cs.actionSheetProvider(row, cs.name)}</Popup> : null
+        const content = cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name]
+        const cell = (colIdx == 0 && colorStripeProvider != null) ?
+            <div style={{ borderLeft: `6px solid ${colorStripeProvider(row, rowIdx)}` }}>&nbsp;&nbsp;{content}{icon}</div>
+            :
+            (icon != null ? <div>{content}{icon}</div> : content)
+        const cell = <Table.Cell key={colIdx} onMouseOver={this.handleMouseOver(rowIdx)} width={cs.width} {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}}>{cell}</Table.Cell>
         return cell
     }
 }

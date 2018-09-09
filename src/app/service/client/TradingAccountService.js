@@ -10,7 +10,7 @@ const contextPath = `${SERVER_API_URL}/papi/trading-accounts`
 class TradingAccountService {
 
     getAccountPortfolio(tradingAccountCode: string, baseCurrencyCode: string): Promise<TradingAccountPortfolioBundle> {
-        let url = `${eApiContextPath}/${tradingAccountCode}/currencies/${baseCurrencyCode}/portfolios`
+        let url = `${contextPath}/${tradingAccountCode}/currencies/${baseCurrencyCode}/portfolios`
         return httpGet(url, {}).then(
             msg => {
                 const json = msg.json

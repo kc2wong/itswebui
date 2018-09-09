@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, { Component } from 'react';
-import { Form } from 'semantic-ui-react';
+import { Form, Select } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import { constructLabel, createColumnClass, getRequired, getStringValue } from './XcFormUtil';
 import { IFieldConstraint, XcSelectConstraint } from './validation/XcFieldConstraint';
@@ -37,9 +37,22 @@ export class XcSelect extends Component<Props, State> {
         const { inline, label, name, options, numeric, onChange, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const className = parseBool(readonly, false) ? { className: "xc-select-readonly" } : {}
+        console.log(label)
         return (
             <FormContext.Consumer>
                 {context =>
+                    context.name == "" ?
+                    <span>{constructLabel(context.name, name, label)}&nbsp;&nbsp;&nbsp;&nbsp;
+                        <Select
+                            onChange={this.handleChange(context.updateModel)}
+                            options={this.createOptions(options, readonly, getStringValue(value, context.model, name))}
+                            required={getRequired(validation)}
+                            value={getStringValue(value, context.model, name)}
+                            {...className}
+                            {...ph}
+                            />
+                    </span>
+                    :
                     <Form.Select
                         inline={parseBool(inline, false)}
                         label={constructLabel(context.name, name, label)}
@@ -51,7 +64,6 @@ export class XcSelect extends Component<Props, State> {
                         {...ph}
                     >
                     </Form.Select>
-
                 }
             </FormContext.Consumer>
         )

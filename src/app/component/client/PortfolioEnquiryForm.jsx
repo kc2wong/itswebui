@@ -99,20 +99,16 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
         return (
             <div style={{ height: "100vh" }}>
                 <br />
-                <XcGrid evenly>
+                <XcGrid>
                     <XcGrid.Row>
-                        <XcGrid.Col>
-                            <XcForm name={formName}>
-                                <XcFormGroup>
-                                    <XcSelect inline name="exchange" onChange={this.handleSelectExchange} options={exchangeOpt} value={exchangeCode} />
-                                </XcFormGroup>
-                            </XcForm>
+                        <XcGrid.Col width={8}>
+                            <XcSelect inline label={`#${formName}.exchange`} onChange={this.handleSelectExchange} options={exchangeOpt} value={exchangeCode} />
                         </XcGrid.Col>
-                        <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}>
+                        <XcGrid.Col width={8} horizontalAlign={XcGrid.HorizontalAlign.Right}>
                             <div>{lastUpdate != null ? xlate("general.lastUpdate", [formatDateTime(lastUpdate)]) : ""}&nbsp;&nbsp;<XcButton icon={{ name: "refresh" }} label="#general.refresh" onClick={this.search} primary /></div>
                         </XcGrid.Col>
                     </XcGrid.Row>
-                </XcGrid>
+                </XcGrid>                
                 <br />
                 <XcPanel>
                     <XcPanel.Body>
