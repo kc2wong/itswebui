@@ -37,7 +37,6 @@ export class XcSelect extends Component<Props, State> {
         const { inline, label, name, options, numeric, onChange, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const className = parseBool(readonly, false) ? { className: "xc-select-readonly" } : {}
-        console.log(label)
         return (
             <FormContext.Consumer>
                 {context =>

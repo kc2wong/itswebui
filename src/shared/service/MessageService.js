@@ -8,4 +8,7 @@ export type MessageService = {
     dismissDialog: () => void,
     showDialog: (dialog: XcDialog) => void,
     isDialogShowing: () => bool,
+    showInfoMessage: (message: string) => void,
+    showWarningMessage: (message: string) => void,
+    showErrorMessage: (message: string) => void
 }

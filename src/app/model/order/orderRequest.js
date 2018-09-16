@@ -6,7 +6,7 @@ import { Currency } from '../staticdata/currency'
 import { ExchangeBoardPriceSpread } from '../staticdata/exchangeBoardPriceSpread'
 import { CHANNEL_CODE } from 'app/constant/ApplicationConstant'
 
-export class OrderRequest {
+export class OrderInputRequest {
     buySell: string;
     operationUnitCode: string;
     tradingAccountCode: string;
@@ -37,14 +37,41 @@ export class OrderRequest {
         return rtn        
     }
     
-    static fromJson(json: Object): OrderRequest {
+    static fromJson(json: Object): OrderInputRequest {
         const rtn = this.newInstance()
         Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
         return rtn
     }
 
-    static newInstance(): OrderRequest {
-        return new OrderRequest("","", "", "", "", CHANNEL_CODE, "E", LotNature.Board.value, 0, 0);
+    static newInstance(): OrderInputRequest {
+        return new OrderInputRequest("", "", "", "", "", CHANNEL_CODE, "E", LotNature.Board.value, 0, 0);
+    }
+
+}
+
+export class OrderCancelRequest {
+    orderNumber: string;
+    channelCode: string;
+
+    constructor(orderNumber: string, channelCode: ?string) {
+        this.orderNumber = orderNumber
+        this.channelCode = channelCode ? channelCode : CHANNEL_CODE
+    }
+
+    toJson(): Object {
+        const rtn = {};
+        Object.assign(rtn, this)
+        return rtn        
+    }
+    
+    static fromJson(json: Object): OrderCancelRequest {
+        const rtn = this.newInstance()
+        Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
+        return rtn
+    }
+
+    static newInstance(): OrderCancelRequest {
+        return new OrderCancelRequest("", CHANNEL_CODE);
     }
 
 }

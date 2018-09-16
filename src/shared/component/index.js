@@ -3,6 +3,7 @@ export * from './XcButton';
 export * from './XcButtonGroup';
 export * from './XcCard';
 export * from './XcCheckbox';
+export * from './XcContextMenu';
 export * from './XcDialog';
 export * from './XcDivider';
 export * from './XcForm';

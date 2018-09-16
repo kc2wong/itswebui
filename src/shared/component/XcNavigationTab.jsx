@@ -62,7 +62,7 @@ export class XcNavigationTab extends React.Component<Props, State> {
                 panes={tabPanes} 
                 renderActiveOnly={false} 
                 {...props} />
-        )
+        ) 
     }
 
     handleTabChange = (event: SyntheticEvent<>, data: Object) => {

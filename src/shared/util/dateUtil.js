@@ -7,11 +7,16 @@ export const DATE_FORMAT = 'YYYY-MM-DD';
 export const DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
 export function currentDate(): Date {
-    const date = new Date()
+    const date = currentDateTime()
     date.setHours(0)
     date.setMinutes(0)
     date.setSeconds(0)
     date.setMilliseconds(0)
+    return date
+}
+
+export function currentDateTime(): Date {
+    const date = new Date()
     return date
 }
 

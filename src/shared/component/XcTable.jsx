@@ -6,13 +6,14 @@ import { Popup, Icon, Table } from 'semantic-ui-react';
 
 import { DataType, SortDirection } from 'shared/model';
 import { parseBool, xlate } from 'shared/util/lang';
+import { XcContextMenu } from './XcContextMenu'
 import { XcGrid } from './XcGrid'
 
 class TableTextAlign extends Enum {}
 TableTextAlign.initEnum({ Left: { value: 'left' }, Center: { value: 'center' }, Right: { value: 'right' } });
 
 export class XcTableColSpec {
-    actionSheetProvider: ?(Object, string) => XcGrid;
+    actionSheetProvider: ?(Object, string) => XcContextMenu;
     dataType: DataType;
     formatter: ?(Object, string) => string;
     label: string;
@@ -72,7 +73,7 @@ export class XcTable extends React.Component<Props, State> {
         ));
 
         return (
-            <Table celled onMouseLeave={this.handleMouseLeave} columns={totalWidth} compact fixed selectable={parseBool(selectable, true)} sortable {...s} >
+            <Table celled columns={totalWidth} compact fixed selectable={parseBool(selectable, true)} sortable {...s} >
                 <Table.Header>
                     <Table.Row>
                         {_.map(colspec, (cs) => (
@@ -83,7 +84,7 @@ export class XcTable extends React.Component<Props, State> {
                 </Table.Header>            
                 <Table.Body>
                     {_.map(data, (row, rowIdx) => (
-                        <Table.Row active={selectedIndex === rowIdx} warning={highlightedIndex === rowIdx} onClick={this.handleClick(rowIdx)} key={rowIdx}>
+                        <Table.Row active={selectedIndex === rowIdx} warning={highlightedIndex === rowIdx} onClick={this.handleClick(rowIdx)} onMouseEnter={this.handleMouseEnter(rowIdx)} key={rowIdx}>
                             {_.map(colspec, (cs, colIdx) => (
                                 this.columnContent(row, cs, mouseOverIndex, rowIdx, colIdx, colorStripeProvider)
                             ))}
@@ -103,12 +104,8 @@ export class XcTable extends React.Component<Props, State> {
         )
     }
 
-    handleMouseOver = (row: number) => (event: SyntheticMouseEvent<>) => {
+    handleMouseEnter = (row: number) => (event: SyntheticMouseEvent<>) => {
         this.setState({ mouseOverIndex: row })
-    }
-
-    handleMouseLeave = (event: SyntheticMouseEvent<>) => {
-        this.setState({ mouseOverIndex: -1 })
     }
 
     handleClick = (row: number) => (event: SyntheticMouseEvent<>) => {
@@ -138,7 +135,7 @@ export class XcTable extends React.Component<Props, State> {
 
     defaultState(props: Props): State {
         return {
-            mouseOverIndex: -1,         
+            mouseOverIndex: -1,
             selectedIndex: props.selectedIndex != null ? props.selectedIndex : -1
         }
     }
@@ -147,14 +144,26 @@ export class XcTable extends React.Component<Props, State> {
         return sortDirection == SortDirection.Descending ? "descending" : "ascending"
     }
 
+    createContextMenu(row: Object, mouseOverIdx: number, cs: XcTableColSpec) {
+        let contextMenu = cs.actionSheetProvider != null ? cs.actionSheetProvider(row, cs.name) : null
+        // update mouseOverIndex to -1 in order to trigger a render and close the context menu
+        if (contextMenu != null) {
+            contextMenu = (<XcContextMenu {... contextMenu.props}>
+                {React.Children.map(contextMenu.props.children, (e, idx) => React.cloneElement(e, {key: idx, buttonAction: () => this.setState({mouseOverIndex: -1}, () => {e.props.buttonAction()} ) }))}
+            </XcContextMenu>)
+        }
+        return contextMenu
+    }
+    
     columnContent(row: Object, cs: XcTableColSpec, mouseOverIdx: number, rowIdx: number, colIdx: number, colorStripeProvider: ?(Object, number) => string): Table.Cell {
-        const icon = (cs.actionSheetProvider != null && mouseOverIdx == rowIdx) ? <Popup flowing hoverable position="right center" trigger={<Icon name="ellipsis vertical" style={{ float: "right" }} />} >{cs.actionSheetProvider(row, cs.name)}</Popup> : null
+        const icon = (cs.actionSheetProvider != null && mouseOverIdx == rowIdx) ? 
+            <Popup flowing hoverable on="click" position="bottom left" trigger={<Icon name="ellipsis vertical" style={{ float: "right" }} />} >{this.createContextMenu(row, mouseOverIdx, cs)}</Popup> 
+            : null
         const content = cs.formatter != null ? cs.formatter(row, cs.name) : row[cs.name]
         const cell = (colIdx == 0 && colorStripeProvider != null) ?
             <div style={{ borderLeft: `6px solid ${colorStripeProvider(row, rowIdx)}` }}>&nbsp;&nbsp;{content}{icon}</div>
             :
             (icon != null ? <div>{content}{icon}</div> : content)
-        const cell = <Table.Cell key={colIdx} onMouseOver={this.handleMouseOver(rowIdx)} width={cs.width} {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}}>{cell}</Table.Cell>
-        return cell
+        return <Table.Cell key={colIdx} width={cs.width} {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}}>{cell}</Table.Cell>
     }
 }

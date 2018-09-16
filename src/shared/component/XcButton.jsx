@@ -16,7 +16,7 @@ ButtonVisibility.initEnum(['Disable', 'Hidden', 'Visible']);
 type Props = {
     active?: bool,
     fluid?: bool,
-    icon: ?XcIconProps,    
+    icon?: XcIconProps,    
     label: string,
     name: string,
     onClick?: () => void,

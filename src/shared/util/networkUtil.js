@@ -79,6 +79,10 @@ export function httpGet(url: string, params: Object, timeout?: number, extraQuer
     return request(url, { headers: authHeaderForGet(), method: 'GET', data: params }, nvl(timeout, DEFAULT_TIMEOUT), extraQueryParam, rawResponse);
 }
 
+export function httpPatch(url: string, headers: ?Object, data: Object, timeout?: number, rawResponse: ?bool = false) {
+    return request(url, { headers: headers ? headers : authHeaderForPost(), method: 'PATCH', data: data }, nvl(timeout, DEFAULT_TIMEOUT), null, rawResponse)
+}
+
 export function httpPost(url: string, headers: ?Object, data: Object, timeout?: number, rawResponse: ?bool = false) {
     return request(url, { headers: headers ? headers : authHeaderForPost(), method: 'POST', data: data }, nvl(timeout, DEFAULT_TIMEOUT), null, rawResponse)
 }

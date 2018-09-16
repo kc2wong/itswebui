@@ -8,7 +8,7 @@ import { SecurityPositionSummary, TradingAccountPortfolio, TradingAccountPortfol
 import { ApplicationContext, type AccountContextType, type CacheContextType, type LanguageContextType, SessionContext, type SessionContextType } from 'app/context'
 import { tradingAccountService } from 'app/service';
 
-import { XaPieChart, XcButton, XcButtonGroup, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
+import { XaPieChart, XcButton, XcButtonGroup, XcContextMenu, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
 import { XcOption, XcPagination, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { BaseModel, DataType, Language, Pageable, PageResult, SortDirection } from 'shared/model';
 import { MessageService } from 'shared/service'
@@ -226,22 +226,11 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
     }
 
     portfolioActionSheet = (model: Object) => (
-        <XcGrid evenly divider>
-            <XcGrid.Row>
-                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.topUpTitle`)}</h4>
-                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.topUpHint`)}</p>
-                    <XcButton label={xlate(`${formName}.topUpTitle`)} primary />
-                </XcGrid.Col>
-                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.sellOutTitle`)}</h4>
-                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.sellOutHint`)}</p>
-                    <XcButton label={xlate(`${formName}.sellOutTitle`)} primary />
-                </XcGrid.Col>
-                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Center}><h4>{xlate(`${formName}.quoteTitle`)}</h4>
-                    <p style={{whiteSpace : "nowrap"}}>{xlate(`${formName}.quoteHint`)}</p>
-                    <XcButton label={xlate(`${formName}.quoteButton`)} primary />
-                </XcGrid.Col>
-            </XcGrid.Row>
-        </XcGrid>
+        <XcContextMenu>
+            <XcContextMenu.Item title={xlate(`${formName}.topUpTitle`)} description={xlate(`${formName}.topUpHint`)} buttonLabel={xlate(`${formName}.topUpTitle`)} buttonAction={() =>{console.log('hihi')} }/>
+            <XcContextMenu.Item title={xlate(`${formName}.sellOutTitle`)} description={xlate(`${formName}.sellOutHint`)} buttonLabel={xlate(`${formName}.sellOutTitle`)} buttonAction={() =>{} }/>
+            <XcContextMenu.Item title={xlate(`${formName}.quoteTitle`)} description={xlate(`${formName}.quoteHint`)} buttonLabel={xlate(`${formName}.quoteButton`)} buttonAction={() =>{} }/>
+        </XcContextMenu>
     )
         
     createResultColSpec = (cacheContext: CacheContextType, language: Language, exchange: Exchange, sortBy: string, sortDirection: SortDirection): XcTableColSpec[] => {

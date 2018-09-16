@@ -55,8 +55,17 @@ class App extends React.Component<Props, State> {
             isDialogShowing: () => {
                 const { dialog } = this.state
                 return dialog != null
+            },
+            showInfoMessage: (message: string) => {
+                console.log(message)
+            },
+            showWarningMessage: (message: string) => {
+                console.log(message)
+            },
+            showErrorMessage: (message: string) => {
+                console.log(message)
             }
-        }; 
+        }
         
         const applicationDate = new Date()
 

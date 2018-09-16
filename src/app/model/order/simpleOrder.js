@@ -3,6 +3,7 @@ import _ from 'lodash'
 import { BuySell, LotNature, OrderStatus } from '../EnumType'
 import { Instrument } from 'app/model/staticdata/instrument'
 import { CHANNEL_CODE } from 'app/constant/ApplicationConstant'
+import { currentDate, currentDateTime } from 'shared/util/dateUtil';
 
 export class SimpleOrder {
 
@@ -20,16 +21,16 @@ export class SimpleOrder {
     netAmount: number;
     executedAmount: number;
     orderStatus: string;
-    createDateTime: string;
-    createTradeDate: string;
-    updateDateTime: string;
-    updateTradeDate: string;
+    createDateTime: Date;
+    createTradeDate: Date;
+    updateDateTime: Date;
+    updateTradeDate: Date;
     rejectReason: ?string;
 
     constructor(orderNumber: string, buySell: string, tradingAccountCode: string, exchangeCode: string, instrumentCode: string, 
         price: number, quantity: number, executedQuantity: number, chargeAmount: number, commissionAmount: number,
         grossAmount: number, netAmount: number, executedAmount: number, orderStatus: string,
-        createDateTime: string, createTradeDate: string, updateDateTime: string, updateTradeDate: string) {
+        createDateTime: Date, createTradeDate: Date, updateDateTime: Date, updateTradeDate: Date) {
         this.orderNumber = orderNumber
         this.buySell = buySell
         this.tradingAccountCode = tradingAccountCode
@@ -71,7 +72,9 @@ export class SimpleOrder {
     }
 
     static newInstance(): SimpleOrder {
-        return new SimpleOrder("", BuySell.Buy.value,"", "", "", 0, 0, 0, 0, 0, 0, 0, 0, "", "", "", "", "");
+        const today = currentDate()
+        const now = currentDateTime()
+        return new SimpleOrder("", BuySell.Buy.value,"", "", "", 0, 0, 0, 0, 0, 0, 0, 0, "", now, today, now, today);
     }
 
 }
@@ -103,6 +106,99 @@ export class OrderEnquirySearchResult {
 
     static newInstance(): OrderEnquirySearchResult {
         return new OrderEnquirySearchResult([], [], new Map());
+    }
+
+}
+
+export class OrderExecution {
+
+    price: number;
+    quantity: number;
+    sellerBroker: ?string;
+    buyerBroker: ?string;
+    splitIndicator: boolean;
+    voidIndicator: boolean;
+    executeTradeDate: Date;
+    executeDateTime: Date;
+    source: ?string;
+
+    constructor(price: number, quantity: number, sellerBroker: ?string, buyerBroker: ?string, 
+        splitIndicator: boolean, voidIndicator: boolean, 
+        executeTradeDate: Date, executeDateTime: Date, source: ?string) {
+
+        this.price = price
+        this.quantity = quantity
+        this.sellerBroker = sellerBroker
+        this.buyerBroker = buyerBroker
+        this.splitIndicator = splitIndicator
+        this.voidIndicator = voidIndicator
+        this.executeTradeDate = executeTradeDate
+        this.executeDateTime = executeDateTime
+        this.source = source
+    }
+
+    toJson(): Object {
+        const rtn = {};
+        Object.assign(rtn, this);
+        return rtn
+    }
+
+    static fromJson(json: Object): OrderExecution {
+        const rtn = this.newInstance()
+        Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
+        return rtn
+    }
+
+    static newInstance(): OrderExecution {
+        return new OrderExecution(0, 0, null, null, false, false, currentDate(), currentDateTime(), null);
+    }
+
+
+}
+
+export class Order extends SimpleOrder {
+
+    orderExecution: OrderExecution[];
+
+    constructor(orderNumber: string, buySell: string, tradingAccountCode: string, exchangeCode: string, instrumentCode: string,
+        price: number, quantity: number, executedQuantity: number, chargeAmount: number, commissionAmount: number,
+        grossAmount: number, netAmount: number, executedAmount: number, orderStatus: string,
+        createDateTime: Date, createTradeDate: Date, updateDateTime: Date, updateTradeDate: Date, orderExecution: OrderExecution[]) {
+
+        super(orderNumber, buySell, tradingAccountCode, exchangeCode, instrumentCode,
+            price, quantity, executedQuantity, chargeAmount, commissionAmount,
+            grossAmount, netAmount, executedAmount, orderStatus,
+            createDateTime, createTradeDate, updateDateTime, updateTradeDate)
+        this.orderExecution = orderExecution
+    }
+
+    toJson(): Object {
+        const rtn = {};
+        Object.assign(rtn, this)
+        return rtn        
+    }
+
+    getBuySell(): BuySell {
+        return _.find(BuySell.enumValues, e => e.value == this.buySell)        
+    }
+
+    getOrderStatus(): OrderStatus {
+        return _.find(OrderStatus.enumValues, e => e.value == this.orderStatus)        
+    }
+
+    static fromJson(json: Object): SimpleOrder {
+        const rtn = this.newInstance()
+        Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
+        if (json.orderExecution != null) {
+            rtn.orderExecution = _.map(json.orderExecution, oe => OrderExecution.fromJson(oe))
+        }
+        return rtn
+    }
+
+    static newInstance(): Order {
+        const today = currentDate()
+        const now = currentDateTime()
+        return new Order("", BuySell.Buy.value,"", "", "", 0, 0, 0, 0, 0, 0, 0, 0, "", now, today, now, today, []);
     }
 
 }

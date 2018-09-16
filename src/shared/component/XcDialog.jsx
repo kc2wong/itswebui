@@ -9,9 +9,6 @@ class DialogType extends Enum { }
 DialogType.initEnum(['Info', 'YesNo', 'YesNoCancel']);
 
 type Props = {
-    // confirmOkAction: ?() => void,
-    // confirmNoAction: ?() => void,
-    // confirmYesAction: ?() => void,
     negativeButton: ?XcButton,
     positiveButton: ?XcButton,
     okButton: ?XcButton,
@@ -57,7 +54,7 @@ export const createConfirmationDialog = (confirmPositiveAction: () => void, conf
         <Icon name='checkmark' />{xlate("general.yes")}
     </Button>
     const negativeButton = <Button negative onClick={confirmNegativeAction} >
-        <Icon name='remove' />{xlate("general.yes")}
+        <Icon name='remove' />{xlate("general.no")}
     </Button>
-    return <XcDialog negativeButton={negativeButton} okButton={null} positiveButton={positiveButton} content={content} title={title} type={DialogType.YesNo} />
+    return <XcDialog negativeButton={negativeButton} okButton={null} positiveButton={positiveButton} content={content} title={title ? title : xlate('general.confirm')} type={DialogType.YesNo} />
 }

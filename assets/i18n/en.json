@@ -16,7 +16,7 @@
             "RD": "Processing",
             "Q": "Processing",
             "PEX": "Partial Executed",
-            "FEX": "Fullly Executed",
+            "FEX": "Full Executed",
             "CAN": "Cancelled",
             "REJ": "Rejected"
         },
@@ -38,6 +38,7 @@
         "back": "Back",
         "cancel": "Cancel",
         "clear": "Clear",
+        "close": "Close",
         "confirm": "Confirm",
         "discardChangeQuestion": "Discard Changes ?",
         "edit": "Edit",        
@@ -106,6 +107,54 @@
     "currencyMaintenanceForm": {
         "title": "Currency Maintenance ({0})"
     },
+    "orderAmendForm": {        
+        "buySell": "Buy / Sell",
+        "charge": "Charge",
+        "commission": "Brokage Fee",
+        "confirmOrderCancellation": "Confirm to cancel order {0} ?",
+        "exchangeCode": "Exchange",
+        "executedQuantity": "Executed Quantity",
+        "grossAmount": "Gross Amount",
+        "instrumentCode": "Stock Code",
+        "lotSizeHint": "Lot Size {0}",
+        "message" : {
+            "instructionSubmitted" : "Instruction to cancel order {0} is submitted"
+        },
+        "netAmount": "Net Amount",
+        "newPrice": "New Price",
+        "newQuantity": "New Quantity",
+        "orderNumber": "Order Number",
+        "orderStatus": "Order Status",
+        "price": "Price",
+        "quantity": "Quantity",
+        "reset": "Reset",
+        "submit": "Submit",
+        "title": "Amend Order",
+        "tradingAccount": "Trading Account"
+    },
+    "orderCancelForm": {        
+        "buySell": "Buy / Sell",
+        "charge": "Charge",
+        "commission": "Brokage Fee",
+        "confirmOrderCancellation": "Confirm to cancel order {0} ?",
+        "exchangeCode": "Exchange",
+        "executedQuantity": "Executed Quantity",
+        "grossAmount": "Gross Amount",
+        "instrumentCode": "Stock Code",
+        "lotSizeHint": "Lot Size {0}",
+        "message" : {
+            "instructionSubmitted" : "Instruction to cancel order {0} is submitted"
+        },
+        "netAmount": "Net Amount",
+        "orderNumber": "Order Number",
+        "orderStatus": "Order Status",
+        "price": "Price",
+        "quantity": "Quantity",
+        "reset": "Reset",
+        "submit": "Submit",
+        "title": "Cancel Order",
+        "tradingAccount": "Trading Account"
+    },
     "orderInputForm": {        
         "buySell": "Buy / Sell",
         "charge": "Charge",
@@ -120,6 +169,7 @@
         "quantity": "Quantity",
         "reset": "Reset",
         "submit": "Submit",
+        "title": "New Order",
         "tradingAccount": "Trading Account"
     },
     "orderEnquiryForm": {
@@ -128,17 +178,27 @@
         "buySell": "Buy / Sell",
         "cancelHint": "Cancel order",
         "cancelTitle": "Cancel",
+        "charge": "Charge",
+        "commission": "Brokage Fee",
+        "createTradeDate": "Create Trade Date",
         "detailHint": "View order detail",
         "detailTitle": "Detail",
         "exchange": "Exchange",
         "executedQuantity": "Executed Quantity",
+        "executionPrice": "Execution Price",
+        "executionQuantity": "Execution Quantity",
+        "executionTime": "Execution Time",
+        "grossAmount": "Gross Amount",
         "instrumentCode": "Stock Code", 
         "instrumentName": "Stock Name", 
+        "netAmount": "Net Amount",
         "orderNumber": "Order Number",
         "orderStatus": "Order Status",
         "outstandingOrderOnly": "Outstanding Order Only",
         "price": "Price",
-        "quantity": "Quantity"
+        "quantity": "Quantity",
+        "tradingAccount": "Trading Account",
+        "updateDateTime": "Update DateTime"
     },
     "portfolioEnquiryForm": {
         "closingPrice": "Ref. Price", 

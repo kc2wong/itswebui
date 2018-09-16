@@ -14,10 +14,10 @@ class HorizontalAlign extends Enum {}
 HorizontalAlign.initEnum({ Left: { value: 'left' }, Center: { value: 'center' }, Right: { value: 'right' } });
 
 type XcColProps = {
-    evenly: ?bool,
-    horizontalAlign: ?HorizontalAlign,
-    children: React.ChildrenArray<XcGridCol>,
-    width: ?number
+    evenly?: bool,
+    horizontalAlign?: HorizontalAlign,
+    width?: number,
+    children: React.ChildrenArray<XcGridCol>
 }
 
 type XcColState = {
@@ -45,7 +45,7 @@ class XcGridCol extends React.Component<XcColProps, XcColState> {
 
 
 type XcRowProps = {
-    evenly: ?bool,
+    evenly?: bool,
     verticalAlign?: VerticalAlign,
     children: React.ChildrenArray<any>
 }
@@ -67,9 +67,9 @@ class XcGridRow extends React.Component<XcRowProps, XcRowState> {
 
 
 type XcGridProps = {
-    columns: ?number,
-    divider: ?bool,
-    evenly: ?bool,
+    columns?: number,
+    divider?: bool,
+    evenly?: bool,
     verticalAlign?: VerticalAlign,
     children: React.ChildrenArray<any>
 }
