@@ -19,6 +19,23 @@ class ExchangeBoardPriceSpreadService implements StaticDataService<ExchangeBoard
 
     }
 
+    getOne(id: Object): Promise<ExchangeBoardPriceSpread> {
+        let url = contextPath
+        _.forEach(Object.values(id), v => {
+            url = url + `/${v}`
+        })
+        return httpGet(url, {}).then(
+            msg => {
+                const json = msg.json
+                return ExchangeBoardPriceSpread.fromJson(json)
+            },
+            error => {
+                console.error(error)
+                return Promise.reject(error)
+            }        
+        )
+    }
+
     getPage(pageable: ?Pageable, criteria: Object): Promise<PageResult<ExchangeBoardPriceSpread>> {
         const sort = ( pageable && pageable.sortBy && pageable.sortDirection ) ? {sort: `${pageable.sortBy},${pageable.sortDirection.value}`} : {} 
         const param = Object.assign(pageable ? {page: pageable.pageNumber - 1, size: pageable.pageSize} : {}, criteria, sort)   // pageNumber starts with 0 in server side

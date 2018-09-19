@@ -4,7 +4,8 @@
   max-width: 450px;
   float: left;
   height: 100vh;
-  border: 1px solid rgb(212,212,213)
+  border: 1px solid rgb(212,212,213);
+  background-color: rgb(245,245,245);
 }
 
 .traderPanel {

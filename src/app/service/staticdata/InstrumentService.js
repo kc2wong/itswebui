@@ -11,10 +11,10 @@ const contextPath = `${SERVER_API_URL}/sapi/static-data/instruments`
 class InstrumentService {
 
     getOne(id: Object): Promise<Instrument> {
-        let url = `${contextPath}/exchanges`
-        _.forEach(Object.values(id), v => {
-            url = url + `/${v}`
-        })
+        let url = `${contextPath}/${id.instrumentCode}/exchanges/${id.exchangeCode}`
+        // _.forEach(Object.values(id), v => {
+        //     url = url + `/${v}`
+        // })
         return httpGet(url, {}).then(
             msg => {
                 const json = msg.json

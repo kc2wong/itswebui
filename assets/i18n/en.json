@@ -111,7 +111,7 @@
         "buySell": "Buy / Sell",
         "charge": "Charge",
         "commission": "Brokage Fee",
-        "confirmOrderCancellation": "Confirm to cancel order {0} ?",
+        "confirmOrderAmendment": "Confirm Order Amendment",
         "exchangeCode": "Exchange",
         "executedQuantity": "Executed Quantity",
         "grossAmount": "Gross Amount",
@@ -221,7 +221,9 @@
         "totalMarketValue": "Total"
     },
     "retailHome": {
-        "newOrder": "New Order"
+        "newOrder": "New Order",
+        "quoteExpress": "Quote Express",
+        "purchasePower": "Purchase Power"
     },    
     "stmActionEditForm": {
         "stmActionCode": "Action Code",

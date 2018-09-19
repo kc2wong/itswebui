@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { Accordion, Icon } from 'semantic-ui-react'
 import { Pagable } from 'shared/model';
-import { XcCard, XcNavigationTab } from 'shared/component';
+import { XaAccordion, XcCard, XcNavigationTab } from 'shared/component';
 import { Language, xlate } from 'shared/util/lang';
 import { getCurrentUserid } from 'shared/util/sessionUtil';
 import { MessageService } from 'shared/service';
@@ -25,6 +25,7 @@ import OrderEnquiryForm from 'app/component/order/OrderEnquiryForm'
 import PortfolioEnquiryForm from 'app/component/client/PortfolioEnquiryForm'
 
 import './RetailHome.css';
+import { XcGrid } from '../../shared/component';
 
 type Props = {
 }
@@ -90,7 +91,7 @@ class RetailHome extends React.Component<IntProps, State> {
         var promises = [
             currencies.length > 0 ? Promise.resolve({ data: currencies }) : currencyService.getPage(null, {}),
             exchanges.length > 0 ? Promise.resolve({ data: exchanges }) : exchangeService.getPage(null, {}),
-            exchangeBoardPriceSpreads.length > 0 ? Promise.resolve({ data: exchaexchangeBoardPriceSpreadsnges }) : exchangeBoardPriceSpreadService.getPage(null, {}),
+            exchangeBoardPriceSpreads.length > 0 ? Promise.resolve({ data: exchangeBoardPriceSpreads }) : exchangeBoardPriceSpreadService.getPage(null, {}),
             tradingAccounts.length > 0 ? Promise.resolve(tradingAccounts) : userProfileService.getOwnedTradingAccount()
         ]
 
@@ -179,52 +180,27 @@ class RetailHome extends React.Component<IntProps, State> {
                         <div style={{ flex: 1 }}>
                             <div className='orderPanel' >
                                 {exchanges.length > 0 && (
-                                    <React.Fragment>
-                                        <XcCard style={{ height: "50vh" }}>
-                                            {tradingFloorComponent ? tradingFloorComponent : <OrderInputForm exchanges={exchanges} />}
-                                        </XcCard>
-                                        <Accordion style={{ height: "50vh" }} fluid styled>
-                                            <Accordion.Title active={activeIndex === 0} index={0} onClick={this.handleClick}>
-                                                <Icon name='dropdown' />
-                                                What is a dog?
-      </Accordion.Title>
-                                            <Accordion.Content active={activeIndex === 0}>
-                                                <p>
-                                                    A dog is a type of domesticated animal. Known for its loyalty and faithfulness, it can
-                                                    be found as a welcome guest in many households across the world.
-        </p>
-                                            </Accordion.Content>
-
-                                            <Accordion.Title active={activeIndex === 1} index={1} onClick={this.handleClick}>
-                                                <Icon name='dropdown' />
-                                                What kinds of dogs are there?
-      </Accordion.Title>
-                                            <Accordion.Content active={activeIndex === 1}>
-                                                <p>
-                                                    There are many breeds of dogs. Each breed varies in size and temperament. Owners often
-                                                    select a breed of dog that they find to be compatible with their own lifestyle and
-                                                    desires from a companion.
-        </p>
-                                            </Accordion.Content>
-
-                                            <Accordion.Title active={activeIndex === 2} index={2} onClick={this.handleClick}>
-                                                <Icon name='dropdown' />
-                                                How do you acquire a dog?
-      </Accordion.Title>
-                                            <Accordion.Content active={activeIndex === 2}>
-                                                <p>
-                                                    Three common ways for a prospective owner to acquire a dog is from pet shops, private
-                                                    owners, or shelters.
-        </p>
-                                                <p>
-                                                    A pet shop may be the most convenient way to buy a dog. Buying a dog from a private
-                                                    owner allows you to assess the pedigree and upbringing of your dog before choosing to
-                                                    take it home. Lastly, finding your dog from a shelter, helps give a good home to a dog
-                                                    who may not find one so readily.
-        </p>
-                                            </Accordion.Content>
-                                        </Accordion>
-                                    </React.Fragment>                                    
+                                    <XcGrid>
+                                        <XcGrid.Row>
+                                            <XcGrid.Col>
+                                                <XcCard style={{height: "45vh"}}>
+                                                    {tradingFloorComponent ? tradingFloorComponent : <OrderInputForm exchanges={exchanges} />}
+                                                </XcCard>
+                                            </XcGrid.Col>
+                                        </XcGrid.Row>
+                                        <XcGrid.Row>
+                                            <XcGrid.Col>
+                                                <XaAccordion style={{ height: "50vh", backgroundColor: "#FBFBFB" }}>
+                                                    <XaAccordion.Pane title={xlate('retailHome.quoteExpress')}>
+                                                        <div>Quote Express</div>
+                                                    </XaAccordion.Pane>
+                                                    <XaAccordion.Pane title={xlate('retailHome.purchasePower')}>
+                                                        <div>Purchase Power</div>
+                                                    </XaAccordion.Pane>
+                                                </XaAccordion>
+                                            </XcGrid.Col>
+                                        </XcGrid.Row>
+                                    </XcGrid>                                                                   
                                 )}
                             </div>
                             <div className='traderPanel'>

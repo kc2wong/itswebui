@@ -25,7 +25,6 @@ type IntProps = {
     exchanges: Exchange[],
     instrument: Instrument,
     order: Order,
-    OrderInputRequest: OrderInputRequest,
     messageService: MessageService,
     sessionContext: SessionContextType
 }
@@ -125,11 +124,14 @@ class OrderAmendForm extends React.Component<IntProps, State> {
     }
 
     handleCalculateChargeCommission = (event: SyntheticFocusEvent<>) => {
-        const { messageService, sessionContext } = this.props
-        const { currency, orderInputRequest, instrument } = this.state
+        const { instrument, messageService, sessionContext } = this.props
+        const { orderInputRequest  } = this.state
 
-        const languageContext: LanguageContextType = sessionContext.languageContext
-        const instrumentName = instrument ? instrument.getDescription(languageContext.language) : ""
+        const languageContext = sessionContext.languageContext
+        const cacheContext = sessionContext.cacheContext
+
+        const instrumentName = instrument.getDescription(languageContext.language)
+        const currency = cacheContext.getCurrency(instrument.tradingCurrencyCode)
         const currencyName = currency ? currency.getDescription(languageContext.language) : ""
         const numberFormat = createNumberFormat(true, currency ? currency.decimalPoint : 2)
 
@@ -159,7 +161,7 @@ class OrderAmendForm extends React.Component<IntProps, State> {
                     const dialog = <XcDialog confirmYesAction={() => { }}
                         negativeButton={negativeButton} positiveButton={positiveButton}
                         content={content}
-                        title={xlate(`${formName}.confirmOrderSubmission`)}
+                        title={xlate(`${formName}.confirmOrderAmendment`)}
                         type={XcDialog.Type.YesNo} />
 
                     messageService.hideLoading()                
