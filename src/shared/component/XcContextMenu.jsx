@@ -48,7 +48,7 @@ export class XcContextMenu extends React.Component<XcContextMenuProps, XcContext
     render() {
         const { ...props } = this.props
         return (
-            <XcGrid evenly divider {...props}>
+            <XcGrid evenly showDivider {...props}>
                 <XcGrid.Row>
                     {_.map(this.props.children, (e, idx) => <XcGrid.Col key={idx} horizontalAlign={XcGrid.HorizontalAlign.Center}>{e}</XcGrid.Col>)}
                 </XcGrid.Row>

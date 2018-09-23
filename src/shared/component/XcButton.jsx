@@ -1,9 +1,10 @@
 // @flow
 import React, { Component } from 'react';
-import {Enum} from 'enumify';
-// import { Button, FormGroup } from 'react-bootstrap';
+import { Enum } from 'enumify';
 import { Button, Icon } from 'semantic-ui-react'
 import FormContext from './XcForm';
+import type { ThemeContextType } from './XaTheme';
+import { ThemeContext } from './XaTheme'
 import type { FormContextType } from './XcForm';
 import ButtonGroupContext from './XcButtonGroup';
 import type { XcIconProps } from './XcIconProps';
@@ -35,18 +36,22 @@ export class XcButton extends Component<Props, State> {
         const p = parseBool(primary, false)
         
         return (
-            <ButtonGroupContext.Consumer>
-                {btnGrpCtx => (
-                    <FormContext.Consumer>
-                        {formCtx => (
-                            formCtx != null ?
-                            <Button active={a} fluid={b} onClick={this.handleClick(formCtx.onSubmit)} primary={p} {... this.constructIcon(formCtx.name, name, icon, label)} {...props}>{this.constructChild(formCtx, name, icon, label)}</Button>
-                            :
-                            <Button active={a} fluid={b} onClick={this.handleClick(null)} primary={p} {... this.constructIcon(null, name, icon, label)} {...props}>{this.constructChild(formCtx, name, icon, label)}</Button>
+            <ThemeContext.Consumer>
+                {theme => (
+                    <ButtonGroupContext.Consumer>
+                        {btnGrpCtx => (
+                            <FormContext.Consumer>
+                                {formCtx => (
+                                    formCtx != null ?
+                                        <Button active={a} fluid={b} onClick={this.handleClick(formCtx.onSubmit)} {... this.constructColor(p, theme)} {... this.constructIcon(formCtx.name, name, icon, label)} {...props}>{this.constructChild(formCtx, name, icon, label)}</Button>
+                                        :
+                                        <Button active={a} fluid={b} onClick={this.handleClick(null)} primary={p} {... this.constructIcon(null, name, icon, label)} {...props}>{this.constructChild(formCtx, name, icon, label)}</Button>
+                                )}
+                            </FormContext.Consumer>
                         )}
-                    </FormContext.Consumer>
+                    </ButtonGroupContext.Consumer>
                 )}
-            </ButtonGroupContext.Consumer>
+            </ThemeContext.Consumer>
         )
     }
 
@@ -61,6 +66,10 @@ export class XcButton extends Component<Props, State> {
         else {
             console.warn(`Button name=${this.props.label} has no action`)
         }
+    }
+
+    constructColor = (primary: boolean, theme: ThemeContextType): Object => {
+        return primary ? { style: { backgroundColor: theme.primary, color: theme.onPrimary } } : {}
     }
 
     constructIcon (formName: ?string, fieldName: string, icon: ?XcIconProps, label: ?string): Object {

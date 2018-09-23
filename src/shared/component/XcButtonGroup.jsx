@@ -14,17 +14,19 @@ const ButtonGroupContext = React.createContext(null);
 
 type Props = {
     alignRight: ?bool,
+    fluid: ?bool,
     toolbar: ?bool,
     children: Array<any>
 }
 
 export class XcButtonGroup extends React.Component<Props, {}> {
     render() {
+        const fluid = parseBool(this.props.fluid, false) ? {fluid: true} : {};
         const toolbar = parseBool(this.props.toolbar, false);
         const className = parseBool(this.props.alignRight, false) ? { className: 'pull-right' } : {}
         const buttonGroupContextType: ButtonGroupContextType = {
         };
-
+        console.log(fluid)
         return (
             <ButtonGroupContext.Provider value={buttonGroupContextType}>
                 {!toolbar && (
@@ -33,7 +35,7 @@ export class XcButtonGroup extends React.Component<Props, {}> {
                     </React.Fragment>
                 )}
                 {toolbar && (
-                    <Button.Group {...className} >
+                    <Button.Group {...className} {...fluid} >
                         {this.props.children}
                     </Button.Group>
                 )}

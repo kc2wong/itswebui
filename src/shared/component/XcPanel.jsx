@@ -1,15 +1,11 @@
 // @flow
 import * as React from 'react';
-// import { Panel } from 'react-bootstrap';
-import { Header, Segment } from 'semantic-ui-react';
-import { xlate } from 'shared/util/lang';
+import { Dimmer, Header, Loader, Segment } from 'semantic-ui-react';
+import { parseBool } from 'shared/util/lang';
 
 class Header2 extends React.Component<{ children: React.Node }, {}> {
     render() {
-        // return (
-        //     <Panel.Heading>{this.props.children}</Panel.Heading>
-        // )
-        return (            
+        return (
             <Header as="h5" attached="top">{this.props.children}</Header>
         )
     }
@@ -17,9 +13,6 @@ class Header2 extends React.Component<{ children: React.Node }, {}> {
 
 class Body extends React.Component<{ children: React.Node }, {}> {
     render() {
-        // return (
-        //     <Panel.Body>{this.props.children}</Panel.Body>
-        // )
         return (
             <Segment attached>{this.props.children}</Segment>
         )
@@ -28,16 +21,14 @@ class Body extends React.Component<{ children: React.Node }, {}> {
 
 class Footer extends React.Component<{ children: React.Node }, {}> {
     render() {
-        // return (
-        //     <Panel.Footer>{this.props.children}</Panel.Footer>
-        // )
         return (
             <Segment attached="bottom">{this.props.children}</Segment>
         )
     }
-}    
+}
 
 type Props = {
+    loading: ?boolean,
     children: React.ChildrenArray<
     | React.Element<Header2>
     | React.Element<Body>
@@ -55,15 +46,9 @@ export class XcPanel extends React.Component<Props, State> {
     static Footer = Footer
 
     render() {
-        // return (
-        //     <Panel>
-        //         {this.props.children}
-        //     </Panel>
-        // )
+        const { loading } = this.props
         return (
-            <React.Fragment>
-                {this.props.children}
-            </React.Fragment>
+            parseBool(loading, false) ? (<Dimmer.Dimmable dimmed><Dimmer active inverted><Loader /></Dimmer>{this.props.children}</Dimmer.Dimmable>) : this.props.children
         )
     }
 }    

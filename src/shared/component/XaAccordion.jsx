@@ -1,8 +1,9 @@
 // @flow
 import _ from 'lodash'
 import * as React from 'react';
-import { Accordion, Icon } from 'semantic-ui-react';
+import { Accordion, Icon, Label } from 'semantic-ui-react';
 import { parseBool } from 'shared/util/lang';
+import { ThemeContext } from './XaTheme'
 
 type XaAccordionPaneProps = {
     title: string,
@@ -16,17 +17,22 @@ type XaAccordionPaneState = {
 class XaAccordionPane extends React.Component<XaAccordionPaneProps, XaAccordionPaneState> {
     render() {
         const { title, ...props } = this.props
+        const active = this.getActive(props)
 
         return (
-            <React.Fragment>
-                <Accordion.Title {...props} >
-                    <Icon name='dropdown' />
-                    {title}
-                </Accordion.Title>
-                <Accordion.Content active={this.getActive(props)}>
-                    {this.props.children}
-                </Accordion.Content>
-            </React.Fragment>
+            <ThemeContext.Consumer>
+                {theme => (
+                    <React.Fragment>
+                        <Accordion.Title style={active ? { backgroundColor: theme.secondary } : {}} {...props} >
+                            <Icon name='dropdown' />
+                            <font color={theme.onSecondary}>{title}</font>
+                        </Accordion.Title>
+                        <Accordion.Content active={active}>
+                            {this.props.children}
+                        </Accordion.Content>
+                    </React.Fragment>
+                )}
+            </ThemeContext.Consumer>
         )
     }
 

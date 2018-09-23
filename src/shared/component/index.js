@@ -1,3 +1,4 @@
+export * from './XaIcon'
 export * from './XaPieChart';
 export * from './XaAccordion';
 export * from './XcButton';
@@ -10,7 +11,6 @@ export * from './XcDivider';
 export * from './XcForm';
 export * from './XcFormGroup';
 export * from './XcGrid';
-export * from './XcIconProps';
 export * from './XcInputNumber';
 export * from './XcInputText';
 export * from './XcLabel';

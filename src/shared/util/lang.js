@@ -6,7 +6,7 @@ import { Enum } from 'enumify';
 import numeral from 'numeral'
 
 export class Language extends Enum { }
-Language.initEnum({ English: { value: 'en' }, TraditionalChinese: { value: 'zh' } });
+Language.initEnum({ English: { value: 'en' }, TraditionalChinese: { value: 'zh' }, SimplifiedChinese: { value: 'gb' } });
 
 export function parseBool(v: any, defaultValue?: boolean = false): boolean {
     if (!_.isUndefined(v) && !_.isNull(v)) {

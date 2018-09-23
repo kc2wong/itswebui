@@ -14,7 +14,7 @@ export class XcCard extends React.Component<Props, State> {
     render() {
         const { ...props } = this.props
         return (
-            <Segment {...props} >
+            <Segment raised {...props} >
                 {this.props.children}
             </Segment>
         )

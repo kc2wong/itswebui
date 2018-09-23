@@ -14,7 +14,6 @@ class HorizontalAlign extends Enum {}
 HorizontalAlign.initEnum({ Left: { value: 'left' }, Center: { value: 'center' }, Right: { value: 'right' } });
 
 type XcColProps = {
-    evenly?: bool,
     horizontalAlign?: HorizontalAlign,
     width?: number,
     children: React.ChildrenArray<XcGridCol>
@@ -29,8 +28,8 @@ const DEFAULT_COL_WIDTH = 16
 class XcGridCol extends React.Component<XcColProps, XcColState> {
 
     render() {
-        const { evenly, horizontalAlign } = this.props
-        const width = evenly ? {} : { width: this.getWidth() }
+        const { horizontalAlign, ...props } = this.props
+        const width = this.getEvenly(props) ? {} : { width: this.getWidth() }
         const ta = horizontalAlign != null ? {textAlign: horizontalAlign.value} : {}
         return (
             <Grid.Column {...width} {...ta}>{this.props.children}</Grid.Column>
@@ -41,11 +40,15 @@ class XcGridCol extends React.Component<XcColProps, XcColState> {
         const width = this.props.width;
         return width != null ? width : DEFAULT_COL_WIDTH;
     }
+
+    getEvenly = (props: Object): boolean => {
+        return parseBool(props.evenly, false)
+    }
+
 }
 
 
 type XcRowProps = {
-    evenly?: bool,
     verticalAlign?: VerticalAlign,
     children: React.ChildrenArray<any>
 }
@@ -56,20 +59,33 @@ type XcRowState = {
 
 class XcGridRow extends React.Component<XcRowProps, XcRowState> {
     render() {
-        const { evenly, verticalAlign, ...props } = this.props
+        const { verticalAlign, ...props } = this.props
+        const e = this.getEvenly(props) == true ? { evenly: true } : {}
+        const style=this.getStyle(this.props)
         return (
-            <Grid.Row verticalAlign={(verticalAlign ? verticalAlign : VerticalAlign.Middle).value} {...props}>
-                {React.Children.map(this.props.children, child => child != null ? React.cloneElement(child, { evenly: evenly }) : child)}
+            <Grid.Row verticalAlign={(verticalAlign ? verticalAlign : VerticalAlign.Middle).value} {...style}>
+                {React.Children.map(this.props.children, child => child != null ? React.cloneElement(child, e) : child)}
             </Grid.Row>
         )
     }
+
+
+    getEvenly = (props: Object): boolean => {
+        return parseBool(props.evenly, false)
+    }
+
+    getStyle = (props: Object): Object => {
+        return props.style ? {style: props.style} : {}
+    }
+
 }    
 
 
 type XcGridProps = {
     columns?: number,
-    divider?: bool,
     evenly?: bool,
+    rowStyle?: Object,
+    showDivider?: bool,
     verticalAlign?: VerticalAlign,
     children: React.ChildrenArray<any>
 }
@@ -85,15 +101,30 @@ export class XcGrid extends React.Component<XcGridProps, XcGridState> {
     static HorizontalAlign = HorizontalAlign
 
     render() {
-        const { columns, divider, evenly, verticalAlign, ...props } = this.props
+        const { columns, evenly, rowStyle, showDivider, verticalAlign, ...props } = this.props
         const va = verticalAlign != null ? { verticalAlign: verticalAlign.value } : {}
-        const d = parseBool(divider, false) == true ? { divided: true } : {}
+        const d = parseBool(showDivider, false) == true ? { divided: true } : {}
         const e = parseBool(evenly, false) == true ? { evenly: true } : {}
+        const rs = rowStyle ? { style: rowStyle } : {}
+        
+        const rowExtraProps = this.getRowExtraProps(this.props)
+        
         return (
-            <Grid {...this.getColumns(columns, evenly)} {...d} {...props} {...va} >
-                {React.Children.map(this.props.children, child => child != null ? React.cloneElement(child, { evenly: evenly }) : child)}
+            <Grid {...this.getColumns(columns, evenly)} {...d} {...props} {...va} {...rs} >
+                {React.Children.map(this.props.children, child => child != null ? React.cloneElement(child, rowExtraProps) : child)}
             </Grid>
         )
+    }
+
+    getRowExtraProps = (props: Object): Object => {
+        let rtn = {}
+        if (parseBool(props.evenly, false) == true) {
+            rtn = Object.assign(rtn, { evenly: true })
+        }
+        if (props.rowStyle != null) {
+            rtn = Object.assign(rtn, { style: props.rowStyle })
+        }
+        return rtn
     }
 
     getColumns = (columns: ?number, evenly: ?bool): Object => {

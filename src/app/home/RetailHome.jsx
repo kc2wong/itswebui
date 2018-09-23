@@ -23,6 +23,8 @@ import OrderCancelForm from 'app/component/order/OrderCancelForm'
 import OrderInputForm from 'app/component/order/OrderInputForm'
 import OrderEnquiryForm from 'app/component/order/OrderEnquiryForm'
 import PortfolioEnquiryForm from 'app/component/client/PortfolioEnquiryForm'
+import PurchasePowerEnquiryForm from 'app/component/client/PurchasePowerEnquiryForm'
+import PriceQuoteForm from 'app/component/staticdata/PriceQuoteForm'
 
 import './RetailHome.css';
 import { XcGrid } from '../../shared/component';
@@ -124,6 +126,9 @@ class RetailHome extends React.Component<IntProps, State> {
                     const rtn = _.find(currencies, c => c.currencyCode == currencyCode)
                     return rtn
                 },    
+                getCurrencies: (): Currency[] => {
+                    return currencies
+                },    
                 getExchangeBoardPriceSpread: (exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string) => {
                     const rtn = _.find(currencies, c => c.exchangeBoardCode == exchangeBoardCode && c.exchangeBoardPriceSpreadCode == exchangeBoardPriceSpreadCode)
                     return rtn
@@ -192,10 +197,10 @@ class RetailHome extends React.Component<IntProps, State> {
                                             <XcGrid.Col>
                                                 <XaAccordion style={{ height: "50vh", backgroundColor: "#FBFBFB" }}>
                                                     <XaAccordion.Pane title={xlate('retailHome.quoteExpress')}>
-                                                        <div>Quote Express</div>
+                                                        <PriceQuoteForm />
                                                     </XaAccordion.Pane>
                                                     <XaAccordion.Pane title={xlate('retailHome.purchasePower')}>
-                                                        <div>Purchase Power</div>
+                                                        <PurchasePowerEnquiryForm />
                                                     </XaAccordion.Pane>
                                                 </XaAccordion>
                                             </XcGrid.Col>

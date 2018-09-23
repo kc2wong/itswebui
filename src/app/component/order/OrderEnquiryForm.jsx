@@ -260,7 +260,6 @@ class OrderEnquiryForm extends Component<IntProps, State> {
                     const executeTimeCol = new XcTableColSpec("executeTime", DataType.String, xlate(`${formName}.executionTime`), 3)
                     const executePriceCol = new XcTableColSpec("price", DataType.String, `${xlate(`${formName}.executionPrice`)} (${currencyName})`, 2)
                     const executeQuantityCol = new XcTableColSpec("quantity", DataType.Number, xlate(`${formName}.executionQuantity`), 2)
-                    console.log(order.orderExecution)
                     const executionData = _.map(_.sortBy(order.orderExecution, "executeDateTime"), (oe) => {
                         return {executeTime: formatDateTime(oe.executeDateTime), price: formatNumber(oe.price, priceFormat), quantity: formatNumber(oe.quantity, quantityFormat) }
                     })

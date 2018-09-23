@@ -24,6 +24,7 @@ export const ApplicationContext = React.createContext({
 
 export type CacheContextType = {
     getCurrency: (currencyCode: string) => ?Currency,
+    getCurrencies: () => Currency[],
     getExchangeBoardPriceSpread: (exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string) => ?ExchangeBoardPriceSpread
 }
 
@@ -55,6 +56,7 @@ export type SessionContextType = {
 export const SessionContext = React.createContext({
     cacheContext: {
         getCurrency: (currencyCode: string) => null,
+        getCurrencies: () => [],
         getExchangeBoardPriceSpread: (exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string) => null
     },
     languageContext: {

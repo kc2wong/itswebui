@@ -74,3 +74,79 @@ export class Instrument implements BaseModel, MultiLingual {
     }
 
 }
+
+export class PriceQuote implements MultiLingual {
+
+    exchangCode: string;
+    instrumentCode: string;
+    currencyCode: string;
+    shortNameDefLang: string;
+    shortName2ndLang: ?string;
+    shortName3rdLang: ?string;
+    nominalPrice: ?number;
+    closingPrice: ?number;
+    priceChange: ?number;
+    percentChange: ?number;
+    bidPrice: ?number;
+    askPrice: ?number;
+    dayHigh: ?number;
+    dayLow: ?number;
+    fiftyTwoWeekHigh: ?number;
+    fiftyTwoWeekLow: ?number;
+    turnover: ?number;
+
+    constructor(exchangCode: string, instrumentCode: string, currencyCode: string, 
+        shortNameDefLang: string, shortName2ndLang: ?string, shortName3rdLang: ?string,
+        nominalPrice: ?number, closingPrice: ?number, priceChange: ?number, percentChange: ?number,
+        bidPrice: ?number, askPrice: ?number, dayHigh: ?number, dayLow: ?number,
+        fiftyTwoWeekHigh: ?number, fiftyTwoWeekLow: ?number, turnover: ?number) {
+        this.exchangCode = exchangCode;
+        this.instrumentCode = instrumentCode;
+        this.currencyCode = currencyCode;
+        this.shortNameDefLang = shortNameDefLang;
+        this.shortName2ndLang = shortName2ndLang;
+        this.shortName3rdLang = shortName3rdLang;
+        this.nominalPrice = nominalPrice;
+        this.closingPrice = closingPrice;
+        this.priceChange = priceChange;
+        this.percentChange = percentChange;
+        this.bidPrice = bidPrice;
+        this.askPrice = askPrice;
+        this.dayHigh = dayHigh;
+        this.dayLow = dayLow;
+        this.fiftyTwoWeekHigh = fiftyTwoWeekHigh;
+        this.fiftyTwoWeekLow = fiftyTwoWeekLow;
+        this.turnover = turnover;
+    }
+    
+    toJson(): Object {
+        const rtn = {};
+        Object.assign(rtn, this);
+        return rtn        
+    }
+
+    getDescription(language: Language): string {
+        var rtn: ?string
+        if (language == Language.TraditionalChinese ) {
+            rtn = this.shortName2ndLang
+        }
+        else if (language == Language.SimplifiedChinese ) {
+            rtn = this.shortName3rdLang
+        }
+        if (!rtn) {
+            rtn = this.shortNameDefLang
+        }
+        return rtn        
+    }
+    
+    static fromJson(json: Object): PriceQuote {
+        const rtn = PriceQuote.newInstance()
+        Object.assign(rtn, json);
+        return rtn
+    }
+
+    static newInstance(): PriceQuote {
+        return new PriceQuote("", "", "", "", null, null, null, null, null, null, null, null, null, null, null, null, null)
+    }
+
+}

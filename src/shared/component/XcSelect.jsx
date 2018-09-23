@@ -9,6 +9,7 @@ import { parseBool, xlate } from 'shared/util/lang';
 import './XcSelect.css';
 
 type Props = {
+    disabled: ?bool,
     inline: ?bool,
     label: ?string,    
     name: string,
@@ -34,7 +35,7 @@ export class XcSelect extends Component<Props, State> {
     };
 
     render() {
-        const { inline, label, name, options, numeric, onChange, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props
+        const { disabled, inline, label, name, options, numeric, onChange, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const className = parseBool(readonly, false) ? { className: "xc-select-readonly" } : {}
         return (
@@ -43,6 +44,7 @@ export class XcSelect extends Component<Props, State> {
                     context.name == "" ?
                     <span>{constructLabel(context.name, name, label)}&nbsp;&nbsp;&nbsp;&nbsp;
                         <Select
+                            disabled={parseBool(disabled, false)}
                             onChange={this.handleChange(context.updateModel)}
                             options={this.createOptions(options, readonly, getStringValue(value, context.model, name))}
                             required={getRequired(validation)}

@@ -220,6 +220,38 @@
         "totalQuantity": "Total Quantity", 
         "totalMarketValue": "Total"
     },
+    "priceQuoteForm": {
+        "bidAsk": "Bid / Ask",
+        "change": "Change",
+        "closingPrice": "Previous Close",
+        "dailyRange": "Daily Range",
+        "instrumentCode": "Stock Code",
+        "instrumentName": "Name",
+        "nominalPrice": "Nominal Price",
+        "lineType": "Line Type",
+        "lineAmount": "Line Amount",
+        "lineUsage": "Line Usage",
+        "lineBalance": "Line Balance",
+        "notApplicable": "Not Applicable",
+        "creditLine": "Credit Line",
+        "summaryInCurrency": "Summary In Currency",
+        "totalPurchasePower": "Total Purchase Power",
+        "yearlyRange": "Yearly Range"
+    },
+    "purchasePowerEnquiryForm": {
+        "accountBalance": "Account Balance",
+        "applyToAllStock": "Apply To All Stock",
+        "availableBalance": "Available Balance",
+        "cashPurchasePower": "Cash Purchase Power",
+        "lineType": "Line Type",
+        "lineAmount": "Line Amount",
+        "lineUsage": "Line Usage",
+        "lineBalance": "Line Balance",
+        "notApplicable": "Not Applicable",
+        "creditLine": "Credit Line",
+        "summaryInCurrency": "Summary In Currency",
+        "totalPurchasePower": "Total Purchase Power"
+    },
     "retailHome": {
         "newOrder": "New Order",
         "quoteExpress": "Quote Express",

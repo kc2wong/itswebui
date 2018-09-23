@@ -5,10 +5,12 @@ import { Form } from 'semantic-ui-react';
 import update from 'immutability-helper';
 
 import { BaseModel } from 'shared/model';
+import { parseBool } from 'shared/util/lang';
 
 import './XcForm.css';
 
 export type FormContextType = {
+    inline: boolean,
     name: string,
     model?: Object,
     onSubmit?: () => void,
@@ -18,6 +20,7 @@ export type FormContextType = {
 }
 
 const defaultFormContextType: FormContextType = {
+    inline: false,
     name: "", 
     model: {},
     updateModel: (name: string, value:any) => {},
@@ -27,6 +30,7 @@ const defaultFormContextType: FormContextType = {
 const FormContext = React.createContext(defaultFormContextType);
 
 type Props = {
+    inline: ?boolean,
     name: string,
     model: BaseModel,
     onModelUpdate?: (model: BaseModel) => void,
@@ -47,8 +51,9 @@ export class XcForm extends React.Component<Props, State> {
     }
 
     render() {
-        const { model, name, onModelUpdate, onSubmit, subLabelColor, ...props } = this.props
+        const { inline, model, name, onModelUpdate, onSubmit, subLabelColor, ...props } = this.props
         const formContextType: FormContextType = {
+            inline: parseBool(inline, false),
             name: name, 
             model: model,
             onSubmit: onSubmit,

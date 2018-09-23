@@ -12,6 +12,7 @@ import './XcInputText.css';
 
 type Props = {
     icon: ?XcIconProps,
+    inline: ?bool,
     label?: string,
     name: string,
     password: ?bool,
@@ -40,7 +41,7 @@ export class XcInputText extends Component<Props, State> {
     }
     
     render() {
-        const { icon, label, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
+        const { icon, inline, label, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
         const { mouseOverIcon } = this.state
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         // const i = icon != null ? { icon: icon.name, iconPosition: "left", onMouseOut: this.handleMouseOut, onMouseOver: this.handleMouseOver } : {};
@@ -53,7 +54,7 @@ export class XcInputText extends Component<Props, State> {
                 {formCtx =>
                     <FormGroupContext.Consumer>
                         {formGrpCtx =>
-                            <Form.Field required={getRequired(validation)}>
+                            <Form.Field inline={parseBool(inline, formCtx.inline)} required={getRequired(validation)}>
                                 <label {...float}>{constructLabel(formCtx.name, name, label)}</label>
                                 {subLabel ? <small {...float} {...formCtx.subLabelColor ? { style: { color: formCtx.subLabelColor } } : {}} >&nbsp;&nbsp;{subLabel}</small> : null}
                                 <Input
@@ -64,7 +65,7 @@ export class XcInputText extends Component<Props, State> {
                                     {...p}
                                     {...ph}
                                     {...r}
-                                    {... (formCtx != null && formGrpCtx.fluid) ? { fluid: true } : { width: width }}
+                                    {... (!parseBool(inline, false) && formCtx != null && formGrpCtx.fluid) ? { fluid: true } : { width: width }}
                                 />
                             </Form.Field>
                         }

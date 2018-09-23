@@ -46,6 +46,8 @@ type Props = {
     onSort: ?(string, SortDirection) => void;
     selectable: ?boolean,
     selectedIndex: ?number,
+    showGrid: ?boolean,
+    showHeader: ?boolean,
     summary: ?Object,
     size: ?TableSize
 }
@@ -65,23 +67,25 @@ export class XcTable extends React.Component<Props, State> {
     }
 
     render() {
-        const { colorStripeProvider, colspec, data, highlightedIndex, selectable, size, summary, ...props } = this.props;
+        const { colorStripeProvider, colspec, data, highlightedIndex, selectable, size, showGrid, showHeader, summary, ...props } = this.props;
         const { mouseOverIndex, selectedIndex } = this.state;
         const s = size ? { size: size.value } : {}
         const totalWidth = _.sumBy(colspec, (cs) => (
             cs.width
         ));
-
+        const basic = parseBool(showGrid, true) == true ? {} : {basic: 'very'}
         return (
-            <Table celled columns={totalWidth} compact fixed selectable={parseBool(selectable, true)} sortable {...s} >
-                <Table.Header>
-                    <Table.Row>
-                        {_.map(colspec, (cs) => (
-                            <Table.HeaderCell key={cs.name} onClick={this.handleSort(`${cs.name}`)} sorted={cs.sortDirection ? this.sortDirectionValue(cs.sortDirection) : null}
-                                {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}} width={cs.width}>{cs.label}</Table.HeaderCell>
-                        ))}
-                    </Table.Row>
-                </Table.Header>            
+            <Table celled={parseBool(showGrid, true)} columns={totalWidth} compact fixed selectable={parseBool(selectable, true)} sortable {...s} >
+                {parseBool(showHeader, true) && (
+                    <Table.Header>
+                        <Table.Row>
+                            {_.map(colspec, (cs) => (
+                                <Table.HeaderCell key={cs.name} onClick={this.handleSort(`${cs.name}`)} sorted={cs.sortDirection ? this.sortDirectionValue(cs.sortDirection) : null}
+                                    {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}} width={cs.width}>{cs.label}</Table.HeaderCell>
+                            ))}
+                        </Table.Row>
+                    </Table.Header>
+                )}
                 <Table.Body>
                     {_.map(data, (row, rowIdx) => (
                         <Table.Row active={selectedIndex === rowIdx} warning={highlightedIndex === rowIdx} onClick={this.handleClick(rowIdx)} onMouseEnter={this.handleMouseEnter(rowIdx)} key={rowIdx}>

@@ -15,3 +15,16 @@ export const BASE_CURRENCY = _BASE_CURRENCY
 
 // first one is default
 export const PAGE_SIZE_OPTION = [10, 20, 40]
+
+export const PRIMARY_COLOR = {
+    900: "#0D47A1",
+    800: "#1565C0",
+    700: "#1976D2",
+    600: "#1E88E5",
+    500: "#2196F3",
+    400: "#42A5F5",
+    300: "#64B5F6",
+    200: "#90CAF9",
+    100: "#BBDEFB",
+    50: "#E3F2FD"
+}

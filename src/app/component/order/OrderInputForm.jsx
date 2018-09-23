@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { DataType } from 'shared/model';
 import { XcButton, XcButtonGroup, XcDialog, XcForm, XcInputText, XcInputNumber } from 'shared/component';
 import { XcMessage, XcOption, XcRadio, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { ThemeContext } from 'shared/component/XaTheme'
 import { createNumberFormat, formatNumber, Language, xlate } from 'shared/util/lang';
 import { isNullOrEmpty } from 'shared/util/stringUtil';
 import { Currency, Exchange, ExchangeBoardPriceSpread, Instrument } from 'app/model/staticdata'
@@ -26,9 +27,6 @@ type IntProps = {
 type State = {    
     orderInputRequest: OrderInputRequest,
     instrument: ?Instrument
-    // currency: ?Currency,
-    // instrument: ?Instrument,
-    // exchangeBoardPriceSpread: ?ExchangeBoardPriceSpread,
 }
 
 const formName = "orderInputForm"
@@ -48,9 +46,6 @@ class OrderInputForm extends React.Component<IntProps, State> {
         this.state = {
             orderInputRequest: orderInputRequest,
             instrument: null
-            // currency: null,
-            // exchangeBoardPriceSpread: null,
-            // instrument: null
         }
     }    
 
@@ -69,28 +64,31 @@ class OrderInputForm extends React.Component<IntProps, State> {
         ))
 
         const cacheContext = sessionContext.cacheContext
-        // const currency = instrument ? cacheContext.getCurrency(instrument.tradingCurrencyCode) : null
         const instrumentName = instrument ? instrument.getDescription(languageContext.language) : ""
         const currencyName = currency ? currency.getDescription(languageContext.language) : ""
         const lotSizeHint = instrument ? xlate(`${formName}.lotSizeHint`, [instrument.lotSize]) : null
 
         return (
-            <React.Fragment>
-                <h3 style={{color: "teal"}}>{xlate(`${formName}.title`)}</h3>
-                <XcForm model={orderInputRequest} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
-                    <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
-                    <XcSelect name="buySell" options={buySellOpt} validation={{ required: true }} />
-                    <XcInputText name="instrumentCode" onBlur={this.handleSearchStock} subLabel={instrumentName} validation={{ required: true }} />
-                    <XcInputNumber name="price" prefix={currencyName} prefixMinWidth="55px" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} />
-                    <XcInputNumber name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
-                    <br/>
-                    <XcButtonGroup>
-                        <XcButton icon={{ name: "erase" }} name="reset" onClick={this.handleClick} />
-                        <XcButton disabled={false} icon={{ name: "hand point up outline" }}
-                            name="submit" onClick={this.handleCalculateChargeCommission} primary />
-                    </XcButtonGroup>
-                </XcForm>
-            </React.Fragment>
+            <ThemeContext.Consumer>
+                {theme => (
+                    <React.Fragment>
+                        <h3 style={{ color: theme.secondaryVariant }}>{xlate(`${formName}.title`)}</h3>
+                        <XcForm model={orderInputRequest} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
+                            <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
+                            <XcSelect name="buySell" options={buySellOpt} validation={{ required: true }} />
+                            <XcInputText name="instrumentCode" onBlur={this.handleSearchStock} subLabel={instrumentName} validation={{ required: true }} />
+                            <XcInputNumber name="price" prefix={currencyName} prefixMinWidth="55px" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} />
+                            <XcInputNumber name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
+                            <br />
+                            <XcButtonGroup>
+                                <XcButton icon={{ name: "erase" }} name="reset" onClick={this.handleClick} />
+                                <XcButton disabled={false} icon={{ name: "hand point up outline" }}
+                                    name="submit" onClick={this.handleCalculateChargeCommission} primary />
+                            </XcButtonGroup>
+                        </XcForm>
+                    </React.Fragment>
+                )}
+            </ThemeContext.Consumer>
         )
     }
 
@@ -134,15 +132,12 @@ class OrderInputForm extends React.Component<IntProps, State> {
 
     handleCalculateChargeCommission = (event: SyntheticFocusEvent<>) => {
         const { messageService, sessionContext } = this.props
-        // const { currency, orderInputRequest, instrument } = this.state
-        // const { orderInputRequest, instrument } = this.state
         const { orderInputRequest } = this.state
         const { currency, instrument } = this.getInstrumentAndCurrency()
 
         const cacheContext = sessionContext.cacheContext
         const languageContext = sessionContext.languageContext
         const instrumentName = instrument ? instrument.getDescription(languageContext.language) : ""
-        // const currency = instrument ? cacheContext.getCurrency(instrument.tradingCurrencyCode) : null
         const currencyName = currency ? currency.getDescription(languageContext.language) : ""
         const numberFormat = createNumberFormat(true, currency ? currency.decimalPoint : 2)
 
