@@ -2,6 +2,8 @@
 import React, { Component } from 'react';
 import { Enum } from 'enumify';
 import { Form, Icon, Input } from 'semantic-ui-react';
+import DayPicker from 'react-day-picker'
+import DayPickerInput from 'react-day-picker/DayPickerInput'
 import FormContext from './XcForm';
 import FormGroupContext from './XcFormGroup';
 import { constructLabel, createColumnClass, getRequired, getStringValue } from './XcFormUtil';
@@ -9,14 +11,13 @@ import { IFieldConstraint, XcInputTextConstraint } from './validation/XcFieldCon
 import type { XcIconProps } from './XcIconProps';
 import { parseBool, xlate } from 'shared/util/lang';
 
+import 'react-day-picker/lib/style.css';
 import './XcInputText.css';
 
-class IconPosition extends Enum {}
+class IconPosition extends Enum { }
 IconPosition.initEnum({ Left: { value: 'left' }, Right: { value: 'right' } });
 
 type Props = {
-    icon?: XcIconProps,
-    iconPosition?: IconPosition,
     inline: ?bool,
     label?: string,
     loading?: bool,
@@ -31,34 +32,41 @@ type Props = {
 }
 
 type State = {
-    mouseOverIcon: boolean
+    showCalendar: boolean
 }
 
-export class XcInputText extends Component<Props, State> {
+export class XaInputDate extends Component<Props, State> {
 
     static IconPosition = IconPosition
 
     static defaultProps = {
-        width: 16
+        width: 12
     };
 
     constructor(props: Props) {
         super();
         this.props = props;
-        this.state = { mouseOverIcon: false }
+        this.state = { showCalendar: false }
     }
-    
+
     render() {
-        const { icon, iconPosition, inline, label, loading, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
-        const { mouseOverIcon } = this.state
+        const { inline, label, loading, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
+        const { showCalendar } = this.state
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
-        const ip = (icon != null && (iconPosition == null || iconPosition == IconPosition.Left)) ? { iconPosition: IconPosition.Left.value } : {}         // no need to specify position when it is right 
-        const i = icon != null ? { icon: <Icon name={icon.name} onMouseOut={this.handleMouseOut} link={icon.onIconClick != null} onClick={icon.onIconClick} /> } : {};
+        const i = { icon: <Icon name="calendar" onMouseOut={this.handleMouseOut} link onClick={this.handleClick} /> }
         const l = parseBool(loading, false) ? { loading: true } : {}
-        const p = Object.assign({}, parseBool(password, false) && !mouseOverIcon ? { type: 'password' } : {}, props)
-        const ro = parseBool(readonly, false) ? { readOnly: true } : {}
+        const r = parseBool(readonly, false) ? { readOnly: true } : {}
         const float = subLabel ? { style: { float: "left" } } : {}
         const w = width != null ? { width: width } : {}
+
+        const datePicker = (
+            <div className='DayPickerInput-OverlayWrapper' style={{ marginLeft: 0 }}>
+                <div className='DayPickerInput-Overlay'>
+                    <DayPicker />
+                </div>
+            </div>
+        )
+
         return (
             <FormContext.Consumer>
                 {formCtx =>
@@ -71,13 +79,14 @@ export class XcInputText extends Component<Props, State> {
                                         type="text"
                                         value={getStringValue(value, formCtx.model, name)}
                                         {...i}
-                                        {...ip}
                                         {...l}
-                                        {...p}
                                         {...ph}
-                                        {...ro}
+                                        {...r}
                                         {... (!parseBool(inline, false) && formCtx != null && formGrpCtx.fluid) ? { fluid: true } : { width: width }}
                                     />
+                                    {showCalendar && (
+                                        datePicker
+                                    )}
                                 </div>
                                 :
                                 <Form.Field inline={parseBool(inline, formCtx.inline)} required={getRequired(validation)} {...w} >
@@ -88,13 +97,14 @@ export class XcInputText extends Component<Props, State> {
                                         type="text"
                                         value={getStringValue(value, formCtx.model, name)}
                                         {...i}
-                                        {...ip}
                                         {...l}
-                                        {...p}
                                         {...ph}
-                                        {...ro}
-                                        {... (!parseBool(inline, false) && formCtx != null && (width == null || formGrpCtx.fluid)) ? { fluid: true } : {}}
+                                        {...r}
+                                        {... (!parseBool(inline, false) && formCtx != null && formGrpCtx.fluid) ? { fluid: true } : {}}
                                     />
+                                    {showCalendar && (
+                                        datePicker
+                                    )}
                                 </Form.Field>
                         }
                     </FormGroupContext.Consumer>
@@ -113,7 +123,8 @@ export class XcInputText extends Component<Props, State> {
     }
 
     handleClick = (event: SyntheticMouseEvent<>) => {
-        console.log("handleClick.....")
+        const { showCalendar } = this.state;
+        this.setState({ showCalendar: !showCalendar })
     }
 
     handleChange = (updateModel: any) => (event: SyntheticInputEvent<>) => {

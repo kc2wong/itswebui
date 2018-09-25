@@ -17,6 +17,7 @@
         "path": "^0.12.7",
         "randomcolor": "^0.5.3",
         "react": "^16.4.0",
+        "react-day-picker": "^7.2.4",
         "react-dom": "^16.4.0",
         "react-minimal-pie-chart": "^3.3.0",
         "react-router-dom": "^4.3.1",

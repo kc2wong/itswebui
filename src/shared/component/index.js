@@ -1,4 +1,5 @@
 export * from './XaIcon'
+export * from './XaInputDate'
 export * from './XaPieChart';
 export * from './XaAccordion';
 export * from './XcButton';

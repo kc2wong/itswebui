@@ -1,6 +1,7 @@
 // @flow
 import _ from 'lodash'
 import React, { Component } from 'react'
+import { Enum } from 'enumify'
 import { XaIcon, XcButton, XcButtonGroup, XcDivider, XcForm, XcGrid, XcPanel, XcInputText } from 'shared/component';
 import { createNumberFormat, formatNumber, Language, parseBool, xlate } from 'shared/util/lang';
 import { BuySell } from 'app/model/EnumType'
@@ -11,6 +12,9 @@ import { priceQuoteService } from 'app/service';
 
 import { MessageService } from 'shared/service';
 
+class IconStyle extends Enum {}
+IconStyle.initEnum({ Play: { value: 'triangle right' }, Refresh: { value: 'refresh' } });
+
 type Props = {
 }
 
@@ -20,6 +24,7 @@ type IntProps = {
 }
 
 type State = {
+    icon: IconStyle,
     instrumentCode: string,
     loading: boolean,
     priceQuote: ?PriceQuote
@@ -36,7 +41,7 @@ class PriceQuoteForm extends React.Component<IntProps, State> {
 
     render() {
         const { messageService, sessionContext } = this.props
-        const { instrumentCode, loading } = this.state
+        const { icon, instrumentCode, loading } = this.state
         const languageContext: LanguageContextType = sessionContext.languageContext
         const cacheContext = sessionContext.cacheContext
 
@@ -46,22 +51,14 @@ class PriceQuoteForm extends React.Component<IntProps, State> {
         const priceFormat = createNumberFormat(true, currency ? currency.decimalPoint : 2)
 
         const rowStyle = { paddingBottom: "0.5rem", paddingTop: "0.5rem" }
+        const sign = Math.sign(priceQuote.priceChange)
+        const arrow = sign > 0 ? "▲" : sign < 0 ? "▼" : ""
         return (
             <ThemeContext.Consumer>
                 {theme => (
                     <div style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>
-                        <XcGrid>
-                            <XcGrid.Row>
-                                <XcGrid.Col width={14}>
-                                <XcForm name={formName}>
-                                <XcInputText disabled={loading} inline label={xlate(`${formName}.instrumentCode`)} onChange={this.handleChangeInstrumentCode} value={instrumentCode} />
-                                </XcForm>
-                                </XcGrid.Col>
-                                <XcGrid.Col width={2}>
-                                    <XaIcon disabled={loading} name={this.state.priceQuote != null ? "refresh" : "triangle right"} onClick={this.search} />
-                                </XcGrid.Col>
-                            </XcGrid.Row>
-                        </XcGrid>
+                        <br />
+                        <XcInputText disabled={loading} icon={{ name: icon.value, onIconClick: this.search }} iconPosition={XcInputText.IconPosition.Right} inline label={xlate(`${formName}.instrumentCode`)} loading={loading} onChange={this.handleChangeInstrumentCode} value={instrumentCode} />
                         <br />
                         {this.state.priceQuote != null && (
                             <XcPanel loading={loading}>
@@ -84,9 +81,14 @@ class PriceQuoteForm extends React.Component<IntProps, State> {
                                             <XcGrid.Col>{xlate(`${formName}.closingPrice`)}</XcGrid.Col>
                                             <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}>{`${formatNumber(priceQuote.closingPrice, priceFormat)}`}</XcGrid.Col>
                                         </XcGrid.Row>
-                                        <XcGrid.Row>
+                                        <XcGrid.Row verticalAlign={XcGrid.VerticalAlign.Center}>
                                             <XcGrid.Col>{xlate(`${formName}.change`)}</XcGrid.Col>
-                                            <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}>{`${priceQuote.priceChange} (${priceQuote.percentChange}%)`}</XcGrid.Col>
+                                            {sign != 0 && (
+                                                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}><font color={sign > 0 ? "green" : "red"}>{arrow}{`${priceQuote.priceChange} (${priceQuote.percentChange}%)`}</font></XcGrid.Col>
+                                            )}
+                                            {sign == 0 && (
+                                                <XcGrid.Col horizontalAlign={XcGrid.HorizontalAlign.Right}>{arrow}{`${priceQuote.priceChange} (${priceQuote.percentChange}%)`}</XcGrid.Col>
+                                            )}
                                         </XcGrid.Row>
                                     </XcGrid>
                                     <br />
@@ -127,18 +129,19 @@ class PriceQuoteForm extends React.Component<IntProps, State> {
     }
 
     handleChangeInstrumentCode = (event: SyntheticInputEvent<>, target: any) => {
-        this.setState({ instrumentCode: target.value })
+        this.setState({ icon: IconStyle.Play, instrumentCode: target.value })
     }
 
     defaultState = (): Object => {
         return {
+            icon: IconStyle.Play,
             instrumentCode: "",
             loading: false,
             priceQuote: null
         }
     }
 
-    formatPrice = (price: ?number, numberFormat: number): string => {
+    formatPrice = (price: ?number, numberFormat: string): string => {
         return price == null ? xlate("priceQuoteForm.notApplicable") : formatNumber(price, numberFormat)
     }
 
@@ -152,6 +155,7 @@ class PriceQuoteForm extends React.Component<IntProps, State> {
                     result => {
                         console.log(result)
                         this.setState({
+                            icon: IconStyle.Refresh,
                             priceQuote: result,
                             loading: false
                         })

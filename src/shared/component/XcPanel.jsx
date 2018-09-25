@@ -30,9 +30,9 @@ class Footer extends React.Component<{ children: React.Node }, {}> {
 type Props = {
     loading: ?boolean,
     children: React.ChildrenArray<
-    | React.Element<Header2>
-    | React.Element<Body>
-    | React.Element<Footer>
+    | React.Element<typeof Header2>
+    | React.Element<typeof Body>
+    | React.Element<typeof Footer>
     >;
 }
 

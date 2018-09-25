@@ -2,6 +2,13 @@
     margin-bottom: 1em!important;
 }
 
+/** inline field **/
+div.xa-inline-input {
+    align-items: center; 
+    display: flex; 
+    flex-direction: row; 
+}
+
 div.ms-TextField-wrapper > label.ms-Label {
     font-weight: bold;
 }
@@ -14,3 +21,4 @@ div.ms-TextField-wrapper > label.ms-Label {
   color: #495057!important;
   background-color: #e9ecef!important;
 }
+

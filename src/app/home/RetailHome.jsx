@@ -22,6 +22,7 @@ import OrderAmendForm from 'app/component/order/OrderAmendForm'
 import OrderCancelForm from 'app/component/order/OrderCancelForm'
 import OrderInputForm from 'app/component/order/OrderInputForm'
 import OrderEnquiryForm from 'app/component/order/OrderEnquiryForm'
+import OrderHistoryEnquiryForm from 'app/component/order/OrderHistoryEnquiryForm'
 import PortfolioEnquiryForm from 'app/component/client/PortfolioEnquiryForm'
 import PurchasePowerEnquiryForm from 'app/component/client/PurchasePowerEnquiryForm'
 import PriceQuoteForm from 'app/component/staticdata/PriceQuoteForm'
@@ -104,7 +105,7 @@ class RetailHome extends React.Component<IntProps, State> {
             const dummyForm = <DummyForm/>
             panes.push(<XcNavigationTab.Pane key={'Portfolio'} id={'Portfolio'} label={xlate('home.accountPortfolio')} component={<PortfolioEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
             panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={xlate('home.orderJournal')} component={<OrderEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
-            panes.push(<XcNavigationTab.Pane key={'OrderHistory'} id={'AccountInfo'} label={xlate('home.orderHistory')} component={dummyForm} ></XcNavigationTab.Pane>)
+            panes.push(<XcNavigationTab.Pane key={'OrderHistory'} id={'AccountInfo'} label={xlate('home.orderHistory')} component={<OrderHistoryEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
     
             this.setState({ currencies: result[0].data, exchanges: exchanges, exchangeBoardPriceSpreads: result[2].data, panes: panes, tradingAccounts: result[3] }, () => {
                 messageService.hideLoading()
