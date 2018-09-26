@@ -61,10 +61,11 @@ class OrderEnquiryForm extends Component<IntProps, State> {
 
         const { exchangeCode, instrumentMap, lastUpdate, outstandingOrder, orders, sortBy, sortDirection } = this.state;
         const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)
+        const exchangeTradeDate = exchange != null ? minDate(currentDate(), _.minBy(exchanges, "tradeDate").tradeDate) : currentDate()            
         const exchangeCurrency = cacheContext.getCurrency(exchange.baseCurrencyCode)
         const baseCurrency = cacheContext.getCurrency(BASE_CURRENCY)
 
-        const exchangeOrder = _.filter(orders, o => o.exchangeCode == exchangeCode && (!outstandingOrder || OUTSTANDING_ORDER_STATUS.has(o.getOrderStatus())) )
+        const exchangeOrder = _.filter(orders, o => o.exchangeCode == exchangeCode && o.createTradeDate >= exchangeTradeDate && (!outstandingOrder || OUTSTANDING_ORDER_STATUS.has(o.getOrderStatus())) )
         const data = _.map(exchangeOrder, (e) => {
             const instrument: Instrument = instrumentMap.get(e.orderNumber)
             return Object.assign({ instrumentName: instrument != null ? instrument.getDescription(language) : "" }, e,
@@ -158,12 +159,12 @@ class OrderEnquiryForm extends Component<IntProps, State> {
         if (selectedTradingAccount) {
             messageService.showLoading()
             const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)
-            const startTradeDate = exchange != null ? minDate(currentDate(), exchange.tradeDate) : currentDate()
+            const startTradeDate = exchange != null ? minDate(currentDate(), _.minBy(exchanges, "tradeDate").tradeDate) : currentDate()            
             const promise = simpleOrderService.enquireOrder(selectedTradingAccount.tradingAccountCode, exchangeCode, startTradeDate, null)
             if (promise) {
                 promise.then(
                     orderEnquirySearchResult => {
-                        let orders = orderEnquirySearchResult.simpleOrders
+                        let orders = orderEnquirySearchResult.simpleOrders.data
                         const instruments = orderEnquirySearchResult.instruments
                         const orderInstrumentIndex = orderEnquirySearchResult.orderInstrumentIndex
                         const instrumentMap = new Map()

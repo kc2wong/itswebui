@@ -118,7 +118,6 @@ class RetailHome extends React.Component<IntProps, State> {
         const { messageService } = this.props;
         const { activeIndex } = this.state
         const { language, currencies, exchanges, selectedTradingAccount, tradingAccounts, menuOpen, panes, processingOrder, tabIndex, tradingFloorComponent } = this.state;
-        console.log(tradingFloorComponent)
         const applicationDate = new Date()
 
         const sessionContext: SessionContextType = {

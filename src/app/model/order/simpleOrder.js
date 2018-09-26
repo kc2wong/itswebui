@@ -1,9 +1,10 @@
 // @flow
 import _ from 'lodash'
 import { BuySell, LotNature, OrderStatus } from '../EnumType'
+import { PageResult } from 'shared/model/BaseModel'
+import { currentDate, currentDateTime } from 'shared/util/dateUtil';
 import { Instrument } from 'app/model/staticdata/instrument'
 import { CHANNEL_CODE } from 'app/constant/ApplicationConstant'
-import { currentDate, currentDateTime } from 'shared/util/dateUtil';
 
 export class SimpleOrder {
 
@@ -80,11 +81,11 @@ export class SimpleOrder {
 }
 
 export class OrderEnquirySearchResult {
-    simpleOrders: Array<SimpleOrder>;
+    simpleOrders: PageResult<SimpleOrder>;
     instruments: Array<Instrument>;
     orderInstrumentIndex: Map<string, number>;
 
-    constructor(simpleOrders: Array<SimpleOrder>, instruments: Array<Instrument>, orderInstrumentIndex: Map<string, number>) {
+    constructor(simpleOrders: PageResult<SimpleOrder>, instruments: Array<Instrument>, orderInstrumentIndex: Map<string, number>) {
         this.simpleOrders = simpleOrders
         this.instruments = instruments
         this.orderInstrumentIndex = orderInstrumentIndex
@@ -96,17 +97,18 @@ export class OrderEnquirySearchResult {
         return rtn
     }
 
-    static fromJson(json: Object): OrderEnquirySearchResult {
-        const simpleOrders = _.map(json.simpleOrders, e => SimpleOrder.fromJson(e))
-        const instruments = _.map(json.instruments, e => Instrument.fromJson(e))
+    static fromJson(criteria: Object, json: Object): OrderEnquirySearchResult {
+        const data = _.map(json.content, e => SimpleOrder.fromJson(e))
+        const simpleOrders = new PageResult(criteria, json.currentPage + 1, json.pageSize, json.totalPage, json.totalCount, data)
+        const instruments = _.map(json.extraContent.instrumentList, e => Instrument.fromJson(e))
         const orderInstrumentIndex = new Map()
-        _.forEach(json.orderInstrumentIndex, (value, key) => orderInstrumentIndex.set(key, value))
+        _.forEach(json.extraContent.orderInstrumentIndex, (value, key) => orderInstrumentIndex.set(key, value))
         return new OrderEnquirySearchResult(simpleOrders, instruments, orderInstrumentIndex)
     }
 
-    static newInstance(): OrderEnquirySearchResult {
-        return new OrderEnquirySearchResult([], [], new Map());
-    }
+    // static newInstance(): OrderEnquirySearchResult {
+    //     return new OrderEnquirySearchResult([], [], new Map());
+    // }
 
 }
 

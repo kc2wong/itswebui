@@ -53,7 +53,7 @@ export class XaInputDate extends Component<Props, State> {
         const { inline, label, loading, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
         const { showCalendar } = this.state
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
-        const i = { icon: <Icon name="calendar" onMouseOut={this.handleMouseOut} link onClick={this.handleClick} /> }
+        const i = { icon: <Icon link name="calendar" onClick={this.handleClick} /> }
         const l = parseBool(loading, false) ? { loading: true } : {}
         const r = parseBool(readonly, false) ? { readOnly: true } : {}
         const float = subLabel ? { style: { float: "left" } } : {}
@@ -111,15 +111,6 @@ export class XaInputDate extends Component<Props, State> {
                 }
             </FormContext.Consumer>
         )
-    }
-
-    handleMouseOver = (event: SyntheticMouseEvent<>) => {
-        console.log("handleMouseOver.....")
-        this.setState({ mouseOverIcon: true })
-    }
-
-    handleMouseOut = (event: SyntheticMouseEvent<>) => {
-        this.setState({ mouseOverIcon: false })
     }
 
     handleClick = (event: SyntheticMouseEvent<>) => {
