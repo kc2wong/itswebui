@@ -45,7 +45,7 @@ class ExchangeService implements StaticDataService<Exchange> {
                 const data = _.map(json.content, (d) =>
                     Exchange.fromJson(d)
                 );
-                const rtn = Promise.resolve(new PageResult(criteria, json.currentPage + 1, json.pageSize, json.totalPage, json.totalCount, data));
+                const rtn = Promise.resolve(new PageResult(criteria, json.currentPage + 1, json.pageSize, json.totalPage, json.totalCount, json.hasNext, data));
                 return rtn
             },
             error => {

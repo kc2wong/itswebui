@@ -9,7 +9,7 @@ import { ApplicationContext, type AccountContextType, type CacheContextType, typ
 import { tradingAccountService } from 'app/service';
 
 import { XaPieChart, XcButton, XcButtonGroup, XcContextMenu, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
-import { XcOption, XcPagination, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { XcOption, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { BaseModel, DataType, Language, Pageable, PageResult, SortDirection } from 'shared/model';
 import { MessageService } from 'shared/service'
 import { createNumberFormat, formatNumber, roundNumber, xlate } from 'shared/util/lang'
@@ -255,24 +255,24 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
             return this.portfolioActionSheet(model)
         }
         const resultColName = ["instrumentCode", "instrumentName", "sellableQuantity", "totalQuantity", "closingPrice", "marketValue", "marketValuePercent"]
-        const searchResultColInstrumentCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`portfolioEnquiryForm.${resultColName[0]}`), 2, sortBy == resultColName[0] ? sortDirection : null)
+        const searchResultColInstrumentCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`portfolioEnquiryForm.${resultColName[0]}`), 2, true, sortBy == resultColName[0] ? sortDirection : null)
         searchResultColInstrumentCode.actionSheetProvider = contentProvider
-        const searchResultColInstrumentName = new XcTableColSpec(resultColName[1], DataType.String, xlate(`portfolioEnquiryForm.${resultColName[1]}`), 3, sortBy == resultColName[1] ? sortDirection : null)
-        const searchResultColSellableQuantity = new XcTableColSpec(resultColName[2], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[2]}`), 2, sortBy == resultColName[2] ? sortDirection : null)
+        const searchResultColInstrumentName = new XcTableColSpec(resultColName[1], DataType.String, xlate(`portfolioEnquiryForm.${resultColName[1]}`), 3, true, sortBy == resultColName[1] ? sortDirection : null)
+        const searchResultColSellableQuantity = new XcTableColSpec(resultColName[2], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[2]}`), 2, true, sortBy == resultColName[2] ? sortDirection : null)
         searchResultColSellableQuantity.formatter = quantityFormatter
         searchResultColSellableQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColTotalQuantity = new XcTableColSpec(resultColName[3], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[3]}`), 2, sortBy == resultColName[3] ? sortDirection : null)
+        const searchResultColTotalQuantity = new XcTableColSpec(resultColName[3], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[3]}`), 2, true, sortBy == resultColName[3] ? sortDirection : null)
         searchResultColTotalQuantity.formatter = quantityFormatter
         searchResultColTotalQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColClosingPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`portfolioEnquiryForm.${resultColName[4]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 2, sortBy == resultColName[4] ? sortDirection : null)
+        const searchResultColClosingPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`portfolioEnquiryForm.${resultColName[4]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 2, true, sortBy == resultColName[4] ? sortDirection : null)
         searchResultColClosingPrice.formatter = priceFormatter
         searchResultColClosingPrice.horizontalAlign = XcTable.TextAlign.Right
         searchResultColClosingPrice.footerHorizontalAlign = XcTable.TextAlign.Right
-        const searchResultColMarketValue = new XcTableColSpec(resultColName[5], DataType.Number, `${xlate(`portfolioEnquiryForm.${resultColName[5]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 3, sortBy == resultColName[5] ? sortDirection : null)
+        const searchResultColMarketValue = new XcTableColSpec(resultColName[5], DataType.Number, `${xlate(`portfolioEnquiryForm.${resultColName[5]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 3, true, sortBy == resultColName[5] ? sortDirection : null)
         searchResultColMarketValue.formatter = priceFormatter
         searchResultColMarketValue.horizontalAlign = XcTable.TextAlign.Right
         searchResultColMarketValue.footerHorizontalAlign = XcTable.TextAlign.Right
-        const searchResultColMarketValuePercent = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[6]}`), 2, sortBy == resultColName[6] ? sortDirection : null)
+        const searchResultColMarketValuePercent = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`portfolioEnquiryForm.${resultColName[6]}`), 2, true, sortBy == resultColName[6] ? sortDirection : null)
         searchResultColMarketValuePercent.formatter = percentFormatter
         searchResultColMarketValuePercent.horizontalAlign = XcTable.TextAlign.Right
         searchResultColMarketValuePercent.footerHorizontalAlign = XcTable.TextAlign.Right

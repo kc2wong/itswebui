@@ -3,7 +3,7 @@ import _ from 'lodash'
 import React, { Component } from 'react';
 import { DataType } from 'shared/model';
 import { XcButton, XcButtonGroup, XcDialog, XcForm, XcInputText, XcInputNumber } from 'shared/component';
-import { XcMessage, XcOption, XcRadio, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { XcOption, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { ThemeContext } from 'shared/component/XaTheme'
 import { createNumberFormat, formatNumber, Language, xlate } from 'shared/util/lang';
 import { isNullOrEmpty } from 'shared/util/stringUtil';
@@ -77,7 +77,7 @@ class OrderInputForm extends React.Component<IntProps, State> {
                             <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
                             <XcSelect name="buySell" options={buySellOpt} validation={{ required: true }} />
                             <XcInputText name="instrumentCode" onBlur={this.handleSearchStock} subLabel={instrumentName} validation={{ required: true }} />
-                            <XcInputNumber name="price" prefix={currencyName} prefixMinWidth="55px" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} />
+                            <XcInputNumber name="price" prefix={currencyName} prefixMinWidth="55px" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} type={XcInputNumber.Type.Decimal} />
                             <XcInputNumber name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
                             <br />
                             <XcButtonGroup>

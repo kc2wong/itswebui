@@ -5,18 +5,15 @@ import { Form, Icon, Input } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import FormGroupContext from './XcFormGroup';
 import { constructLabel, createColumnClass, getRequired, getStringValue } from './XcFormUtil';
-import { IFieldConstraint, XcInputTextConstraint } from './validation/XcFieldConstraint';
-import type { XcIconProps } from './XcIconProps';
-import { parseBool, xlate } from 'shared/util/lang';
+import type { XcInputTextConstraint } from './validation/XcFieldConstraint';
+import type { XcIconProps } from './XcIconProps'
+import { IconPosition } from './XcIconProps'
+import { parseBool, xlate } from 'shared/util/lang'
 
 import './XcInputText.css';
 
-class IconPosition extends Enum {}
-IconPosition.initEnum({ Left: { value: 'left' }, Right: { value: 'right' } });
-
 type Props = {
     icon?: XcIconProps,
-    iconPosition?: IconPosition,
     inline: ?bool,
     label?: string,
     loading?: bool,
@@ -36,8 +33,6 @@ type State = {
 
 export class XcInputText extends Component<Props, State> {
 
-    static IconPosition = IconPosition
-
     static defaultProps = {
         width: 16
     };
@@ -49,16 +44,19 @@ export class XcInputText extends Component<Props, State> {
     }
     
     render() {
-        const { icon, iconPosition, inline, label, loading, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
+        const { icon, inline, label, loading, name, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
+        const isPassword = parseBool(password, false)
         const { mouseOverIcon } = this.state
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
-        const ip = (icon != null && (iconPosition == null || iconPosition == IconPosition.Left)) ? { iconPosition: IconPosition.Left.value } : {}         // no need to specify position when it is right 
-        const i = icon != null ? { icon: <Icon name={icon.name} onMouseOut={this.handleMouseOut} link={icon.onIconClick != null} onClick={icon.onIconClick} /> } : {};
+        const i = icon != null ? { icon: <Icon name={icon.name} onMouseOut={this.handleIconMouseOut} onMouseEnter={this.handleIconMouseOver}  link={isPassword || icon.onIconClick != null} onClick={icon.onIconClick} /> } : {};
+        const ip = (icon != null && (icon.position == null || icon.position == IconPosition.Left)) ? { iconPosition: IconPosition.Left.value } : {}         // no need to specify position when it is right 
         const l = parseBool(loading, false) ? { loading: true } : {}
-        const p = Object.assign({}, parseBool(password, false) && !mouseOverIcon ? { type: 'password' } : {}, props)
+        const ml = (validation != null && validation.maxLength != null) ? { maxLength: validation.maxLength }: {}
+        const p = Object.assign({}, isPassword && !mouseOverIcon ? { type: 'password' } : {}, props)
         const ro = parseBool(readonly, false) ? { readOnly: true } : {}
         const float = subLabel ? { style: { float: "left" } } : {}
         const w = width != null ? { width: width } : {}
+
         return (
             <FormContext.Consumer>
                 {formCtx =>
@@ -73,6 +71,7 @@ export class XcInputText extends Component<Props, State> {
                                         {...i}
                                         {...ip}
                                         {...l}
+                                        {...ml}
                                         {...p}
                                         {...ph}
                                         {...ro}
@@ -90,6 +89,7 @@ export class XcInputText extends Component<Props, State> {
                                         {...i}
                                         {...ip}
                                         {...l}
+                                        {...ml}
                                         {...p}
                                         {...ph}
                                         {...ro}
@@ -103,12 +103,11 @@ export class XcInputText extends Component<Props, State> {
         )
     }
 
-    handleMouseOver = (event: SyntheticMouseEvent<>) => {
-        console.log("handleMouseOver.....")
+    handleIconMouseOver = (event: SyntheticMouseEvent<>) => {
         this.setState({ mouseOverIcon: true })
     }
 
-    handleMouseOut = (event: SyntheticMouseEvent<>) => {
+    handleIconMouseOut = (event: SyntheticMouseEvent<>) => {
         this.setState({ mouseOverIcon: false })
     }
 

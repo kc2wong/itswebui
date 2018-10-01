@@ -34,18 +34,20 @@ export class PageResult<T> {
     totalCount: number;    
     totalPage: number;
     pageSize: number;
+    hasNext: boolean;
     data: T[];
 
-    constructor(criteria: Object, currentPage: number, pageSize: number, totalPage: number, totalCount: number, data: T[]) {
-        this.criteria = criteria;
-        this.currentPage = currentPage;
-        this.totalPage = totalPage;
-        this.totalCount = totalCount;
-        this.pageSize = pageSize;
-        this.data = data;
+    constructor(criteria: Object, currentPage: number, pageSize: number, totalPage: number, totalCount: number, hasNext: boolean, data: T[]) {
+        this.criteria = criteria
+        this.currentPage = currentPage
+        this.totalPage = totalPage
+        this.totalCount = totalCount
+        this.pageSize = pageSize
+        this.hasNext = hasNext
+        this.data = data
     }
 
-    hasNextPage(): boolean {
-        return this.totalPage > (this.currentPage + 1)
-    }
+    // hasNextPage(): boolean {
+    //     return this.hasNext
+    // }
 }

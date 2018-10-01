@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Form } from 'semantic-ui-react';
 import { parseBool } from 'shared/util/lang';
 
-type FormGroupContextType = {
+export type FormGroupContextType = {
     fluid: bool
 }
 

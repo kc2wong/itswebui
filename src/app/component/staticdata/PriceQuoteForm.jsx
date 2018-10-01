@@ -2,13 +2,14 @@
 import _ from 'lodash'
 import React, { Component } from 'react'
 import { Enum } from 'enumify'
-import { XaIcon, XcButton, XcButtonGroup, XcDivider, XcForm, XcGrid, XcPanel, XcInputText } from 'shared/component';
-import { createNumberFormat, formatNumber, Language, parseBool, xlate } from 'shared/util/lang';
+import { XcButton, XcButtonGroup, XcDivider, XcForm, XcGrid, XcPanel, XcInputText } from 'shared/component'
+import { IconPosition } from 'shared/component/XcIconProps'
+import { createNumberFormat, formatNumber, Language, parseBool, xlate } from 'shared/util/lang'
 import { BuySell } from 'app/model/EnumType'
 import { ThemeContext } from 'shared/component/XaTheme'
 import { Currency, PriceQuote } from 'app/model/staticdata'
 import { ApplicationContext, type AccountContextType, type CacheContextType, type LanguageContextType, SessionContext, type SessionContextType } from 'app/context'
-import { priceQuoteService } from 'app/service';
+import { priceQuoteService } from 'app/service'
 
 import { MessageService } from 'shared/service';
 
@@ -58,7 +59,7 @@ class PriceQuoteForm extends React.Component<IntProps, State> {
                 {theme => (
                     <div style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>
                         <br />
-                        <XcInputText disabled={loading} icon={{ name: icon.value, onIconClick: this.search }} iconPosition={XcInputText.IconPosition.Right} inline label={xlate(`${formName}.instrumentCode`)} loading={loading} onChange={this.handleChangeInstrumentCode} value={instrumentCode} />
+                        <XcInputText disabled={loading} icon={{ name: icon.value, onIconClick: this.search, position: IconPosition.Right }} inline label={xlate(`${formName}.instrumentCode`)} loading={loading} onChange={this.handleChangeInstrumentCode} value={instrumentCode} />
                         <br />
                         {this.state.priceQuote != null && (
                             <XcPanel loading={loading}>

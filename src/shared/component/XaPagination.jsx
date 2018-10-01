@@ -4,11 +4,12 @@ import React, { Component } from 'react';
 import { Icon, Menu, Pagination } from 'semantic-ui-react';
 import { nvl, parseBool } from 'shared/util/lang';
 
-import './XcPagination.css';
+import './XaPagination.css';
 
 type Props = {
     activePage: number,
     totalPages?: number,
+    hasNext?: boolean,
     range?: number[],
     freeNavigate: ?bool,            // If true, totalPages is calculated correctly in server.  Otherwise, can only navigate prev / next page
     onPageChange: (pageNum: number) => void
@@ -18,12 +19,11 @@ type State = {
 
 }
 
-export class XcPagination extends Component<Props, State> {
+export class XaPagination extends Component<Props, State> {
 
     render() {
-        const { activePage, onPageChange, range, totalPages } = this.props;
+        const { activePage, hasNext, onPageChange, range, totalPages } = this.props;
         const freeNavigate = parseBool(this.props.freeNavigate, true);
-
         return (
             range != null ?
                 <Menu size="mini" pagination>
@@ -48,7 +48,7 @@ export class XcPagination extends Component<Props, State> {
                     <Menu size="mini" pagination>
                         <Menu.Item disabled={activePage == 1} icon='angle left' onClick={this.handlePrevPage} />
                         <Menu.Item active={true} name={activePage.toString()} />
-                        <Menu.Item disabled={activePage == totalPages} icon='angle right' onClick={this.handleNextPage} />
+                        <Menu.Item disabled={!parseBool(hasNext, false)} icon='angle right' onClick={this.handleNextPage} />
                     </Menu>                
         );
     }

@@ -138,7 +138,7 @@ class StmActionMaintenanceForm extends Component<Props, State> {
             if (searchResult) {
                 const result = new PageResult(
                     searchResult.criteria, searchResult.currentPage, searchResult.pageSize, searchResult.totalPage, searchResult.totalCount,
-                    _.reverse(searchResult.data)
+                    searchResult.hasNext, _.reverse(searchResult.data)
                 )
                 messageService && messageService.dismissDialog()
                 this.setState({ searchResult: result })                

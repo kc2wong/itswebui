@@ -60,9 +60,9 @@ class LoginForm extends Component<IntProps, State> {
                                         </header>
                                         <br />
                                     </div>
-                                    <XcInputText icon={{ name: "user" }} label="#loginForm.username" name="userid" validation={{ required: true }} />
-                                    <XcInputText icon={{ name: "lock" }} label="Password" name="password" password validation={{ required: true }} />
-                                    <XcSelect label="Language" name="language" onChange={this.handleChangeLanguage} options={langOpt} value={language.value} />
+                                    <XcInputText icon={{ name: "user" }} name="userid" validation={{ maxLength: 10, required: true }} />
+                                    <XcInputText icon={{ name: "lock" }} name="password" password validation={{ required: true }} />
+                                    <XcSelect label="Language" name="language" onChange={this.handleChangeLanguage} options={langOpt} validation={{ required: true }} value={language.value} />
                                     <XcCheckbox label="Remember Me" name="rememberMe" />
                                     <p />
                                     <XcButton disabled={isNullOrEmpty(credential.userid) || isNullOrEmpty(credential.password)} fluid primary onClick={this.handleClick} name="login" />

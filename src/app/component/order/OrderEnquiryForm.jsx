@@ -160,7 +160,7 @@ class OrderEnquiryForm extends Component<IntProps, State> {
             messageService.showLoading()
             const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)
             const startTradeDate = exchange != null ? minDate(currentDate(), _.minBy(exchanges, "tradeDate").tradeDate) : currentDate()            
-            const promise = simpleOrderService.enquireOrder(selectedTradingAccount.tradingAccountCode, exchangeCode, startTradeDate, null)
+            const promise = simpleOrderService.enquireOrder(selectedTradingAccount.tradingAccountCode, null, startTradeDate, null)
             if (promise) {
                 promise.then(
                     orderEnquirySearchResult => {
@@ -334,22 +334,22 @@ class OrderEnquiryForm extends Component<IntProps, State> {
             return this.portfolioActionSheet(model)
         }
         const resultColName = ["orderNumber", "buySell", "instrumentCode", "instrumentName", "price", "quantity", "executedQuantity", "orderStatus"]
-        const searchResultColOrderNumber = new XcTableColSpec(resultColName[0], DataType.String, xlate(`${formName}.${resultColName[0]}`), 1, sortBy == resultColName[0] ? sortDirection : null)
+        const searchResultColOrderNumber = new XcTableColSpec(resultColName[0], DataType.String, xlate(`${formName}.${resultColName[0]}`), 1, true, sortBy == resultColName[0] ? sortDirection : null)
         searchResultColOrderNumber.actionSheetProvider = contextMenuProvider
-        const searchResultColBuySell = new XcTableColSpec(resultColName[1], DataType.String, xlate(`${formName}.${resultColName[1]}`), 1, sortBy == resultColName[1] ? sortDirection : null)
+        const searchResultColBuySell = new XcTableColSpec(resultColName[1], DataType.String, xlate(`${formName}.${resultColName[1]}`), 1, true, sortBy == resultColName[1] ? sortDirection : null)
         searchResultColBuySell.formatter = buySellFormatter
-        const searchResultColInstrumentCode = new XcTableColSpec(resultColName[2], DataType.String, xlate(`${formName}.${resultColName[2]}`), 1, sortBy == resultColName[2] ? sortDirection : null)
-        const searchResultColInstrumentName = new XcTableColSpec(resultColName[3], DataType.String, xlate(`${formName}.${resultColName[3]}`), 2, sortBy == resultColName[3] ? sortDirection : null)
-        const searchResultColPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`${formName}.${resultColName[4]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 1, sortBy == resultColName[4] ? sortDirection : null)
+        const searchResultColInstrumentCode = new XcTableColSpec(resultColName[2], DataType.String, xlate(`${formName}.${resultColName[2]}`), 1, true, sortBy == resultColName[2] ? sortDirection : null)
+        const searchResultColInstrumentName = new XcTableColSpec(resultColName[3], DataType.String, xlate(`${formName}.${resultColName[3]}`), 2, true, sortBy == resultColName[3] ? sortDirection : null)
+        const searchResultColPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`${formName}.${resultColName[4]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 1, true, sortBy == resultColName[4] ? sortDirection : null)
         searchResultColPrice.formatter = priceFormatter
         searchResultColPrice.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColQuantity = new XcTableColSpec(resultColName[5], DataType.Number, xlate(`${formName}.${resultColName[5]}`), 1, sortBy == resultColName[5] ? sortDirection : null)
+        const searchResultColQuantity = new XcTableColSpec(resultColName[5], DataType.Number, xlate(`${formName}.${resultColName[5]}`), 1, true, sortBy == resultColName[5] ? sortDirection : null)
         searchResultColQuantity.formatter = quantityFormatter
         searchResultColQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColExecutedQuantity = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`${formName}.${resultColName[6]}`), 1, sortBy == resultColName[6] ? sortDirection : null)
+        const searchResultColExecutedQuantity = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`${formName}.${resultColName[6]}`), 1, true, sortBy == resultColName[6] ? sortDirection : null)
         searchResultColExecutedQuantity.formatter = quantityFormatter
         searchResultColExecutedQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColOrderStatus = new XcTableColSpec(resultColName[7], DataType.String, xlate(`${formName}.${resultColName[7]}`), 1, sortBy == resultColName[7] ? sortDirection : null)
+        const searchResultColOrderStatus = new XcTableColSpec(resultColName[7], DataType.String, xlate(`${formName}.${resultColName[7]}`), 1, true, sortBy == resultColName[7] ? sortDirection : null)
         return [
             searchResultColOrderNumber, searchResultColBuySell, searchResultColInstrumentCode, searchResultColInstrumentName, searchResultColPrice, searchResultColQuantity, searchResultColExecutedQuantity, searchResultColOrderStatus
         ]

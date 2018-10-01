@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-// import { ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
+import { Enum } from 'enumify'
 import { Button, Form, Input, Label } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import FormGroupContext from './XcFormGroup';
@@ -10,6 +10,9 @@ import type { XcIconProps } from './XcIconProps';
 import { parseBool, xlate } from 'shared/util/lang';
 
 import './XcInputText.css';
+
+export class NumberType extends Enum { }
+NumberType.initEnum(['Integer', 'Decimal']);
 
 type Props = {
     icon: ?XcIconProps,
@@ -22,19 +25,32 @@ type Props = {
     steppingDown: ?number,
     steppingUp: ?number,
     subLabel: ?string,
-    value: ?string,
+    type: ?NumberType,
+    value: ?number,
     validation: ?XcInputTextConstraint,
     width: ?number
 }
 
 type State = {
+    inFocus: boolean,
+    intermediate: string
 }
 
 export class XcInputNumber extends Component<Props, State> {
+    static Type = NumberType
 
     static defaultProps = {
         width: 12
     };
+
+    constructor(props: Props) {
+        super();
+        this.props = props;
+        this.state = {
+            inFocus: false,
+            intermediate: ''
+        }
+    }
 
     render() {
         return (
@@ -50,12 +66,16 @@ export class XcInputNumber extends Component<Props, State> {
         )
     }
 
-    handleMouseOver = (event: any) => {
-        console.log("handleMouseOver.....")
-    }
-
     handleClick = (event: SyntheticMouseEvent<>) => {
         console.log("handleClick.....")
+    }
+
+    handleOnBlur = (updateModel: any) => (event: SyntheticFocusEvent<>) => {
+        this.setState({ inFocus: false })
+    }
+
+    handleOnFocus = (value: string) => (event: SyntheticFocusEvent<>) => {
+        this.setState({ inFocus: true, intermediate: value })
     }
 
     handleStepUp = (formCtx: any) => (event: SyntheticInputEvent<>) => {
@@ -75,6 +95,7 @@ export class XcInputNumber extends Component<Props, State> {
     handleStepDown = (formCtx: any) => (event: SyntheticInputEvent<>) => {
         console.log("handleStepDown.....")
         const { steppingDown, value } = this.props
+
         if (steppingDown) {
             if (value) {
                 formCtx.updateModel(this.props.name, parseFloat(value) - steppingDown);
@@ -87,18 +108,57 @@ export class XcInputNumber extends Component<Props, State> {
     }
 
     handleChange = (updateModel: any) => (event: SyntheticInputEvent<>) => {
-        console.debug(`XcInputText.handleChanged(), name=${this.props.name}, newValue=${event.target.value}`);
-        updateModel(this.props.name, event.target.value);
+        console.debug(`XcInputNumber.handleChanged(), name=${this.props.name}, newValue=${event.target.value}`);
+        const { name, type } = this.props
+        const isInteger = type == null || type == NumberType.Integer
+        const v: string = event.target.value
+        const length = v.length
+
+        // updateModel(this.props.name, event.target.value);
+        const regexp = isInteger ?  /^(?:[-]?(?:\d+))?$/ : /^(?:[-]?(?:\d+))?(?:\.\d*)?$/
+        let validateOk = true
+
+        if (length > 0) {
+            if (!regexp.test(v)) {
+                // input must be number
+                validateOk = false
+            }
+        }
+
+        if (validateOk) {
+            this.setState({ intermediate: v }, () => {                
+                updateModel(name, length == 0 ? null : (isInteger ? Number.parseInt(v) : Number.parseFloat(v)));
+            })
+        }
+        else {
+            event.preventDefault()
+        }
+
+
+    }
+
+    getInputNumber(value: ?number, model: ?Object, name: string): string {
+        var rtn = null
+        if (value != null) {
+            rtn = value
+        }
+        else if (model != null) {
+            rtn = (model[name]: number)
+        }
+        return rtn != null ? rtn.toString() : ""
     }
 
     constructInputField = (formCtx: any, formGrpCtx: any) => {
+        const model = formCtx.model
         const { icon, label, name, placeholder, prefix, prefixMinWidth, readonly, steppingDown, steppingUp, subLabel, validation, value, width, ...props } = this.props;
+        const { inFocus, intermediate } = this.state
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const i = icon != null ? { icon: icon.name, iconPosition: "left" } : {};
         const c = createColumnClass(width) + " " + (getRequired(validation) ? "required" : "")
         const r = parseBool(readonly, false) ? { readOnly: true } : {}
         const l = prefix != null ? { label: prefix } : {}
         const float = subLabel ? { style: { float: "left" } } : {}
+        const v = inFocus ? intermediate : this.getInputNumber(value, model, name)
 
         if (steppingUp != null || steppingDown != null) {
             return (
@@ -108,14 +168,15 @@ export class XcInputNumber extends Component<Props, State> {
                     <Input
                         action
                         className={prefix != null ? "labeled" : ""}
+                        onBlur={this.handleOnBlur(formCtx.updateModel)}
+                        onFocus={this.handleOnFocus(v)}
                         type="text"
                         {...i}
-                        // {...l}
                         {...ph}
                         {...r}
                         {... (formGrpCtx && formGrpCtx.fluid) ? { fluid: true } : { width: width }}>
-                        {prefix != null && (<Label {... prefixMinWidth ? {style: {minWidth: prefixMinWidth}} : {} }>{prefix}</Label>)}
-                        <input onChange={this.handleChange(formCtx.updateModel)} type="text" value={getStringValue(value, formCtx.model, name)} />
+                        {prefix != null && (<Label {...prefixMinWidth ? { style: { minWidth: prefixMinWidth } } : {}}>{prefix}</Label>)}
+                        <input onChange={this.handleChange(formCtx.updateModel)} type="text" value={v} />
                         <Button disabled={steppingUp == 0} icon="plus" onClick={this.handleStepUp(formCtx)} />
                         <Button disabled={steppingDown == 0} icon="minus" onClick={this.handleStepDown(formCtx)} />
                     </Input>
@@ -129,14 +190,15 @@ export class XcInputNumber extends Component<Props, State> {
                     {subLabel ? <small {...float} {...formCtx.subLabelColor ? { style: { color: formCtx.subLabelColor } } : {}} >&nbsp;&nbsp;{subLabel}</small> : null}
                     <Input
                         type="text"
+                        onBlur={this.handleOnBlur(formCtx.updateModel)}
+                        onFocus={this.handleOnFocus(v)}
                         onChange={this.handleChange(formCtx.updateModel)}
-                        value={getStringValue(value, formCtx.model, name)}
+                        value={v}
                         {...i}
                         {...l}
                         {...ph}
                         {...r}
                         {... (formGrpCtx && formGrpCtx.fluid) ? { fluid: true } : { width: width }}>
-                        {/* {prefix && (<Label>{prefix}</Label>)} */}
                     </Input>
                 </Form.Field>
             )

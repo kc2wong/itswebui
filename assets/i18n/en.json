@@ -48,6 +48,7 @@
         "loadingIndicator": "Loading ...",
         "new": "New",        
         "no": "No",
+        "noMatchRecord": "No matched record",
         "noOfMatchRecord": "{0} matched record(s)",
         "ok": "Ok",
         "pageSize": "Page Size",
@@ -81,7 +82,7 @@
     "loginForm": {
         "login": "Login",
         "password": "Password",
-        "username": "Username",
+        "userid": "Username",
         "welcomeTo": "Welcome To",
         "copyRight": "Developed By Kelvin Wong @ 2018"
     },

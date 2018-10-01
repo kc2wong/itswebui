@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { Form, Select } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import { constructLabel, createColumnClass, getRequired, getStringValue } from './XcFormUtil';
-import { IFieldConstraint, XcSelectConstraint } from './validation/XcFieldConstraint';
+import type { XcSelectConstraint } from './validation/XcFieldConstraint';
 import { parseBool, xlate } from 'shared/util/lang';
 
 import './XcSelect.css';

@@ -3,7 +3,7 @@ import _ from 'lodash'
 import React, { Component } from 'react';
 import { DataType } from 'shared/model';
 import { XcButton, XcButtonGroup, XcDialog, XcForm, XcFormGroup, XcInputText, XcInputNumber } from 'shared/component';
-import { XcMessage, XcOption, XcRadio, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { XcOption, XcSelect } from 'shared/component';
 import { createConfirmationDialog } from 'shared/component';
 import { createNumberFormat, formatNumber, Language, xlate } from 'shared/util/lang';
 import { isNullOrEmpty } from 'shared/util/stringUtil';

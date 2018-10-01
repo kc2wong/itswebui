@@ -31,8 +31,6 @@ function getQueryString(params: Object, extraQueryParam: ?string) {
         .map(k => esc(k) + '=' + esc(params[k]))
         .join('&');
 
-    console.log('extraQueryParam = ' + nvl(extraQueryParam, "null"));
-
     if (extraQueryParam) {
         return base + '&' + extraQueryParam;
     }

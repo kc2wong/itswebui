@@ -99,7 +99,7 @@ export class OrderEnquirySearchResult {
 
     static fromJson(criteria: Object, json: Object): OrderEnquirySearchResult {
         const data = _.map(json.content, e => SimpleOrder.fromJson(e))
-        const simpleOrders = new PageResult(criteria, json.currentPage + 1, json.pageSize, json.totalPage, json.totalCount, data)
+        const simpleOrders = new PageResult(criteria, json.currentPage + 1, json.pageSize, json.totalPage, json.totalCount, json.hasNext, data)
         const instruments = _.map(json.extraContent.instrumentList, e => Instrument.fromJson(e))
         const orderInstrumentIndex = new Map()
         _.forEach(json.extraContent.orderInstrumentIndex, (value, key) => orderInstrumentIndex.set(key, value))

@@ -50,6 +50,7 @@ export function roundNumber(value: number, decimalPlace: number): number {
 }
 
 export function removeNull(obj: Object): Object {
-    Object.keys(obj).forEach((k) => (!obj[k] && obj[k] !== undefined) && delete obj[k]);
+    // Object.keys(obj).forEach((k) => (!obj[k] && obj[k] !== undefined) && delete obj[k]);
+    Object.keys(obj).forEach((k) => (obj[k] == null) && delete obj[k]);
     return obj;
 }

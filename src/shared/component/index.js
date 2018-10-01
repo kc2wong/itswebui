@@ -1,5 +1,6 @@
 export * from './XaIcon'
 export * from './XaInputDate'
+export * from './XaPagination';
 export * from './XaPieChart';
 export * from './XaAccordion';
 export * from './XcButton';
@@ -18,7 +19,6 @@ export * from './XcLabel';
 export * from './XcLoader';
 export * from './XcMessage';
 export * from './XcPanel';
-export * from './XcPagination';
 export * from './XcRadio';
 export * from './XcSearchForm';
 export * from './XcSelect';

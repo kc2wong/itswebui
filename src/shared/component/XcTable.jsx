@@ -18,16 +18,18 @@ export class XcTableColSpec {
     formatter: ?(Object, string) => string;
     label: string;
     name: string;
+    sortable: ?boolean;
     sortDirection : ?SortDirection;
     horizontalAlign: ?TableTextAlign;
     footerHorizontalAlign: ?TableTextAlign;
     width: number;
 
-    constructor(name: string, dataType: DataType, label: string, width: number, sortDirection: ?SortDirection = null) {
+    constructor(name: string, dataType: DataType, label: string, width: number, sortable: ?boolean = true, sortDirection: ?SortDirection = null) {
         this.dataType = dataType;
         this.label = label;
         this.name = name;
         this.width = width;
+        this.sortable = sortable;
         this.sortDirection = sortDirection;
     }
 }
@@ -80,7 +82,7 @@ export class XcTable extends React.Component<Props, State> {
                     <Table.Header>
                         <Table.Row>
                             {_.map(colspec, (cs) => (
-                                <Table.HeaderCell key={cs.name} onClick={this.handleSort(`${cs.name}`)} sorted={cs.sortDirection ? this.sortDirectionValue(cs.sortDirection) : null}
+                                <Table.HeaderCell key={cs.name} disabled={!parseBool(cs.sortable, true)} onClick={this.handleSort(`${cs.name}`)} sorted={cs.sortDirection ? this.sortDirectionValue(cs.sortDirection) : null}
                                     {...cs.horizontalAlign ? { textAlign: cs.horizontalAlign.value } : {}} width={cs.width}>{cs.label}</Table.HeaderCell>
                             ))}
                         </Table.Row>
@@ -126,14 +128,17 @@ export class XcTable extends React.Component<Props, State> {
     handleSort = (nextSortBy: string) => (event: SyntheticMouseEvent<>) => {
         const { colspec, onSort } = this.props
         if (onSort) {
-            // const { sortBy, sortDirection } = this.state
+            // current sort field
             const sortField = _.find(colspec, cs => cs.sortDirection != null)
             let nextDirection = SortDirection.Ascending
             if ( nextSortBy == sortField.name ) {
                 // same column, reverse direction
                 nextDirection = SortDirection.Ascending == sortField.sortDirection ? SortDirection.Descending : SortDirection.Ascending
             }
-            onSort(nextSortBy, nextDirection)
+            const nextSortField = _.find(colspec, cs => cs.name == nextSortBy)
+            if (nextSortField != null && parseBool(nextSortField.sortable)) {
+                onSort(nextSortBy, nextDirection)
+            }
         }
     }
 

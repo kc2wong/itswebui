@@ -6,8 +6,8 @@ import { PAGE_SIZE_OPTION } from 'app/constant/ApplicationConstant';
 import { Currency } from 'app/model/staticdata';
 import { currencyService } from 'app/service';
 
-import { XcButton, XcButtonGroup, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
-import { XcOption, XcPagination, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { XaPagination, XcButton, XcButtonGroup, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
+import { XcOption, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { BaseModel, DataType, Pageable, PageResult, SortDirection } from 'shared/model';
 import { xlate } from 'shared/util/lang';
 
@@ -90,11 +90,11 @@ export class CurrencyEnquiryForm extends Component<Props, State> {
                             <XcGrid>
                                 <XcGrid.Row>
                                     <XcGrid.Col width={8}>
-                                        <XcPagination activePage={pageNum} freeNavigate={searchResult.totalCount >= 0} onPageChange={this.handleUpdatePageNum} totalPages={searchResult.totalPage} />
+                                        <XaPagination activePage={pageNum} freeNavigate={searchResult.totalCount >= 0} onPageChange={this.handleUpdatePageNum} totalPages={searchResult.totalPage} />
                                     </XcGrid.Col>
                                     <XcGrid.Col alignRight={true} width={4}>
                                         {xlate("general.pageSize")}&emsp;
-                                        <XcPagination activePage={pageSize} onPageChange={this.handleUpdatePageSize} range={PAGE_SIZE_OPT} />
+                                        <XaPagination activePage={pageSize} onPageChange={this.handleUpdatePageSize} range={PAGE_SIZE_OPT} />
                                     </XcGrid.Col>
                                     {numOfRecord >= 0 &&(
                                         <XcGrid.Col alignRight={true} width={3}>
@@ -188,13 +188,20 @@ export class CurrencyEnquiryForm extends Component<Props, State> {
     }
 
     createResultColSpec = (sortBy: string, sortDirection: SortDirection): XcTableColSpec[] => {
+        // const resultColName = ["currencyCode", "descptDefLang", "descpt2ndLang", "descpt3rdLang"]
+        // const searchResultColCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`currencyEditForm.${resultColName[0]}`), 3, true, sortBy == resultColName[0] ? sortDirection : null)
+        // const searchResultColDescptDefLang = new XcTableColSpec(resultColName[1], DataType.String, xlate(`currencyEditForm.${resultColName[1]}`), 5, true, sortBy == resultColName[1] ? sortDirection : null)
+        // const searchResultColDescpt2ndLang = new XcTableColSpec(resultColName[2], DataType.String, xlate(`currencyEditForm.${resultColName[2]}`), 4, true, sortBy == resultColName[2] ? sortDirection : null)
+        // const searchResultColDescpt3rdLang = new XcTableColSpec(resultColName[3], DataType.String, xlate(`currencyEditForm.${resultColName[3]}`), 4, true, sortBy == resultColName[3] ? sortDirection : null)
+        // return [
+        //     searchResultColCode, searchResultColDescptDefLang, searchResultColDescpt2ndLang, searchResultColDescpt3rdLang
+        // ]
+
         const resultColName = ["currencyCode", "descptDefLang", "descpt2ndLang", "descpt3rdLang"]
-        const searchResultColCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`currencyEditForm.${resultColName[0]}`), 3, sortBy == resultColName[0] ? sortDirection : null)
-        const searchResultColDescptDefLang = new XcTableColSpec(resultColName[1], DataType.String, xlate(`currencyEditForm.${resultColName[1]}`), 5, sortBy == resultColName[1] ? sortDirection : null)
-        const searchResultColDescpt2ndLang = new XcTableColSpec(resultColName[2], DataType.String, xlate(`currencyEditForm.${resultColName[2]}`), 4, sortBy == resultColName[2] ? sortDirection : null)
-        const searchResultColDescpt3rdLang = new XcTableColSpec(resultColName[3], DataType.String, xlate(`currencyEditForm.${resultColName[3]}`), 4, sortBy == resultColName[3] ? sortDirection : null)
-        return [
-            searchResultColCode, searchResultColDescptDefLang, searchResultColDescpt2ndLang, searchResultColDescpt3rdLang
-        ]
+        const resultColDataType = [DataType.String, DataType.String, DataType.String, DataType.String]
+        const resultColLength = [3, 5, 4, 4]
+        return _.map(resultColName, (c, idx) => {
+            return new XcTableColSpec(c, resultColDataType[idx], xlate(`stmActionEditForm.${c}`), resultColLength[idx], true, sortBy == c ? sortDirection : null)
+        })
     }
 }

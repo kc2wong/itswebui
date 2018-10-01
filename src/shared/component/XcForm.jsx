@@ -59,8 +59,13 @@ export class XcForm extends React.Component<Props, State> {
             onSubmit: onSubmit,
             subLabelColor: subLabelColor,
             updateModel: (name: string, value: any) => { 
-                const newModel = update(model, {[name]: {$set: value}});                
-                onModelUpdate && onModelUpdate(newModel);                
+                if (onModelUpdate != null) {
+                    const newModel = update(model, {[name]: {$set: value}});
+                    onModelUpdate(newModel);
+                }
+                else {
+                    model[name] = value
+                }
             },    
             patchModel: (name: string, delta: number) => { 
                 const newValue = parseFloat(model[name]) + delta

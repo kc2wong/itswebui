@@ -31,3 +31,8 @@ export function formatDate(value: ?Date, pattern: ?string): string {
 export function formatDateTime(value: ?Date, pattern: ?string): string {
     return value != null ? moment(value).format(nvl(pattern, DATETIME_FORMAT)) : '' ;
 }
+
+export function parseDate(value: ?string, pattern: ?string): ?Date {
+    const rtn = value != null ? moment(value, nvl(pattern, DATE_FORMAT.replace(/[^A-Za-z]/g, ""))) : null 
+    return rtn != null ? rtn.toDate() : null
+}

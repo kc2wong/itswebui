@@ -6,8 +6,8 @@ import { PAGE_SIZE_OPTION } from 'app/constant/ApplicationConstant';
 import { StmAction } from 'app/model/staticdata';
 import { stmActionService } from 'app/service';
 
-import { XcButton, XcButtonGroup, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
-import { XcOption, XcPagination, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { XaPagination, XcButton, XcButtonGroup, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow, XcInputText } from 'shared/component';
+import { XcOption, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { BaseModel, DataType, Pageable, PageResult, SortDirection } from 'shared/model';
 import { xlate } from 'shared/util/lang';
 
@@ -90,11 +90,11 @@ export class StmActionEnquiryForm extends Component<Props, State> {
                             <XcGrid>
                                 <XcGrid.Row>
                                     <XcGrid.Col width={8}>
-                                        <XcPagination activePage={pageNum} onPageChange={this.handleUpdatePageNum} totalPages={searchResult.totalPage} />
+                                        <XaPagination activePage={pageNum} onPageChange={this.handleUpdatePageNum} totalPages={searchResult.totalPage} />
                                     </XcGrid.Col>
                                     <XcGrid.Col alignRight={true} width={4}>
                                         {xlate("general.pageSize")}&emsp;
-                                        <XcPagination activePage={pageSize} onPageChange={this.handleUpdatePageSize} showNavigation={false} range={PAGE_SIZE_OPT} />
+                                        <XaPagination activePage={pageSize} onPageChange={this.handleUpdatePageSize} showNavigation={false} range={PAGE_SIZE_OPT} />
                                     </XcGrid.Col>
                                     <XcGrid.Col alignRight={true} width={3}>
                                         {xlate("general.noOfMatchRecord", [numOfRecord.toString()])}
@@ -190,7 +190,7 @@ export class StmActionEnquiryForm extends Component<Props, State> {
         const resultColDataType = [DataType.String, DataType.String, DataType.String, DataType.String]
         const resultColLength = [3, 7, 3, 3]
         return _.map(resultColName, (c, idx) => {
-            return new XcTableColSpec(c, resultColDataType[idx], xlate(`stmActionEditForm.${c}`), resultColLength[idx], sortBy == c ? sortDirection : null)
+            return new XcTableColSpec(c, resultColDataType[idx], xlate(`stmActionEditForm.${c}`), resultColLength[idx], true, sortBy == c ? sortDirection : null)
         })
     }
 }

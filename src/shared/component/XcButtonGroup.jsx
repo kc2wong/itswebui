@@ -26,7 +26,6 @@ export class XcButtonGroup extends React.Component<Props, {}> {
         const className = parseBool(this.props.alignRight, false) ? { className: 'pull-right' } : {}
         const buttonGroupContextType: ButtonGroupContextType = {
         };
-        console.log(fluid)
         return (
             <ButtonGroupContext.Provider value={buttonGroupContextType}>
                 {!toolbar && (

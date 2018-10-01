@@ -1,6 +1,8 @@
 // @flow
-import { parseBool, xlate } from 'shared/util/lang';
-import { IFieldConstraint } from './validation/XcFieldConstraint';
+import _ from 'lodash'
+import { parseBool, xlate } from 'shared/util/lang'
+import { IFieldConstraint } from './validation/XcFieldConstraint'
+import { formatDate } from 'shared/util/dateUtil'
 
 const DEFAULT_COL_NUM = 12;
 
@@ -22,14 +24,19 @@ export function getRequired(constraint: ?IFieldConstraint): bool {
     return constraint != null ? parseBool(constraint.required, defaultRequired) : defaultRequired;
 }
 
-export function getStringValue (value: ?string, model: any, name: string, defaultValue: ?string = ""): ?string {
-    const v = value != null ? value : (model[name]: string) ;
-    console.log(`XcFormUtil.getStringValue(), ${name} = ${v}, type = ${typeof v}`)
-    switch (typeof v) {
-        case 'number':
-            return v.toString();
-        default:
-            return v != null ? v.toString() : defaultValue;
+export function getStringValue (value: ?any, model: any, name: string, defaultValue: ?string = ""): ?string {
+    // const v = value != null ? value : (model[name]: string|number|Date) ;
+    const v = value != null ? value : model[name]
+    if (_.isDate(v)) {
+        return formatDate((v: Date))
+    }
+    else {
+        switch (typeof v) {
+            case 'number':
+                return v.toString();
+            default:
+                return v != null ? v.toString() : defaultValue;
+        }    
     }
 }
 

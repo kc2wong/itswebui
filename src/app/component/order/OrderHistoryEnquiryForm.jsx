@@ -5,33 +5,25 @@ import { ApplicationContext, type AccountContextType, type CacheContextType, typ
 import { Toolbar } from 'app/component/common/Toolbar';
 import { PAGE_SIZE_OPTION } from 'app/constant/ApplicationConstant';
 import { Currency, Exchange, Instrument } from 'app/model/staticdata'
+import { OrderStatus } from 'app/model/EnumType'
+import { SimpleOrder } from 'app/model/order'
 import { orderService, simpleOrderService, tradingAccountService } from 'app/service';
 
-import { XaInputDate, XcButton, XcButtonGroup, XcContextMenu, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow } from 'shared/component';
-import { XcOption, XcPagination, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
-import { BaseModel, DataType, Pageable, PageResult, SortDirection } from 'shared/model';
+import { XaInputDate, XaPagination, XcButton, XcButtonGroup, XcContextMenu, XcDialog, XcForm, XcFormGroup, XcGrid, XcGridCol, XcGridRow } from 'shared/component';
+import { XcNavigationTab, XcOption, XcPanel, XcPanelBody, XcPanelFooter, XcSearchCriteriaSpec, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { BaseModel, DataType, Language, Pageable, PageResult, SortDirection } from 'shared/model';
 import { MessageService } from 'shared/service'
 import { createNumberFormat, formatNumber, roundNumber, parseBool, xlate } from 'shared/util/lang'
 import { currentDate, formatDate, formatDateTime, minDate } from 'shared/util/dateUtil'
 
 type Props = {
-    exchanges: Exchange[],
-    onClear: () => void,
-    onSearch: (searchCriteria: Object, pageable: Pageable, reverseOnly: ?bool) => ?Promise<PageResult<Currency>>,
-    onRecordSelect: (currency: Currency) => void
-    // selectedIndex: ?number,
-    // searchResult: ?PageResult<Currency>
+    exchanges: Exchange[]
 }
 
 type IntProps = {
     exchanges: Exchange[],
     messageService: MessageService,
-    sessionContext: SessionContextType,
-    onClear: () => void,
-    onSearch: (searchCriteria: Object, pageable: Pageable, reverseOnly: ?bool) => ?Promise<PageResult<Currency>>,
-    onRecordSelect: (currency: Currency) => void
-    // selectedIndex: ?number,
-    // searchResult: ?PageResult<SimpleOrder>
+    sessionContext: SessionContextType
 }
 
 type State = {
@@ -40,7 +32,8 @@ type State = {
     searchCriteria: Object,
     sortBy: string,
     sortDirection: SortDirection,
-    searchResult: ?PageResult<SimpleOrder>
+    searchResult: ?PageResult<SimpleOrder>,
+    instrumentMap: Map<string, Instrument>
 }
 
 class SearchCriteria implements BaseModel {
@@ -56,12 +49,13 @@ class SearchCriteria implements BaseModel {
 }
 
 const formName = "orderHistoryEnquiryForm"
-
+const resultColName = ["orderNumber", "buySell", "instrumentCode", "instrumentName", "price", "quantity", "executedQuantity", "orderStatus"]
+const OUTSTANDING_ORDER_STATUS = new Set([OrderStatus.Pending, OrderStatus.New, OrderStatus.Reserved, OrderStatus.WaitForApprove, OrderStatus.Queued, OrderStatus.PartialExecuted])
 const PAGE_SIZE_OPT = _.sortBy(PAGE_SIZE_OPTION)
 
 export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
 
-    constructor(props: Props) {
+    constructor(props: IntProps) {
         super(props);
         this.state = this.resetState();
     }
@@ -76,12 +70,9 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
         const language = sessionContext.languageContext.language
         const navigationContext = sessionContext.navigationContext
 
-        // const { selectedIndex, searchResult } = this.props;
         const { instrumentMap, pageNum, pageSize, searchCriteria, searchResult, sortBy, sortDirection } = this.state;
         const numOfRecord = searchResult != null ? searchResult.totalCount : 0;
 
-        console.log("kkk")
-        console.log(exchanges)
         const exchange = _.find(exchanges, e => e.exchangeCode == searchCriteria.exchangeCode)
 
         const criteriaFromDate = new XcSearchCriteriaSpec(`#${formName}.fromDate`, "fromDate", 3);
@@ -89,6 +80,11 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
         const dateSearchCriteria = [[criteriaFromDate, criteriaToDate]];
 
         const searchResultColSpec = this.createResultColSpec(cacheContext, language, exchange, instrumentMap, sortBy, sortDirection)
+        const data = searchResult != null ? _.map(searchResult.data, (e) => {
+            const instrument: Instrument = instrumentMap.get(e.orderNumber)
+            return Object.assign({ instrumentName: instrument != null ? instrument.getDescription(language) : "" }, e,
+                { orderStatus: xlate(`enum.externalOrderStatus.${e.orderStatus}`), outstandingOrder: OUTSTANDING_ORDER_STATUS.has(e.getOrderStatus()) })
+        }) : []
 
         return (
             <div style={{ height: "100vh" }}>
@@ -102,38 +98,48 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
                         </XcFormGroup>
                     ))}
                     <XcButtonGroup>
-                        <XcButton label="#general.search" onClick={this.search} primary />
+                        <XcButton label="#general.search" onClick={this.handleSearch} primary />
                         <XcButton label="#general.clear" onClick={this.handleClearForm} />
                     </XcButtonGroup>
                     {searchResult != null && (
-                        <XcPanel>
-                            <XcPanel.Header>{xlate("general.searchResult")}</XcPanel.Header>
-                            <XcPanel.Body>
-                                <XcTable colspec={searchResultColSpec}
-                                    data={searchResult.data}
-                                    onSort={this.handleSort}
-                                    onSelectionChange={this.handleSelectionChange}
-                                    size={XcTable.Size.Small} />
-                            </XcPanel.Body>
-                            <XcPanel.Footer>
-                                <XcGrid>
-                                    <XcGrid.Row>
-                                        <XcGrid.Col width={8}>
-                                            <XcPagination activePage={pageNum} freeNavigate={searchResult.totalCount >= 0} onPageChange={this.handleUpdatePageNum} totalPages={searchResult.totalPage} />
-                                        </XcGrid.Col>
-                                        <XcGrid.Col alignRight={true} width={4}>
-                                            {xlate("general.pageSize")}&emsp;
-                                        <XcPagination activePage={pageSize} onPageChange={this.handleUpdatePageSize} range={PAGE_SIZE_OPT} />
-                                        </XcGrid.Col>
-                                        {numOfRecord >= 0 && (
-                                            <XcGrid.Col alignRight={true} width={3}>
-                                                {xlate("general.noOfMatchRecord", [numOfRecord.toString()])}
-                                            </XcGrid.Col>
-                                        )}
-                                    </XcGrid.Row>
-                                </XcGrid>
-                            </XcPanel.Footer>
-                        </XcPanel>
+                        <React.Fragment>
+                            {_.size(data) == 0 && (
+                                <React.Fragment>
+                                    <br />
+                                    <br />
+                                    <div>{xlate("general.noMatchRecord")}</div>
+                                </React.Fragment>
+                            )}
+                            {_.size(data) > 0 && (
+                                <XcPanel>
+                                    <XcPanel.Header>{xlate("general.searchResult")}</XcPanel.Header>
+                                    <XcPanel.Body>
+                                        <XcTable colspec={searchResultColSpec}
+                                            data={data}
+                                            onSort={this.handleSort}
+                                            size={XcTable.Size.Small} />
+                                    </XcPanel.Body>
+                                    <XcPanel.Footer>
+                                        <XcGrid>
+                                            <XcGrid.Row>
+                                                <XcGrid.Col width={8}>
+                                                    <XaPagination activePage={pageNum} freeNavigate={searchResult.totalCount >= 0} hasNext={searchResult.hasNext} onPageChange={this.handleUpdatePageNum} totalPages={searchResult.totalPage} />
+                                                </XcGrid.Col>
+                                                <XcGrid.Col alignRight={true} width={4}>
+                                                    {xlate("general.pageSize")}&emsp;
+                                    <XaPagination activePage={pageSize} onPageChange={this.handleUpdatePageSize} range={PAGE_SIZE_OPT} />
+                                                </XcGrid.Col>
+                                                {numOfRecord >= 0 && (
+                                                    <XcGrid.Col alignRight={true} width={3}>
+                                                        {xlate("general.noOfMatchRecord", [numOfRecord.toString()])}
+                                                    </XcGrid.Col>
+                                                )}
+                                            </XcGrid.Row>
+                                        </XcGrid>
+                                    </XcPanel.Footer>
+                                </XcPanel>
+                            )}
+                        </React.Fragment>
                     )}
                 </XcForm>
             </div>
@@ -141,9 +147,7 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
     }
 
     handleClearForm = (event: SyntheticMouseEvent<>) => {
-        this.setState(this.resetState(), () => {
-            this.props.onClear()
-        })
+        this.setState(this.resetState())
     }
 
     handleSearch = (event: SyntheticMouseEvent<>) => {
@@ -152,30 +156,19 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
     }
 
     handleSort = (sortBy: string, sortDirection : SortDirection) => {
-        const { pageNum, pageSize } = this.state
+        const { pageNum, pageSize, searchResult } = this.state
         const currentSortBy = this.state.sortBy
         const currentSortDirection = this.state.sortDirection
-        const pageable = new Pageable(pageNum, pageSize, sortBy, sortDirection)
         const reverseOnly = sortBy == currentSortBy && sortDirection != currentSortDirection
 
-        const promise = this.props.onSearch(this.state.searchCriteria.toJson(), pageable, reverseOnly)
-        if (promise) {
-            promise.then(
-                result => {
-                    const searchResultColSpec = this.createResultColSpec(sortBy, sortDirection)
-                    this.setState({ pageNum: result.currentPage, pageSize: result.pageSize, searchResultColSpec: searchResultColSpec, sortBy: sortBy, sortDirection: sortDirection })
-                },
-                error => {
-                    // TODO                
-                }
-            )
+        if (reverseOnly && searchResult != null) {
+            searchResult.data = _.reverse(searchResult.data)
+            this.setState({ searchResult: searchResult, sortDirection: sortDirection })
         }
-    }
-
-    handleSelectionChange = (index: number) => {
-        const { onRecordSelect, searchResult } = this.props
-        if (searchResult != null) {
-            onRecordSelect(searchResult.data[index])
+        else {
+            this.setState({sortBy: sortBy, sortDirection: sortDirection}, () => {
+                this.search(pageNum, pageSize)
+            })    
         }
     }
 
@@ -197,10 +190,9 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
         const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
         if (selectedTradingAccount) {
             messageService.showLoading()
-            const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)
-            const startTradeDate = exchange != null ? minDate(currentDate(), exchange.tradeDate) : currentDate()
-            const endTradeDate = null
-            const promise = simpleOrderService.enquireOrder(selectedTradingAccount.tradingAccountCode, exchangeCode, startTradeDate, endTradeDate, new Pageable(pageNum, pageSize, sortBy, sortDirection))
+            const startTradeDate = searchCriteria.fromDate
+            const endTradeDate = searchCriteria.toDate
+            const promise = simpleOrderService.enquireOrder(selectedTradingAccount.tradingAccountCode, exchangeCode, startTradeDate, endTradeDate, pageable)
             if (promise) {
                 promise.then(
                     orderEnquirySearchResult => {
@@ -209,10 +201,7 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
                         const orderInstrumentIndex = orderEnquirySearchResult.orderInstrumentIndex
                         const instrumentMap = new Map()
                         orderInstrumentIndex.forEach((value, key) => instrumentMap.set(key, instruments[value]))
-                        if (sortDirection == SortDirection.Descending) {
-                            orders = _.reverse(orders)
-                        }
-                        this.setState({ instrumentMap: instrumentMap, searchResult: orderEnquirySearchResult.simpleOrders }, () => {
+                        this.setState({ pageNum: pageNum, instrumentMap: instrumentMap, searchResult: orderEnquirySearchResult.simpleOrders }, () => {
                             messageService.hideLoading()
                         })
                     },
@@ -226,39 +215,95 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
     }
 
     resetState = (): Object => {
-        // const searchResultColSpec = this.createResultColSpec("currencyCode", SortDirection.Ascending)
+        const { exchanges } = this.props
         return {
             pageNum: 1,
             pageSize: PAGE_SIZE_OPTION[0],
-            searchCriteria: {exchangeCode: "HKG"}
-            // searchResultColSpec: searchResultColSpec,
-            // sortBy: searchResultColSpec[0].name,
-            // sortDirection: searchResultColSpec[0].sortDirection
+            searchCriteria: {exchangeCode: exchanges[0].exchangeCode},
+            sortBy: resultColName[0],
+            sortDirection: SortDirection.Ascending,
+            searchResult: null,
+            instrumentMap: new Map()
         }
     }
 
-    // createResultColSpec = (sortBy: string, sortDirection: SortDirection): XcTableColSpec[] => {
-    //     const resultColName = ["currencyCode", "descptDefLang", "descpt2ndLang", "descpt3rdLang"]
-    //     const searchResultColCode = new XcTableColSpec(resultColName[0], DataType.String, xlate(`currencyEditForm.${resultColName[0]}`), 3, sortBy == resultColName[0] ? sortDirection : null)
-    //     const searchResultColDescptDefLang = new XcTableColSpec(resultColName[1], DataType.String, xlate(`currencyEditForm.${resultColName[1]}`), 5, sortBy == resultColName[1] ? sortDirection : null)
-    //     const searchResultColDescpt2ndLang = new XcTableColSpec(resultColName[2], DataType.String, xlate(`currencyEditForm.${resultColName[2]}`), 4, sortBy == resultColName[2] ? sortDirection : null)
-    //     const searchResultColDescpt3rdLang = new XcTableColSpec(resultColName[3], DataType.String, xlate(`currencyEditForm.${resultColName[3]}`), 4, sortBy == resultColName[3] ? sortDirection : null)
-    //     return [
-    //         searchResultColCode, searchResultColDescptDefLang, searchResultColDescpt2ndLang, searchResultColDescpt3rdLang
-    //     ]
-    // }
+    viewOrderDetail(orderNumber: string) {
+        const { messageService, sessionContext } = this.props
+        const { instrumentMap } = this.state
+
+        const cacheContext = sessionContext.cacheContext
+        const languageContext = sessionContext.languageContext
+        const instrument = instrumentMap.get(orderNumber)
+        const instrumentName = instrument ? instrument.getDescription(languageContext.language) : ""
+        const currency = instrument ? cacheContext.getCurrency(instrument.tradingCurrencyCode) : null
+        const currencyName = currency ? currency.getDescription(languageContext.language) : ""
+        const priceFormat = createNumberFormat(true, currency ? currency.decimalPoint : 2)
+        const quantityFormat = createNumberFormat(true, 0)
+        
+        messageService.showLoading()
+        const promise = orderService.enquireOrder(orderNumber)
+        if (promise) {
+            promise.then(
+                order => {
+                    const keyCol = new XcTableColSpec("key", DataType.String, "", 5)
+                    const valueCol = new XcTableColSpec("value", DataType.String, "", 5)
+                    const data = [
+                        { key: xlate(`${formName}.orderStatus`), value: xlate(`enum.externalOrderStatus.${order.orderStatus}`) },
+                        { key: xlate(`${formName}.tradingAccount`), value: order.tradingAccountCode },
+                        { key: xlate(`${formName}.exchange`), value: order.exchangeCode },
+                        { key: xlate(`${formName}.buySell`), value: xlate(`enum.buySell.${order.buySell}`) },
+                        { key: xlate(`${formName}.instrumentCode`), value: `${order.instrumentCode} ${instrumentName}` },
+                        { key: xlate(`${formName}.createTradeDate`), value: formatDate(order.createTradeDate) },
+                        { key: xlate(`${formName}.updateDateTime`), value: formatDateTime(order.updateDateTime) },
+                        { key: xlate(`${formName}.price`), value: `${currencyName} ${formatNumber(order.price, priceFormat)}` },
+                        { key: xlate(`${formName}.quantity`), value: order.quantity },
+                        { key: xlate(`${formName}.executedQuantity`), value: order.executedQuantity },
+                        { key: xlate(`${formName}.grossAmount`), value: `${currencyName} ${formatNumber(order.grossAmount, priceFormat)}` },
+                        { key: xlate(`${formName}.charge`), value: `${currencyName} ${formatNumber(order.chargeAmount, priceFormat)}` },
+                        { key: xlate(`${formName}.commission`), value: `${currencyName} ${formatNumber(order.commissionAmount, priceFormat)}` },
+                        { key: xlate(`${formName}.netAmount`), value: `${currencyName} ${formatNumber(order.netAmount, priceFormat)}` }
+                    ]
+
+                    const executeTimeCol = new XcTableColSpec("executeTime", DataType.String, xlate(`${formName}.executionTime`), 3)
+                    const executePriceCol = new XcTableColSpec("price", DataType.String, `${xlate(`${formName}.executionPrice`)} (${currencyName})`, 2)
+                    const executeQuantityCol = new XcTableColSpec("quantity", DataType.Number, xlate(`${formName}.executionQuantity`), 2)
+                    const executionData = _.map(_.sortBy(order.orderExecution, "executeDateTime"), (oe) => {
+                        return {executeTime: formatDateTime(oe.executeDateTime), price: formatNumber(oe.price, priceFormat), quantity: formatNumber(oe.quantity, quantityFormat) }
+                    })
+
+                    const content = <React.Fragment><br/><XcTable colspec={[keyCol, valueCol]} compact={false} data={data} selectable={false} size={XcTable.Size.Large}></XcTable></React.Fragment>
+                    const executionContent = <React.Fragment><br/><XcTable colspec={[executeTimeCol, executePriceCol, executeQuantityCol]} compact={false} data={executionData} selectable={false} size={XcTable.Size.Large}></XcTable></React.Fragment>
+                    const okButton = <XcButton icon={{name: 'close'}} label={xlate("general.close")} primary onClick={() => {messageService && messageService.dismissDialog()}} />
+
+                    let panes = []
+                    panes.push(<XcNavigationTab.Pane component={content} key="orderDetail" id="orderDetail" label="Order Detail" />)
+                    if (_.size(executionData) > 0) {
+                        panes.push(<XcNavigationTab.Pane component={executionContent} key="executionDetail" id="executionDetail" label="Execution Detail" />)
+                    }
+                    const tabContent = <XcNavigationTab style={{height: "50vh"}} >{panes}</XcNavigationTab>
+
+                    const dialog = <XcDialog
+                        okButton={okButton}
+                        content={tabContent}
+                        title={orderNumber}
+                        type={XcDialog.Type.Info} />
+
+                    messageService.hideLoading()                
+                    messageService.showDialog(dialog);
+                    
+                },
+                error => {
+                    // TODO                
+                    messageService.hideLoading()
+                }
+            )
+        }            
+    }
 
     portfolioActionSheet = (model: Object) => (
-        parseBool(model.outstandingOrder, false) == true ?
-            <XcContextMenu style={{ width: "40em" }}>
-                <XcContextMenu.Item title={xlate(`${formName}.detailTitle`)} description={xlate(`${formName}.detailHint`)} buttonLabel={xlate(`${formName}.detailTitle`)} buttonAction={() => { this.viewOrderDetail(model.orderNumber) }} />
-                <XcContextMenu.Item title={xlate(`${formName}.amendTitle`)} description={xlate(`${formName}.amendHint`)} buttonLabel={xlate(`${formName}.amendTitle`)} buttonAction={() => { this.amendCancelOrder(model.orderNumber, true) }} />
-                <XcContextMenu.Item title={xlate(`${formName}.cancelTitle`)} description={xlate(`${formName}.cancelHint`)} buttonLabel={xlate(`${formName}.cancelTitle`)} buttonAction={() => { this.amendCancelOrder(model.orderNumber, false) }} />
-            </XcContextMenu>
-            :
-            <XcContextMenu>
-                <XcContextMenu.Item title={xlate(`${formName}.detailTitle`)} description={xlate(`${formName}.detailHint`)} buttonLabel={xlate(`${formName}.detailTitle`)} buttonAction={() => { this.viewOrderDetail(model.orderNumber) }} />
-            </XcContextMenu>
+        <XcContextMenu>
+            <XcContextMenu.Item title={xlate(`${formName}.detailTitle`)} description={xlate(`${formName}.detailHint`)} buttonLabel={xlate(`${formName}.detailTitle`)} buttonAction={() => { this.viewOrderDetail(model.orderNumber) }} />
+        </XcContextMenu>
     )
 
     createResultColSpec = (cacheContext: CacheContextType, language: Language, exchange: Exchange, instrumentMap: Map<string, Instrument>, sortBy: string, sortDirection: SortDirection): XcTableColSpec[] => {
@@ -287,23 +332,22 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
         const contextMenuProvider = (model: Object, fieldName: string) => {
             return this.portfolioActionSheet(model)
         }
-        const resultColName = ["orderNumber", "buySell", "instrumentCode", "instrumentName", "price", "quantity", "executedQuantity", "orderStatus"]
-        const searchResultColOrderNumber = new XcTableColSpec(resultColName[0], DataType.String, xlate(`${formName}.${resultColName[0]}`), 1, sortBy == resultColName[0] ? sortDirection : null)
+        const searchResultColOrderNumber = new XcTableColSpec(resultColName[0], DataType.String, xlate(`${formName}.${resultColName[0]}`), 1, true, sortBy == resultColName[0] ? sortDirection : null)
         searchResultColOrderNumber.actionSheetProvider = contextMenuProvider
-        const searchResultColBuySell = new XcTableColSpec(resultColName[1], DataType.String, xlate(`${formName}.${resultColName[1]}`), 1, sortBy == resultColName[1] ? sortDirection : null)
+        const searchResultColBuySell = new XcTableColSpec(resultColName[1], DataType.String, xlate(`${formName}.${resultColName[1]}`), 1, true, sortBy == resultColName[1] ? sortDirection : null)
         searchResultColBuySell.formatter = buySellFormatter
-        const searchResultColInstrumentCode = new XcTableColSpec(resultColName[2], DataType.String, xlate(`${formName}.${resultColName[2]}`), 1, sortBy == resultColName[2] ? sortDirection : null)
-        const searchResultColInstrumentName = new XcTableColSpec(resultColName[3], DataType.String, xlate(`${formName}.${resultColName[3]}`), 2, sortBy == resultColName[3] ? sortDirection : null)
-        const searchResultColPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`${formName}.${resultColName[4]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 1, sortBy == resultColName[4] ? sortDirection : null)
+        const searchResultColInstrumentCode = new XcTableColSpec(resultColName[2], DataType.String, xlate(`${formName}.${resultColName[2]}`), 1, true, sortBy == resultColName[2] ? sortDirection : null)
+        const searchResultColInstrumentName = new XcTableColSpec(resultColName[3], DataType.String, xlate(`${formName}.${resultColName[3]}`), 2, false, sortBy == resultColName[3] ? sortDirection : null)
+        const searchResultColPrice = new XcTableColSpec(resultColName[4], DataType.Number, `${xlate(`${formName}.${resultColName[4]}`)}${exchangeCurrency != null ? ` (${exchangeCurrency.getDescription(language)})` : ""}`, 1, true, sortBy == resultColName[4] ? sortDirection : null)
         searchResultColPrice.formatter = priceFormatter
         searchResultColPrice.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColQuantity = new XcTableColSpec(resultColName[5], DataType.Number, xlate(`${formName}.${resultColName[5]}`), 1, sortBy == resultColName[5] ? sortDirection : null)
+        const searchResultColQuantity = new XcTableColSpec(resultColName[5], DataType.Number, xlate(`${formName}.${resultColName[5]}`), 1, true, sortBy == resultColName[5] ? sortDirection : null)
         searchResultColQuantity.formatter = quantityFormatter
         searchResultColQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColExecutedQuantity = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`${formName}.${resultColName[6]}`), 1, sortBy == resultColName[6] ? sortDirection : null)
+        const searchResultColExecutedQuantity = new XcTableColSpec(resultColName[6], DataType.Number, xlate(`${formName}.${resultColName[6]}`), 1, true, sortBy == resultColName[6] ? sortDirection : null)
         searchResultColExecutedQuantity.formatter = quantityFormatter
         searchResultColExecutedQuantity.horizontalAlign = XcTable.TextAlign.Right
-        const searchResultColOrderStatus = new XcTableColSpec(resultColName[7], DataType.String, xlate(`${formName}.${resultColName[7]}`), 1, sortBy == resultColName[7] ? sortDirection : null)
+        const searchResultColOrderStatus = new XcTableColSpec(resultColName[7], DataType.String, xlate(`${formName}.${resultColName[7]}`), 1, false, sortBy == resultColName[7] ? sortDirection : null)
         return [
             searchResultColOrderNumber, searchResultColBuySell, searchResultColInstrumentCode, searchResultColInstrumentName, searchResultColPrice, searchResultColQuantity, searchResultColExecutedQuantity, searchResultColOrderStatus
         ]
