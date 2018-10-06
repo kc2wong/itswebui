@@ -1,7 +1,8 @@
 // @flow
 import _ from 'lodash';
 import React, { Component } from 'react';
-import { XcButton, XcCheckbox, XcForm, XcGrid, XcInputText, XcLabel, XcSelect } from 'shared/component';
+import { XaButton, XaInputText } from 'shared/component';
+import { XcButton, XcCheckbox, XcForm, XcGrid, XcLabel, XcSelect } from 'shared/component';
 import { XcMessage, XcOption } from 'shared/component';
 import { createColumnClass } from 'shared/component/XcFormUtil';
 import { Language, xlate } from 'shared/util/lang';
@@ -60,12 +61,13 @@ class LoginForm extends Component<IntProps, State> {
                                         </header>
                                         <br />
                                     </div>
-                                    <XcInputText icon={{ name: "user" }} name="userid" validation={{ maxLength: 10, required: true }} />
-                                    <XcInputText icon={{ name: "lock" }} name="password" password validation={{ required: true }} />
+                                    <XaInputText icon={{ name: "user" }} name="userid" validation={{ maxLength: 10, required: true }} />
+                                    <XaInputText icon={{ name: "lock" }} name="password" password validation={{ required: true }} />
                                     <XcSelect label="Language" name="language" onChange={this.handleChangeLanguage} options={langOpt} validation={{ required: true }} value={language.value} />
                                     <XcCheckbox label="Remember Me" name="rememberMe" />
                                     <p />
-                                    <XcButton disabled={isNullOrEmpty(credential.userid) || isNullOrEmpty(credential.password)} fluid primary onClick={this.handleClick} name="login" />
+                                    {/* <XaButton disabled={isNullOrEmpty(credential.userid) || isNullOrEmpty(credential.password)} fluid primary onClick={this.handleClick} name="login" /> */}
+                                    <XaButton fluid primary onClick={this.handleClick} name="login" type={XcButton.Type.Submit} />
                                 </XcForm>
                             </XcGrid.Col>
                         </XcGrid.Row>
@@ -99,7 +101,7 @@ class LoginForm extends Component<IntProps, State> {
         })
     }
 
-    handleClick = (event: SyntheticMouseEvent<>) => {
+    handleClick = () => {
         const { messageService, onLoginSuccess } = this.props
         const { userid, password } = this.state.credential
         const { language } = this.state

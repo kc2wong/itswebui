@@ -1,5 +1,5 @@
 // @flow
-export function isNullOrEmpty(value?: string): boolean {
+export function isNullOrEmpty(value: ?string): boolean {
     return value == null || value.length == 0
 }
 

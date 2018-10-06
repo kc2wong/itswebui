@@ -1,0 +1,15 @@
+@startuml
+
+[*] --> NotValidated : New instance
+
+Valid -> NotValidated : Submit
+NotValidated -> Valid : Validate (success)
+
+NotValidated -down-> Invalid : Validate (fail)
+Invalid -> Valid : Validate (success)
+Invalid -> NotValidated : Reset
+Invalid -right-> Invalid : Validate (fail)
+
+NotValidated -> NotValidated : Reset
+
+@enduml

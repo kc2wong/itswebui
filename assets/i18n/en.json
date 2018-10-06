@@ -30,6 +30,7 @@
         }
     },
     "error": {
+        "MISSING_MANDATORY_FIELD": "{0} is required",
         "SS": {
             "00015E": "Invalid username or password"
         }

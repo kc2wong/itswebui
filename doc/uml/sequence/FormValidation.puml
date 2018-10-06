@@ -1,0 +1,48 @@
+@startuml
+autonumber
+
+Actor User
+participant "Submit Button" as D
+participant "Container Form" as A
+participant "Form Component" as B
+participant "Server Resource" as C
+
+User -> D: Click
+activate D
+D -> A: Validate
+activate A
+loop All components
+A -> B: Validate
+activate B
+B -> B: Set validation result to state
+alt Validation fail
+B -> B: Display error message
+end 
+B --> A: Promise<ValidationResult>
+deactivate B
+end
+alt Field validation success
+A -> A: Form level validation
+end
+A -> A: Set overall validation result to state
+A --> D: Promise<OverallValidationResult>
+deactivate A
+
+alt Validation success
+D -> C: Restful API
+activate C
+C -> C: Perform service
+C --> D
+deactivate C
+D -> A: Reset
+activate A
+A -> A: Reset validation result in state
+A --> D
+deactivate A
+end 'alt
+
+D --> User
+
+deactivate A
+
+@enduml

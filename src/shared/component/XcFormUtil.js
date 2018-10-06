@@ -1,8 +1,10 @@
 // @flow
 import _ from 'lodash'
+import type { FormContextType } from './XcForm'
+import { defaultFormContext } from './XcForm'
 import { parseBool, xlate } from 'shared/util/lang'
-import { IFieldConstraint } from './validation/XcFieldConstraint'
 import { formatDate } from 'shared/util/dateUtil'
+import { IFieldConstraint } from './validation/XcFieldConstraint'
 
 const DEFAULT_COL_NUM = 12;
 
@@ -24,7 +26,7 @@ export function getRequired(constraint: ?IFieldConstraint): bool {
     return constraint != null ? parseBool(constraint.required, defaultRequired) : defaultRequired;
 }
 
-export function getStringValue (value: ?any, model: any, name: string, defaultValue: ?string = ""): ?string {
+export function getStringValue (value: ?any, model: any, name: string, defaultValue?: string = ""): string {
     // const v = value != null ? value : (model[name]: string|number|Date) ;
     const v = value != null ? value : model[name]
     if (_.isDate(v)) {
@@ -40,3 +42,7 @@ export function getStringValue (value: ?any, model: any, name: string, defaultVa
     }
 }
 
+export function getFormContext(props: Object): FormContextType {
+    const rtn = (props.context: FormContextType)
+    return rtn != null ? rtn : defaultFormContext
+}

@@ -2,7 +2,8 @@
 import _ from 'lodash'
 import React, { Component } from 'react';
 import { DataType } from 'shared/model';
-import { XcButton, XcButtonGroup, XcDialog, XcForm, XcInputText, XcInputNumber } from 'shared/component';
+import { XaInputText } from 'shared/component';
+import { XcButton, XcButtonGroup, XcDialog, XcForm, XcInputNumber } from 'shared/component';
 import { XcOption, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { ThemeContext } from 'shared/component/XaTheme'
 import { createNumberFormat, formatNumber, Language, xlate } from 'shared/util/lang';
@@ -51,11 +52,11 @@ class OrderInputForm extends React.Component<IntProps, State> {
 
     render() {
         const { exchanges, sessionContext } = this.props
-        // const { instrument, orderInputRequest } = this.state
         const { orderInputRequest } = this.state
         const languageContext: LanguageContextType = sessionContext.languageContext
         const { currency, instrument } = this.getInstrumentAndCurrency()
 
+        const exchange = _.find(exchanges, ep => ep.exchangeCode == orderInputRequest.exchangeCode)
         const exchangeOpt = _.map(exchanges, (e) => (
             new XcOption(e.exchangeCode, e.shortNameDefLang)
         ))
@@ -68,6 +69,9 @@ class OrderInputForm extends React.Component<IntProps, State> {
         const currencyName = currency ? currency.getDescription(languageContext.language) : ""
         const lotSizeHint = instrument ? xlate(`${formName}.lotSizeHint`, [instrument.lotSize]) : null
 
+        const instrumentCodeLength = exchange != null ? exchange.getInstrumentCodeLength() : -1
+        const instrumentCodeConstraint = instrumentCodeLength > 0 ? { required: true, maxLength: instrumentCodeLength } : { required: true }
+
         return (
             <ThemeContext.Consumer>
                 {theme => (
@@ -76,12 +80,12 @@ class OrderInputForm extends React.Component<IntProps, State> {
                         <XcForm model={orderInputRequest} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
                             <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
                             <XcSelect name="buySell" options={buySellOpt} validation={{ required: true }} />
-                            <XcInputText name="instrumentCode" onBlur={this.handleSearchStock} subLabel={instrumentName} validation={{ required: true }} />
+                            <XaInputText name="instrumentCode" onBlur={this.handleSearchStock} subLabel={instrumentName} validation={instrumentCodeConstraint} />
                             <XcInputNumber name="price" prefix={currencyName} prefixMinWidth="55px" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} type={XcInputNumber.Type.Decimal} />
                             <XcInputNumber name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
                             <br />
                             <XcButtonGroup>
-                                <XcButton icon={{ name: "erase" }} name="reset" onClick={this.handleClick} />
+                                <XcButton icon={{ name: "erase" }} name="reset" onClick={this.handleResetForm} />
                                 <XcButton disabled={false} icon={{ name: "hand point up outline" }}
                                     name="submit" onClick={this.handleCalculateChargeCommission} primary />
                             </XcButtonGroup>
@@ -112,17 +116,35 @@ class OrderInputForm extends React.Component<IntProps, State> {
         })
     }
     
-    handleClick = (event: SyntheticMouseEvent<>) => {
+    handleResetForm = (event: SyntheticMouseEvent<>) => {
     }    
 
     handleSearchStock = (event: SyntheticFocusEvent<>) => {
-        const { exchangeCode, instrumentCode } = this.state.orderInputRequest
+        const { exchanges } = this.props
+        const { orderInputRequest } = this.state
+        const { exchangeCode, instrumentCode } = orderInputRequest
+
         if (!isNullOrEmpty(exchangeCode) && !isNullOrEmpty(instrumentCode)) {
+            const exchange = _.find(exchanges, ep => ep.exchangeCode == exchangeCode)
+            if (exchange != null) {
+                const formattedInstrumentCode = exchange.formatInstrumentCode(instrumentCode)
+                if (formattedInstrumentCode != instrumentCode) {
+                    orderInputRequest.instrumentCode = formattedInstrumentCode
+                    this.setState({ orderInputRequest: orderInputRequest }, () => {
+                        instrumentService.getOne({ exchangeCode: exchangeCode, instrumentCode: formattedInstrumentCode }).then(
+                            instrument => {
+                                this.setState({
+                                    instrument: instrument
+                                })
+                            }
+                        )
+                    })
+                    return
+                }
+            }
             instrumentService.getOne({ exchangeCode: exchangeCode, instrumentCode: instrumentCode }).then(
                 instrument => {
                     this.setState({
-                        // currency: orderInputResourceBundle.currency,
-                        // exchangeBoardPriceSpread: orderInputResourceBundle.exchangeBoardPriceSpread,
                         instrument: instrument
                     })
                 }

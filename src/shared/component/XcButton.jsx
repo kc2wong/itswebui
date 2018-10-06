@@ -9,10 +9,14 @@ import type { FormContextType } from './XcForm';
 import ButtonGroupContext from './XcButtonGroup';
 import type { XcIconProps } from './XcIconProps';
 import { parseBool, xlate } from 'shared/util/lang';
-import { constructLabel } from './XcFormUtil';
+import { constructLabel, getFormContext } from './XcFormUtil';
+import { ValidationStatus } from './validation/XaValidationStatus'
 
 export class ButtonVisibility extends Enum {}
 ButtonVisibility.initEnum(['Disable', 'Hidden', 'Visible']);
+
+export class ButtonType extends Enum {}
+ButtonType.initEnum(['Submit', 'Reset']);
 
 type Props = {
     active?: bool,
@@ -21,7 +25,8 @@ type Props = {
     label: string,
     name: string,
     onClick?: () => void,
-    primary?: bool
+    primary?: bool,
+    type?: ButtonType
 }
 
 type State = {
@@ -29,8 +34,10 @@ type State = {
 }
 
 export class XcButton extends Component<Props, State> {
+    static Type = ButtonType
+    
     render() {
-        const { active, fluid, icon, label, name, primary, ...props } = this.props;
+        const { active, fluid, icon, label, onClick, name, primary, type, ...props } = this.props;
         const a = parseBool(active, false)
         const b = parseBool(fluid, false)
         const p = parseBool(primary, false)
@@ -56,6 +63,23 @@ export class XcButton extends Component<Props, State> {
     }
 
     handleClick = (onSubmit: ?() => void) => (event: SyntheticMouseEvent<>) => {
+        const { onClick, type } = this.props;
+
+        const formContext = getFormContext(this.props)
+        if (formContext != null && ButtonType.Submit == type) {
+            formContext.validate().then(result => {                
+                console.log(`Form validation result = ${result.toString()}`)
+                if (result == ValidationStatus.ValidateSuccess) {
+                    this.doAction(onSubmit)
+                }
+            })
+        }
+        else {
+            this.doAction(onSubmit)
+        }
+    }
+
+    doAction(onSubmit: ?() => void) {
         const { onClick } = this.props;
         if (onClick != null) {
             onClick();
@@ -64,7 +88,7 @@ export class XcButton extends Component<Props, State> {
             onSubmit();
         }
         else {
-            console.warn(`Button name=${this.props.label} has no action`)
+            console.warn(`Button name=${this.props.name} has no action`)
         }
     }
 
@@ -82,3 +106,11 @@ export class XcButton extends Component<Props, State> {
         return icon != null ? null : t
    }    
 }
+
+export const XaButton = (props: Props) => (    
+    <FormContext.Consumer>
+        {context =>
+            <XcButton context={context} {...props} />
+        }
+    </FormContext.Consumer>
+)
