@@ -14,8 +14,9 @@ export class Exchange implements BaseModel {
     sequence: number;
     tradeDate: ?Date;
     exchangeParameter: ExchangeParameter[];
+    exchangeOrderType: ExchangeOrderType[];
 
-    constructor(exchangeCode: string, nameDefLang: string, shortNameDefLang: string, baseCurrencyCode: string, sequence: number, tradeDate: Date,  exchangeParameter: ExchangeParameter[]) {
+    constructor(exchangeCode: string, nameDefLang: string, shortNameDefLang: string, baseCurrencyCode: string, sequence: number, tradeDate: Date,  exchangeParameter: ExchangeParameter[], exchangeOrderType: ExchangeOrderType[]) {
         this.exchangeCode = exchangeCode;
         this.nameDefLang = nameDefLang;
         this.shortNameDefLang = shortNameDefLang;
@@ -23,6 +24,7 @@ export class Exchange implements BaseModel {
         this.sequence = sequence;
         this.tradeDate = tradeDate;
         this.exchangeParameter = exchangeParameter
+        this.exchangeOrderType = exchangeOrderType
     }
 
     getId(): Object {
@@ -59,11 +61,12 @@ export class Exchange implements BaseModel {
         const rtn = Exchange.newInstance()
         Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
         rtn.exchangeParameter = _.map(json.exchangeParameter, ep => ExchangeParameter.fromJson(ep))
+        rtn.exchangeOrderType = _.map(json.exchangeOrderType, eot => ExchangeOrderType.fromJson(eot))
         return rtn
     }
 
     static newInstance(): Exchange {
-        return new Exchange("", "", "", "", 0, new Date(), []);        
+        return new Exchange("", "", "", "", 0, new Date(), [], []);        
     }
 
     static getId(json: Object): Object {
@@ -115,6 +118,35 @@ export class ExchangeParameter {
 
     static newInstance(): ExchangeParameter {
         return new ExchangeParameter("", "", "", null, 0, true);        
+    }
+
+}
+
+
+export class ExchangeOrderType {
+
+    orderChannelCode: string;
+    orderTypeCode: string;
+
+    constructor(orderChannelCode: string, orderTypeCode: string) {
+        this.orderChannelCode = orderChannelCode
+        this.orderTypeCode = orderTypeCode
+    }
+
+    toJson(): Object {
+        const rtn = {};
+        Object.assign(rtn, this);
+        return rtn        
+    }
+    
+    static fromJson(json: Object): ExchangeOrderType {
+        const rtn = ExchangeOrderType.newInstance()
+        Object.assign(rtn, _.pick(json, Object.keys(rtn.toJson())))
+        return rtn
+    }
+
+    static newInstance(): ExchangeOrderType {
+        return new ExchangeOrderType("", "");        
     }
 
 }

@@ -2,16 +2,19 @@
 import _ from 'lodash'
 import React, { Component } from 'react';
 import { DataType } from 'shared/model';
-import { XaInputText } from 'shared/component';
-import { XcButton, XcButtonGroup, XcDialog, XcForm, XcInputNumber } from 'shared/component';
+import { XaButton, XaInputNumber, XaInputText } from 'shared/component';
+import { XcButtonGroup, XcDialog, XcForm } from 'shared/component';
 import { XcOption, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
+import { ValidationStatus } from 'shared/component/validation/XaValidationStatus'
 import { ThemeContext } from 'shared/component/XaTheme'
-import { createNumberFormat, formatNumber, Language, xlate } from 'shared/util/lang';
+import { createNumberFormat, formatNumber, isDivisiable, getPrecision, Language, xlate } from 'shared/util/lang';
 import { isNullOrEmpty } from 'shared/util/stringUtil';
-import { Currency, Exchange, ExchangeBoardPriceSpread, Instrument } from 'app/model/staticdata'
+import { Currency, Exchange, ExchangeBoardPriceSpread, OrderType, Instrument } from 'app/model/staticdata'
 import { BuySell } from 'app/model/EnumType'
 import { OrderInputRequest, OrderInputResourceBundle } from 'app/model/order'
 import { MessageService } from 'shared/service';
+import { CHANNEL_CODE } from 'app/constant/ApplicationConstant'
+import { ErrorCode } from 'app/constant/ErrorCode'
 import { instrumentService, orderService } from 'app/service'
 import { ApplicationContext, type AccountContextType, type LanguageContextType, SessionContext, type SessionContextType } from 'app/context'
 
@@ -43,7 +46,9 @@ class OrderInputForm extends React.Component<IntProps, State> {
             orderInputRequest.operationUnitCode = selectedTradingAccount.operationUnitCode
             orderInputRequest.tradingAccountCode = selectedTradingAccount.tradingAccountCode    
         }
-
+        
+        const defaultExchange = _.sortBy(props.exchanges, ['sequence'])[0]
+        orderInputRequest.exchangeCode = defaultExchange.exchangeCode
         this.state = {
             orderInputRequest: orderInputRequest,
             instrument: null
@@ -57,11 +62,18 @@ class OrderInputForm extends React.Component<IntProps, State> {
         const { currency, instrument } = this.getInstrumentAndCurrency()
 
         const exchange = _.find(exchanges, ep => ep.exchangeCode == orderInputRequest.exchangeCode)
+        const exchangeOrderTypeCodes = _.map(_.filter(exchange.exchangeOrderType, eot => eot.orderChannelCode == CHANNEL_CODE), eot => eot.orderTypeCode)
+        const exchangeOrderTypes = _.filter(sessionContext.cacheContext.getOrderTypes(), ot => _.indexOf(exchangeOrderTypeCodes, ot.orderTypeCode) != -1)
+        const orderType = _.find(exchangeOrderTypes, ep => ep.orderTypeCode == orderInputRequest.orderTypeCode)
+        const priceEnabled = orderType == null || orderType.priceAllowedIndicator
         const exchangeOpt = _.map(exchanges, (e) => (
             new XcOption(e.exchangeCode, e.shortNameDefLang)
         ))
         const buySellOpt = _.map(BuySell.enumValues, (e) => (
             new XcOption(e.value, xlate(`enum.buySell.${e.value}`))
+        ))
+        const orderTypeOpt = _.map(exchangeOrderTypes, (e) => (
+            new XcOption(e.orderTypeCode, e.getDescription(languageContext.language))
         ))
 
         const cacheContext = sessionContext.cacheContext
@@ -77,17 +89,22 @@ class OrderInputForm extends React.Component<IntProps, State> {
                 {theme => (
                     <React.Fragment>
                         <h3 style={{ color: theme.secondaryVariant }}>{xlate(`${formName}.title`)}</h3>
-                        <XcForm model={orderInputRequest} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
+                        <XcForm model={orderInputRequest.toJson()} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
                             <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
                             <XcSelect name="buySell" options={buySellOpt} validation={{ required: true }} />
-                            <XaInputText name="instrumentCode" onBlur={this.handleSearchStock} subLabel={instrumentName} validation={instrumentCodeConstraint} />
-                            <XcInputNumber name="price" prefix={currencyName} prefixMinWidth="55px" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} type={XcInputNumber.Type.Decimal} />
-                            <XcInputNumber name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
+                            <XaInputText name="instrumentCode" lookup={this.handleSearchStock} subLabel={instrumentName} validation={instrumentCodeConstraint} />
+                            <XcSelect name="orderTypeCode" options={orderTypeOpt} validation={{ required: true }} />
+                            <XaInputNumber name="price" disabled={!priceEnabled} prefix={currencyName} prefixMinWidth="55px"
+                                steppingDown={instrument ? this.getStepDownPriceSpread(orderInputRequest.price, instrument) : 0}
+                                steppingUp={instrument ? this.getStepUpPriceSpread(orderInputRequest.price, instrument) : 0}
+                                type={XaInputNumber.Type.Decimal} validation={{ custom: this.validatePrice, greaterThan: 0, required: priceEnabled }} />
+                            <XaInputNumber name="quantity" steppingDown={instrument && orderInputRequest.quantity > 0 ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0}
+                                subLabel={lotSizeHint} validation={{ custom: this.validateQuantity, greaterThan: 0, required: true }} />
                             <br />
                             <XcButtonGroup>
-                                <XcButton icon={{ name: "erase" }} name="reset" onClick={this.handleResetForm} />
-                                <XcButton disabled={false} icon={{ name: "hand point up outline" }}
-                                    name="submit" onClick={this.handleCalculateChargeCommission} primary />
+                                <XaButton icon={{ name: "erase" }} name="reset" onClick={this.handleResetForm} type={XaButton.Type.Reset} />
+                                <XaButton disabled={false} icon={{ name: "hand point up outline" }}
+                                    name="submit" onClick={this.handleCalculateChargeCommission} primary type={XaButton.Type.Submit} />
                             </XcButtonGroup>
                         </XcForm>
                     </React.Fragment>
@@ -119,7 +136,7 @@ class OrderInputForm extends React.Component<IntProps, State> {
     handleResetForm = (event: SyntheticMouseEvent<>) => {
     }    
 
-    handleSearchStock = (event: SyntheticFocusEvent<>) => {
+    handleSearchStock = (): ?Promise<ValidationStatus> => {
         const { exchanges } = this.props
         const { orderInputRequest } = this.state
         const { exchangeCode, instrumentCode } = orderInputRequest
@@ -130,28 +147,29 @@ class OrderInputForm extends React.Component<IntProps, State> {
                 const formattedInstrumentCode = exchange.formatInstrumentCode(instrumentCode)
                 if (formattedInstrumentCode != instrumentCode) {
                     orderInputRequest.instrumentCode = formattedInstrumentCode
-                    this.setState({ orderInputRequest: orderInputRequest }, () => {
-                        instrumentService.getOne({ exchangeCode: exchangeCode, instrumentCode: formattedInstrumentCode }).then(
-                            instrument => {
-                                this.setState({
-                                    instrument: instrument
-                                })
-                            }
-                        )
-                    })
-                    return
+                    this.setState({ orderInputRequest: orderInputRequest })
                 }
+                return instrumentService.getOne({ exchangeCode: exchangeCode, instrumentCode: formattedInstrumentCode }).then(
+                    instrument => {
+                        this.setState({
+                            instrument: instrument
+                        })
+                        return ValidationStatus.ValidateSuccess
+                    }
+                )
             }
-            instrumentService.getOne({ exchangeCode: exchangeCode, instrumentCode: instrumentCode }).then(
+            return instrumentService.getOne({ exchangeCode: exchangeCode, instrumentCode: instrumentCode }).then(
                 instrument => {
                     this.setState({
                         instrument: instrument
                     })
+                    return ValidationStatus.ValidateSuccess
                 }
             )
         }
+        return Promise.resolve(ValidationStatus.ValidateSuccess)
     }    
-
+        
     handleCalculateChargeCommission = (event: SyntheticFocusEvent<>) => {
         const { messageService, sessionContext } = this.props
         const { orderInputRequest } = this.state
@@ -183,8 +201,8 @@ class OrderInputForm extends React.Component<IntProps, State> {
                         { key: xlate(`${formName}.netAmount`), value: `${currencyName} ${formatNumber(chargeCommission.netAmount, numberFormat)}` }
                     ]
                     const content = <XcTable colspec={[keyCol, valueCol]} compact={false} data={data} selectable={false} size={XcTable.Size.Large}></XcTable>
-                    const positiveButton = <XcButton icon={{name: 'checkmark'}} label={xlate("general.confirm")} primary onClick={() => {}} />
-                    const negativeButton = <XcButton icon={{name: 'remove'}} label={xlate("general.cancel")} onClick={() => {messageService && messageService.dismissDialog()}} />
+                    const positiveButton = <XaButton icon={{name: 'checkmark'}} label={xlate("general.confirm")} primary onClick={() => {}} />
+                    const negativeButton = <XaButton icon={{name: 'remove'}} label={xlate("general.cancel")} onClick={() => {messageService && messageService.dismissDialog()}} />
                                 
                     const dialog = <XcDialog confirmYesAction={() => { }}
                         negativeButton={negativeButton} positiveButton={positiveButton}
@@ -208,6 +226,77 @@ class OrderInputForm extends React.Component<IntProps, State> {
         return { currency, instrument}
     }
 
+    getStepUpPriceSpread(price: number, instrument: Instrument): number {
+        const { sessionContext } = this.props
+
+        const cacheContext = sessionContext.cacheContext
+        const ps = cacheContext.getExchangeBoardPriceSpread(instrument.exchangeBoardCode, instrument.exchangeBoardPsCode)
+        if (ps != null) {
+            const dtl = _.find(_.reverse([...ps.exchangeBoardPriceSpreadDetail]), d => price >= d.priceFrom)
+            if (dtl != null) {
+                return dtl.spreadValue
+            }
+            else {
+                return ps.exchangeBoardPriceSpreadDetail[0].spreadValue
+            }
+        }
+        return 0
+    }
+
+    getStepDownPriceSpread(price: number, instrument: Instrument): number {
+        const { sessionContext } = this.props
+
+        const cacheContext = sessionContext.cacheContext
+        const ps = cacheContext.getExchangeBoardPriceSpread(instrument.exchangeBoardCode, instrument.exchangeBoardPsCode)
+        if (price > 0 && ps != null) {
+            const idx = _.findLastIndex(ps.exchangeBoardPriceSpreadDetail, d => price >= d.priceFrom)
+            if (idx >= 0) {
+                const dtl = ps.exchangeBoardPriceSpreadDetail[idx]
+                if (dtl.priceFrom == price) {
+                    // current price same as From Price in range, use previous spread when step down
+                    if (idx >= 1) {
+                        return ps.exchangeBoardPriceSpreadDetail[idx - 1].spreadValue                        
+                    }
+                    else {
+                        return ps.exchangeBoardPriceSpreadDetail[0].spreadValue
+                    }
+                }
+                return dtl.spreadValue                        
+            }
+            else {
+                return ps.exchangeBoardPriceSpreadDetail[0].spreadValue
+            }
+        }
+        return 0
+    }
+
+    validatePrice = (): ?string => {
+        const { sessionContext } = this.props
+        const { orderInputRequest, instrument } = this.state
+
+        const cacheContext = sessionContext.cacheContext
+        const ps = cacheContext.getExchangeBoardPriceSpread(instrument.exchangeBoardCode, instrument.exchangeBoardPsCode)
+        const price = orderInputRequest.price
+
+        if (ps != null) {
+            const dtl = _.findLast(ps.exchangeBoardPriceSpreadDetail, d => price >= d.priceFrom)
+            if (!isDivisiable(orderInputRequest.price, dtl.spreadValue)) {
+                return xlate(`error.${ErrorCode.INVALID_ORDER_PRICE}`, [xlate(`${formName}.price`), dtl.spreadValue])
+            }            
+        }
+        return null
+    }
+
+    validateQuantity = (): ?string => {
+        const { orderInputRequest, instrument } = this.state
+
+        if (instrument != null) {
+            if (!isDivisiable(orderInputRequest.quantity, instrument.lotSize)) {
+                return xlate(`error.${ErrorCode.INVALID_ORDER_QUANTITY}`, [xlate(`${formName}.quantity`), instrument.lotSize])
+            }            
+        }
+        return null
+    }
 }
 
 export default (props: Props) => (

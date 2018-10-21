@@ -15,9 +15,9 @@ import { ApplicationContext, SessionContext, type SessionContextType } from 'app
 import CurrencyMaintenanceForm from 'app/component/staticdata/currency/CurrencyMaintenanceForm';
 import StmActionMaintenanceForm from 'app/component/staticdata/stmaction/StmActionMaintenanceForm';
 import { Order, OrderInputRequest } from 'app/model/order'
-import { Currency, Exchange, ExchangeBoardPriceSpread, Instrument } from 'app/model/staticdata'
+import { Currency, Exchange, ExchangeBoardPriceSpread, Instrument, OrderType } from 'app/model/staticdata'
 import { SimpleTradingAccount } from 'app/model/client/simpleTradingAccount'
-import { authenticationService, currencyService, exchangeService, exchangeBoardPriceSpreadService, userProfileService } from 'app/service';
+import { authenticationService, currencyService, exchangeService, exchangeBoardPriceSpreadService, orderTypeService, userProfileService } from 'app/service';
 import OrderAmendForm from 'app/component/order/OrderAmendForm'
 import OrderCancelForm from 'app/component/order/OrderCancelForm'
 import OrderInputForm from 'app/component/order/OrderInputForm'
@@ -43,6 +43,7 @@ type State = {
     exchanges: Exchange[],
     exchangeBoardPriceSpreads: ExchangeBoardPriceSpread[],
     language: Language,
+    orderTypes: OrderType[],
     tradingAccounts: SimpleTradingAccount[],
     selectedTradingAccount: ?SimpleTradingAccount,
     menuOpen: bool,
@@ -64,10 +65,6 @@ class RetailHome extends React.Component<IntProps, State> {
         super(props)
 
         let panes = []
-        // const dummyForm = <DummyForm />
-        // panes.push(<XcNavigationTab.Pane key={'Portfolio'} id={'Portfolio'} label={'Account Portfolio'} component={<PortfolioEnquiryForm/>} ></XcNavigationTab.Pane>)
-        // panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={'Order Journal'} component={dummyForm} ></XcNavigationTab.Pane>)
-        // panes.push(<XcNavigationTab.Pane key={'AccountInfo'} id={'AccountInfo'} label={'Account 11Information'} component={dummyForm} ></XcNavigationTab.Pane>)
 
         this.state = {
             activeIndex: 0,
@@ -77,6 +74,7 @@ class RetailHome extends React.Component<IntProps, State> {
             language: _.find(Language.enumValues, (e) => (
                 e.value == navigator.location.state.language
             )),
+            orderTypes: [],
             processingOrder: null,
             selectedTradingAccount: null,
             tradingAccounts: [],
@@ -89,12 +87,13 @@ class RetailHome extends React.Component<IntProps, State> {
 
     componentDidMount() {
         const { messageService } = this.props
-        const { currencies, exchanges, exchangeBoardPriceSpreads, tradingAccounts } = this.state
+        const { currencies, exchanges, exchangeBoardPriceSpreads, orderTypes, tradingAccounts } = this.state
 
         var promises = [
             currencies.length > 0 ? Promise.resolve({ data: currencies }) : currencyService.getPage(null, {}),
             exchanges.length > 0 ? Promise.resolve({ data: exchanges }) : exchangeService.getPage(null, {}),
             exchangeBoardPriceSpreads.length > 0 ? Promise.resolve({ data: exchangeBoardPriceSpreads }) : exchangeBoardPriceSpreadService.getPage(null, {}),
+            orderTypes.length > 0 ? Promise.resolve({ data: orderTypes }) : orderTypeService.getPage(null, {}),
             tradingAccounts.length > 0 ? Promise.resolve(tradingAccounts) : userProfileService.getOwnedTradingAccount()
         ]
 
@@ -107,7 +106,7 @@ class RetailHome extends React.Component<IntProps, State> {
             panes.push(<XcNavigationTab.Pane key={'Journal'} id={'Journal'} label={xlate('home.orderJournal')} component={<OrderEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
             panes.push(<XcNavigationTab.Pane key={'OrderHistory'} id={'AccountInfo'} label={xlate('home.orderHistory')} component={<OrderHistoryEnquiryForm exchanges={exchanges} />} ></XcNavigationTab.Pane>)
     
-            this.setState({ currencies: result[0].data, exchanges: exchanges, exchangeBoardPriceSpreads: result[2].data, panes: panes, tradingAccounts: result[3] }, () => {
+            this.setState({ currencies: result[0].data, exchanges: exchanges, exchangeBoardPriceSpreads: result[2].data, orderTypes: result[3].data, panes: panes, tradingAccounts: result[4] }, () => {
                 messageService.hideLoading()
             })
         });
@@ -117,7 +116,7 @@ class RetailHome extends React.Component<IntProps, State> {
     render() {
         const { messageService } = this.props;
         const { activeIndex } = this.state
-        const { language, currencies, exchanges, selectedTradingAccount, tradingAccounts, menuOpen, panes, processingOrder, tabIndex, tradingFloorComponent } = this.state;
+        const { language, currencies, exchanges, exchangeBoardPriceSpreads, orderTypes, selectedTradingAccount, tradingAccounts, menuOpen, panes, processingOrder, tabIndex, tradingFloorComponent } = this.state;
         const applicationDate = new Date()
 
         const sessionContext: SessionContextType = {
@@ -130,8 +129,11 @@ class RetailHome extends React.Component<IntProps, State> {
                     return currencies
                 },    
                 getExchangeBoardPriceSpread: (exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string) => {
-                    const rtn = _.find(currencies, c => c.exchangeBoardCode == exchangeBoardCode && c.exchangeBoardPriceSpreadCode == exchangeBoardPriceSpreadCode)
+                    const rtn = _.find(exchangeBoardPriceSpreads, ps => ps.exchangeBoardCode == exchangeBoardCode && ps.exchangeBoardPriceSpreadCode == exchangeBoardPriceSpreadCode)
                     return rtn
+                },
+                getOrderTypes: (): OrderType[] => {
+                    return orderTypes
                 }
             },
             languageContext: {
@@ -188,16 +190,16 @@ class RetailHome extends React.Component<IntProps, State> {
                                     <XcGrid>
                                         <XcGrid.Row>
                                             <XcGrid.Col>
-                                                <XcCard style={{height: "45vh"}}>
+                                                <XcCard style={{ backgroundColor: "transparent", height: "45vh" }}>
                                                     {tradingFloorComponent ? tradingFloorComponent : <OrderInputForm exchanges={exchanges} />}
                                                 </XcCard>
                                             </XcGrid.Col>
                                         </XcGrid.Row>
                                         <XcGrid.Row>
                                             <XcGrid.Col>
-                                                <XaAccordion style={{ height: "50vh", backgroundColor: "#FBFBFB" }}>
+                                                <XaAccordion style={{ backgroundColor: "transparent", height: "50vh" }}>
                                                     <XaAccordion.Pane title={xlate('retailHome.quoteExpress')}>
-                                                        <PriceQuoteForm />
+                                                        <PriceQuoteForm exchanges={exchanges} />
                                                     </XaAccordion.Pane>
                                                     <XaAccordion.Pane title={xlate('retailHome.purchasePower')}>
                                                         <PurchasePowerEnquiryForm />

@@ -23,9 +23,9 @@ class XaAccordionPane extends React.Component<XaAccordionPaneProps, XaAccordionP
             <ThemeContext.Consumer>
                 {theme => (
                     <React.Fragment>
-                        <Accordion.Title style={active ? { backgroundColor: theme.secondary } : {}} {...props} >
-                            <Icon name='dropdown' />
-                            <font color={theme.onSecondary}>{title}</font>
+                        <Accordion.Title {...props} >
+                            <Icon style={active ? { color: theme.secondaryVariant } : {}} name='dropdown' />
+                            <font color={active ? theme.secondaryVariant : ""}>{title}</font>
                         </Accordion.Title>
                         <Accordion.Content active={active}>
                             {this.props.children}

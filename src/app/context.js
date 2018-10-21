@@ -6,7 +6,7 @@ import { MessageService } from 'shared/service';
 import { XcDialog } from 'shared/component';
 import { SimpleTradingAccount } from 'app/model/client/simpleTradingAccount'
 import { Order, OrderInputRequest } from 'app/model/order'
-import { Currency, Instrument, ExchangeBoardPriceSpread } from 'app/model/staticdata'
+import { Currency, Instrument, ExchangeBoardPriceSpread, OrderType } from 'app/model/staticdata'
 
 export type ApplicationContextType = {
     messageService: MessageService
@@ -25,7 +25,8 @@ export const ApplicationContext = React.createContext({
 export type CacheContextType = {
     getCurrency: (currencyCode: string) => ?Currency,
     getCurrencies: () => Currency[],
-    getExchangeBoardPriceSpread: (exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string) => ?ExchangeBoardPriceSpread
+    getExchangeBoardPriceSpread: (exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string) => ?ExchangeBoardPriceSpread,
+    getOrderTypes: () => OrderType[],
 }
 
 export type LanguageContextType = {
@@ -57,7 +58,8 @@ export const SessionContext = React.createContext({
     cacheContext: {
         getCurrency: (currencyCode: string) => null,
         getCurrencies: () => [],
-        getExchangeBoardPriceSpread: (exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string) => null
+        getExchangeBoardPriceSpread: (exchangeBoardCode: string, exchangeBoardPriceSpreadCode: string) => null,
+        getOrderTypes: () => [],
     },
     languageContext: {
         language: Language.English,

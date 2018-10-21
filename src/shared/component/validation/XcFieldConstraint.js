@@ -1,7 +1,17 @@
-export type XcInputTextConstraint = {
-    minLength: ?number,
-    maxLength: ?number,
-    required: ?bool
+export type XaInputNumberConstraint = {
+    required?: bool,
+    lessThan?: number,
+    lessEqual?: number,
+    greaterThan?: number,
+    greaterEqual?: number,
+    custom?: () => ?string
+}
+
+export type XcInputTextConstraint = {    
+    required: ?bool,
+    minLength?: number,
+    maxLength?: number,
+    custom?: () => ?string
 }
 
 export type XcSelectConstraint = {

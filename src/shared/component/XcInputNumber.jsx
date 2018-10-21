@@ -1,13 +1,16 @@
 // @flow
 import React, { Component } from 'react';
 import { Enum } from 'enumify'
-import { Button, Form, Input, Label } from 'semantic-ui-react';
+import { Button, Form, Input, Label, Popup } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import FormGroupContext from './XcFormGroup';
-import { constructLabel, createColumnClass, getRequired, getStringValue } from './XcFormUtil';
-import { IFieldConstraint, XcInputTextConstraint } from './validation/XcFieldConstraint';
+import { constructLabel, createColumnClass, createFormContextComponent, getFormContext, getRequired, getNumberValue, getStringValue } from './XcFormUtil';
+import { ValidationStatus } from './validation/XaValidationStatus'
+import { IFieldConstraint, XaInputNumberConstraint } from './validation/XcFieldConstraint';
 import type { XcIconProps } from './XcIconProps';
-import { parseBool, xlate } from 'shared/util/lang';
+import { addFloat, parseBool, subtractFloat, xlate } from 'shared/util/lang'
+import { ErrorCode } from 'shared/constant/ErrorCode'
+import { isNullOrEmpty } from 'shared/util/stringUtil'
 
 import './XcInputText.css';
 
@@ -15,9 +18,11 @@ export class NumberType extends Enum { }
 NumberType.initEnum(['Integer', 'Decimal']);
 
 type Props = {
+    disabled: ?boolean,
     icon: ?XcIconProps,
     label?: string,
     name: string,
+    onChange?: (event: SyntheticInputEvent<>, value: number) => void,
     placeholder: ?string,
     prefix: ?string,
     prefixMinWidth: ?string,
@@ -27,13 +32,15 @@ type Props = {
     subLabel: ?string,
     type: ?NumberType,
     value: ?number,
-    validation: ?XcInputTextConstraint,
+    validation: ?XaInputNumberConstraint,
     width: ?number
 }
 
 type State = {
+    errorMessage: ?string,
     inFocus: boolean,
-    intermediate: string
+    intermediate: string,
+    validationStatus: ValidationStatus
 }
 
 export class XcInputNumber extends Component<Props, State> {
@@ -47,22 +54,26 @@ export class XcInputNumber extends Component<Props, State> {
         super();
         this.props = props;
         this.state = {
+            errorMessage: null,            
             inFocus: false,
-            intermediate: ''
+            intermediate: '',
+            validationStatus: ValidationStatus.NotValidate
         }
     }
 
+    componentDidMount() {
+        getFormContext(this.props).attach(this)
+    }
+
     render() {
+        const formCtx = getFormContext(this.props)
+
         return (
-            <FormContext.Consumer>
-                {formCtx =>
-                    <FormGroupContext.Consumer>
-                        {formGrpCtx =>
-                            this.constructInputField(formCtx, formGrpCtx)
-                        }
-                    </FormGroupContext.Consumer>
+            <FormGroupContext.Consumer>
+                {formGrpCtx =>
+                    this.constructInputField(formCtx, formGrpCtx)
                 }
-            </FormContext.Consumer>
+            </FormGroupContext.Consumer>
         )
     }
 
@@ -80,11 +91,12 @@ export class XcInputNumber extends Component<Props, State> {
 
     handleStepUp = (formCtx: any) => (event: SyntheticInputEvent<>) => {
         console.log("handleStepUp.....")
-        const { steppingUp, value } = this.props
+        const { onChange, steppingUp, value } = this.props
         if (steppingUp) {
             if (value) {
-                // should be calling onChange as it is controlled component
-                formCtx.updateModel(this.props.name, parseFloat(value) + steppingUp);
+                if (onChange) {
+                    onChange(addFloat(value, steppingUp), event)
+                }
             }
             else {
                 formCtx.patchModel(this.props.name, steppingUp);
@@ -92,13 +104,15 @@ export class XcInputNumber extends Component<Props, State> {
         }
     }
 
-    handleStepDown = (formCtx: any) => (event: SyntheticInputEvent<>) => {
+    handleStepDown = (formCtx: any) => (event: SyntheticEvent<>) => {
         console.log("handleStepDown.....")
-        const { steppingDown, value } = this.props
+        const { onChange, steppingDown, value } = this.props
 
         if (steppingDown) {
             if (value) {
-                formCtx.updateModel(this.props.name, parseFloat(value) - steppingDown);
+                if (onChange) {
+                    onChange(subtractFloat(value, steppingDown), event)
+                }
             }
             else {
                 // should be calling onChange as it is controlled component
@@ -126,7 +140,7 @@ export class XcInputNumber extends Component<Props, State> {
         }
 
         if (validateOk) {
-            this.setState({ intermediate: v }, () => {                
+            this.setState({ errorMessage: null, intermediate: v, validationStatus: ValidationStatus.NotValidate }, () => {                
                 updateModel(name, length == 0 ? null : (isInteger ? Number.parseInt(v) : Number.parseFloat(v)));
             })
         }
@@ -150,8 +164,11 @@ export class XcInputNumber extends Component<Props, State> {
 
     constructInputField = (formCtx: any, formGrpCtx: any) => {
         const model = formCtx.model
-        const { icon, label, name, placeholder, prefix, prefixMinWidth, readonly, steppingDown, steppingUp, subLabel, validation, value, width, ...props } = this.props;
-        const { inFocus, intermediate } = this.state
+        const formName = formCtx.name
+
+        const { disabled, icon, label, name, onChange, placeholder, prefix, prefixMinWidth, readonly, steppingDown, steppingUp, subLabel, validation, value, width, ...props } = this.props;
+        const { errorMessage, inFocus, intermediate, validationStatus } = this.state
+        const e = validationStatus == ValidationStatus.ValidateFail ? { error: true } : {}
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
         const i = icon != null ? { icon: icon.name, iconPosition: "left" } : {};
         const c = createColumnClass(width) + " " + (getRequired(validation) ? "required" : "")
@@ -160,14 +177,22 @@ export class XcInputNumber extends Component<Props, State> {
         const float = subLabel ? { style: { float: "left" } } : {}
         const v = inFocus ? intermediate : this.getInputNumber(value, model, name)
 
+        const caption = constructLabel(formName, name, label)
+        const fieldLabel = validationStatus == ValidationStatus.ValidateFail ?
+            <Popup trigger={<label {...float}>{caption}</label>} content={errorMessage} />
+            :
+            <label {...float}>{caption}</label>
+        const fieldDisabled = parseBool(disabled, false)
+
         if (steppingUp != null || steppingDown != null) {
             return (
-                <Form.Field required={getRequired(validation)}>
-                    <label {...float}>{constructLabel(formCtx.name, name, label)}</label>
+                <Form.Field required={getRequired(validation)} {...e}>
+                    {fieldLabel}
                     {subLabel ? <small {...float} {...formCtx.subLabelColor ? { style: { color: formCtx.subLabelColor } } : {}} >&nbsp;&nbsp;{subLabel}</small> : null}
                     <Input
                         action
                         className={prefix != null ? "labeled" : ""}
+                        disabled={fieldDisabled}
                         onBlur={this.handleOnBlur(formCtx.updateModel)}
                         onFocus={this.handleOnFocus(v)}
                         type="text"
@@ -177,22 +202,23 @@ export class XcInputNumber extends Component<Props, State> {
                         {... (formGrpCtx && formGrpCtx.fluid) ? { fluid: true } : { width: width }}>
                         {prefix != null && (<Label {...prefixMinWidth ? { style: { minWidth: prefixMinWidth } } : {}}>{prefix}</Label>)}
                         <input onChange={this.handleChange(formCtx.updateModel)} type="text" value={v} />
-                        <Button disabled={steppingUp == 0} icon="plus" onClick={this.handleStepUp(formCtx)} />
-                        <Button disabled={steppingDown == 0} icon="minus" onClick={this.handleStepDown(formCtx)} />
+                        <Button disabled={fieldDisabled || steppingUp == 0} icon="plus" onClick={this.handleStepUp(formCtx)} />
+                        <Button disabled={fieldDisabled || steppingDown == 0} icon="minus" onClick={this.handleStepDown(formCtx)} />
                     </Input>
                 </Form.Field>
             )
         }
         else {
             return (
-                <Form.Field required={getRequired(validation)}>
-                    <label {...float}>{constructLabel(formCtx.name, name, label)}</label>
+                <Form.Field required={getRequired(validation)} {...e}>
+                    {fieldLabel}
                     {subLabel ? <small {...float} {...formCtx.subLabelColor ? { style: { color: formCtx.subLabelColor } } : {}} >&nbsp;&nbsp;{subLabel}</small> : null}
                     <Input
-                        type="text"
+                        disabled={fieldDisabled}
                         onBlur={this.handleOnBlur(formCtx.updateModel)}
                         onFocus={this.handleOnFocus(v)}
                         onChange={this.handleChange(formCtx.updateModel)}
+                        type="text"
                         value={v}
                         {...i}
                         {...l}
@@ -205,4 +231,63 @@ export class XcInputNumber extends Component<Props, State> {
         }
     }
 
+    /**
+     * API called by container form
+     */
+    validate(model: Object, formName: string) : Promise<ValidationStatus> {
+        const { label, name, type, validation, value } = this.props;
+        let errorMessage: ?string = null
+        let validationStatus = ValidationStatus.ValidateSuccess
+
+        const v = getStringValue(value, model, name)
+        if (getRequired(validation)) {
+            if (isNullOrEmpty(v)) {
+                errorMessage =  xlate(`error.${ErrorCode.MISSING_MANDATORY_FIELD}`, [constructLabel(formName, name, label)])
+            }
+        }
+
+        const numericValue = getNumberValue(value, model, name)
+        if (numericValue != null && validation != null) {
+            // if (parseBool(validation.positive, false) && numericValue <= 0) {
+            //     errorMessage =  xlate(`error.${ErrorCode.NUMBER_MUST_BE_POSITIVE}`, [constructLabel(formName, name, label)])
+            // }
+            // if (parseBool(validation.nonNegative, false) && numericValue < 0) {
+            //     errorMessage =  xlate(`error.${ErrorCode.NUMBER_MUST_BE_NON_NEGATIVE}`, [constructLabel(formName, name, label)])
+            // }
+            // if (parseBool(validation.negative, false) && numericValue >= 0) {
+            //     errorMessage =  xlate(`error.${ErrorCode.NUMBER_MUST_BE_NEGATIVE}`, [constructLabel(formName, name, label)])
+            // }
+            // if (parseBool(validation.nonPositive, false) && numericValue <= 0) {
+            //     errorMessage =  xlate(`error.${ErrorCode.NUMBER_MUST_BE_NON_POSITIVE}`, [constructLabel(formName, name, label)])
+            // }
+            if (errorMessage == null && validation.lessThan != null && !(numericValue < validation.lessThan)) {
+                errorMessage =  xlate(`error.${ErrorCode.NUMBER_MUST_BE_LESS_THAN}`, [constructLabel(formName, name, label), validation.lessThan])
+            }
+            if (errorMessage == null && validation.lessEqual != null && !(numericValue <= validation.lessEqual)) {
+                errorMessage =  xlate(`error.${ErrorCode.NUMBER_MUST_BE_LESS_EQUAL}`, [constructLabel(formName, name, label), validation.lessEqual])
+            }
+            if (errorMessage == null && validation.greaterThan != null && !(numericValue > validation.greaterThan)) {
+                errorMessage =  xlate(`error.${ErrorCode.NUMBER_MUST_BE_GREATER_THAN}`, [constructLabel(formName, name, label), validation.greaterThan])
+            }
+            if (errorMessage == null && validation.greaterEqual != null && !(numericValue >= validation.greaterEqual)) {
+                errorMessage =  xlate(`error.${ErrorCode.NUMBER_MUST_BE_GREATER_EQUAL}`, [constructLabel(formName, name, label), validation.greaterEqual])
+            }
+            if (errorMessage == null && validation.custom != null) {
+                errorMessage = validation.custom()              
+            }
+        }
+
+        if (errorMessage != null) {
+            validationStatus = ValidationStatus.ValidateFail
+        }
+        this.setState({ errorMessage: errorMessage, validationStatus: validationStatus })
+        return Promise.resolve(validationStatus)
+    }
+
+    reset() {
+        this.setState({ errorMessage: null, validationStatus: ValidationStatus.NotValidate })
+    }
+
 }
+
+export const XaInputNumber = createFormContextComponent(XcInputNumber);

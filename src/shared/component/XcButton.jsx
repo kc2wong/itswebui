@@ -9,7 +9,7 @@ import type { FormContextType } from './XcForm';
 import ButtonGroupContext from './XcButtonGroup';
 import type { XcIconProps } from './XcIconProps';
 import { parseBool, xlate } from 'shared/util/lang';
-import { constructLabel, getFormContext } from './XcFormUtil';
+import { constructLabel, createFormContextComponent, getFormContext } from './XcFormUtil';
 import { ValidationStatus } from './validation/XaValidationStatus'
 
 export class ButtonVisibility extends Enum {}
@@ -74,6 +74,10 @@ export class XcButton extends Component<Props, State> {
                 }
             })
         }
+        else if (formContext != null && ButtonType.Reset == type) {
+            this.doAction(onSubmit)
+            formContext.reset()
+        }
         else {
             this.doAction(onSubmit)
         }
@@ -107,10 +111,4 @@ export class XcButton extends Component<Props, State> {
    }    
 }
 
-export const XaButton = (props: Props) => (    
-    <FormContext.Consumer>
-        {context =>
-            <XcButton context={context} {...props} />
-        }
-    </FormContext.Consumer>
-)
+export const XaButton = createFormContextComponent(XcButton);

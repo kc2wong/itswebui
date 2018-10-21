@@ -3,9 +3,11 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "decimal.js": "^10.0.1",
         "enumify": "^1.0.4",
         "file-loader": "^1.1.11",
         "history": "^4.7.2",
+        "hoist-non-react-statics": "^3.0.1",
         "i18n-react": "^0.6.4",
         "immutability-helper": "^2.7.0",
         "json-loader": "^0.5.7",

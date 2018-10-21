@@ -5,11 +5,12 @@ import { Form, Icon, Input, Popup } from 'semantic-ui-react';
 import FormContext from './XcForm';
 import type { FormContextType } from './XcForm'
 import FormGroupContext from './XcFormGroup';
-import { constructLabel, createColumnClass, getFormContext, getRequired, getStringValue } from './XcFormUtil';
+import { constructLabel, createColumnClass, createFormContextComponent, getFormContext, getRequired, getStringValue } from './XcFormUtil';
 import { ValidationStatus } from './validation/XaValidationStatus'
 import type { XcInputTextConstraint } from './validation/XcFieldConstraint'
 import type { XcIconProps } from './XcIconProps'
 import { IconPosition } from './XcIconProps'
+import { ErrorCode } from 'shared/constant/ErrorCode'
 import { parseBool, xlate } from 'shared/util/lang'
 import { isNullOrEmpty } from 'shared/util/stringUtil'
 
@@ -20,8 +21,7 @@ type Props = {
     icon?: XcIconProps,
     inline?: bool,
     label?: string,
-    loading?: bool,
-    lookup?: () => Promise<ValidationStatus>,
+    lookup?: () => ?Promise<ValidationStatus>,
     name: string,
     onBlur?: (event: SyntheticFocusEvent<>) => void,
     password?: bool,
@@ -36,6 +36,7 @@ type Props = {
 type State = {
     errorMessage: ?string,
     inFocus: boolean,
+    loading: boolean,
     mouseOverIcon: boolean,
     validationStatus: ValidationStatus
 }
@@ -48,7 +49,7 @@ export class XcInputText extends Component<Props, State> {
 
     constructor(props: Props) {
         super();
-        this.state = { inFocus: false, mouseOverIcon: false, errorMessage: null, validationStatus: ValidationStatus.NotValidate }
+        this.state = { inFocus: false, loading: false, mouseOverIcon: false, errorMessage: null, validationStatus: ValidationStatus.NotValidate }
     }
     
     componentDidMount() {
@@ -59,14 +60,14 @@ export class XcInputText extends Component<Props, State> {
         const formCtx = getFormContext(this.props)
         const formName = formCtx.name
 
-        const { icon, inline, formatter, label, loading, name, onBlur, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
+        const { icon, inline, formatter, label, lookup, name, onBlur, password, placeholder, readonly, subLabel, validation, value, width, ...props } = this.props;
         const isPassword = parseBool(password, false)
-        const { errorMessage, inFocus, mouseOverIcon, validationStatus } = this.state
+        const { errorMessage, inFocus, loading, mouseOverIcon, validationStatus } = this.state
         const e = validationStatus == ValidationStatus.ValidateFail ? { error: true } : {}
         const ph = placeholder != null ? { placeholder: placeholder.startsWith('#') ? xlate(placeholder.substr(1)) : placeholder } : {};
-        const i = icon != null ? { icon: <Icon name={icon.name} onMouseOut={this.handleIconMouseOut} onMouseEnter={this.handleIconMouseOver}  link={isPassword || icon.onIconClick != null} onClick={icon.onIconClick} /> } : {};
+        const i = icon != null ? { icon: <Icon name={icon.name} onMouseOut={this.handleIconMouseOut} onMouseEnter={this.handleIconMouseOver}  link={isPassword || icon.onIconClick != null} onClick={this.handleIconClick} /> } : {};
         const ip = (icon != null && (icon.position == null || icon.position == IconPosition.Left)) ? { iconPosition: IconPosition.Left.value } : {}         // no need to specify position when it is right 
-        const l = parseBool(loading, false) ? { loading: true } : {}
+        const l = loading ? { loading: true } : {}
         const ml = (validation != null && validation.maxLength != null) ? { maxLength: validation.maxLength }: {}
         const t = Object.assign({}, isPassword && !mouseOverIcon ? { type: 'password' } : { type: 'text' }, props)
         const ro = parseBool(readonly, false) ? { readOnly: true } : {}
@@ -125,6 +126,18 @@ export class XcInputText extends Component<Props, State> {
         )
     }
 
+    handleIconClick = (event: SyntheticEvent<>) => {
+        const { icon } = this.props;
+        const handler = icon == null ? null : icon.onIconClick
+        if (handler != null) {
+            this.setState({ loading: true }, () => {
+                handler().then(result => {
+                    this.setState({ loading: false })
+                })                
+            })
+        }
+    }
+
     handleIconMouseOver = (event: SyntheticMouseEvent<>) => {
         this.setState({ mouseOverIcon: true })
     }
@@ -134,11 +147,22 @@ export class XcInputText extends Component<Props, State> {
     }
 
     handleOnBlur = (event: SyntheticFocusEvent<>) => {
+        const { lookup } = this.props
         this.setState({ inFocus: false }, () => {
             const { onBlur } = this.props
             if (onBlur) {
                 onBlur(event)
             }
+            if (lookup != null) {
+                this.setState({ loading: true }, () => {
+                    const promise = lookup()
+                    if (promise) {
+                        promise.then(result => {
+                            this.setState({ loading: false })
+                        })                    
+                    }
+                })
+            }    
         })
     }
 
@@ -166,20 +190,28 @@ export class XcInputText extends Component<Props, State> {
         if (getRequired(validation)) {
             const v = getStringValue(value, model, name)
             if (isNullOrEmpty(v)) {
-                validationStatus = ValidationStatus.ValidateFail
-                errorMessage =  xlate('error.MISSING_MANDATORY_FIELD', [constructLabel(formName, name, label)])
+                errorMessage =  xlate(`error.${ErrorCode.MISSING_MANDATORY_FIELD}`, [constructLabel(formName, name, label)])                
             }
+        }
+
+        if (errorMessage != null) {
+            validationStatus = ValidationStatus.ValidateFail
         }
         this.setState({ errorMessage: errorMessage, validationStatus: validationStatus })
         return Promise.resolve(validationStatus)
     }
 
+    reset() {
+        this.setState({ errorMessage: null, validationStatus: ValidationStatus.NotValidate })
+    }
+
+    setStatePromise(newState: Object) {
+        return new Promise((resolve) => {
+            this.setState(newState, () => {
+                resolve();
+            });
+        });
+    }    
 }
 
-export const XaInputText = (props: Props) => (
-    <FormContext.Consumer>
-        {context =>
-            <XcInputText context={context} {...props} />
-        }
-    </FormContext.Consumer>
-)
+export const XaInputText = createFormContextComponent(XcInputText);

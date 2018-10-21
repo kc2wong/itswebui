@@ -1,8 +1,8 @@
 // @flow
-
-import _ from 'lodash';
-import T from 'i18n-react';
-import { Enum } from 'enumify';
+import _ from 'lodash'
+import T from 'i18n-react'
+import { Enum } from 'enumify'
+import { Decimal } from 'decimal.js'
 import numeral from 'numeral'
 
 export class Language extends Enum { }
@@ -53,4 +53,29 @@ export function removeNull(obj: Object): Object {
     // Object.keys(obj).forEach((k) => (!obj[k] && obj[k] !== undefined) && delete obj[k]);
     Object.keys(obj).forEach((k) => (obj[k] == null) && delete obj[k]);
     return obj;
+}
+
+export function addFloat(a: number, b: number): number {
+    const dA = Decimal(a)
+    const dB = Decimal(b)
+    return dA.plus(dB).toNumber()
+}
+
+export function subtractFloat(a: number, b: number): number {
+    const dA = Decimal(a)
+    const dB = Decimal(b)
+    return dA.minus(dB).toNumber()
+}
+
+export function isDivisiable(a: number, b: number): boolean {
+    const dA = Decimal(a)
+    const dB = Decimal(b)
+    const dp = Math.max(dA.decimalPlaces(), dB.decimalPlaces())
+    const multiplier = Decimal(10).toPower(dp)
+    return dA.times(multiplier).modulo(dB.times(multiplier)) == 0
+}
+
+export function getDecimalPlace(a: number): number {
+    const dA = Decimal(a)
+    return dA.decimalPlaces()
 }

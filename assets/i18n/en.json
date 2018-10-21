@@ -30,7 +30,17 @@
         }
     },
     "error": {
-        "MISSING_MANDATORY_FIELD": "{0} is required",
+        "SYSERR_01001": "{0} is required",
+        "SYSERR_01101": "{0} must be positive",
+        "SYSERR_01102": "{0} must be non negative",
+        "SYSERR_01103": "{0} must be negative",
+        "SYSERR_01104": "{0} must be non positive",
+        "SYSERR_01105": "{0} must be greater than {1}",
+        "SYSERR_01106": "{0} must be greater than or equal to {1}",
+        "SYSERR_01107": "{0} must be less than {1}",
+        "SYSERR_01108": "{0} must be less than or equal to {1}",
+        "SYSERR_10001": "{0} must be multiple of {1}",
+        "SYSERR_10002": "{0} must be multiple of {1}",
         "SS": {
             "00015E": "Invalid username or password"
         }
@@ -167,6 +177,7 @@
         "instrumentCode": "Stock Code",
         "lotSizeHint": "Lot Size {0}",
         "netAmount": "Net Amount",
+        "orderTypeCode": "Order Type",
         "price": "Price",
         "quantity": "Quantity",
         "reset": "Reset",

@@ -7,5 +7,5 @@ IconPosition.initEnum({ Left: { value: 'left' }, Right: { value: 'right' } });
 export type XcIconProps = {
     name: string,
     position: ?IconPosition,
-    onIconClick?: () => void
+    onIconClick?: () => Promise<void>
 }

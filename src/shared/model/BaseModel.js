@@ -46,8 +46,4 @@ export class PageResult<T> {
         this.hasNext = hasNext
         this.data = data
     }
-
-    // hasNextPage(): boolean {
-    //     return this.hasNext
-    // }
 }
