@@ -155,7 +155,7 @@ class OrderEnquiryForm extends Component<IntProps, State> {
     search = () => {
         const { exchanges, messageService, sessionContext } = this.props
         const { exchangeCode, sortBy, sortDirection } = this.state
-        const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
+        const selectedTradingAccount = sessionContext.accountContext.selectedTradingAccount()
         if (selectedTradingAccount) {
             messageService.showLoading()
             const exchange = _.find(exchanges, e => e.exchangeCode == exchangeCode)

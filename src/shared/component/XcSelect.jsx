@@ -75,7 +75,6 @@ export class XcSelect extends Component<Props, State> {
         if (!parseBool(readonly, false)) {
             const value = target.value;
             console.debug(`XcSelect.handleChanged(), name=${this.props.name}, value=${value}`);
-            console.log(event.defaultPrevented)
             const numeric = parseBool(this.props.numeric, false);
 
             if (onChange) {

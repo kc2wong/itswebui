@@ -7,7 +7,7 @@ import { Pageable, PageResult, SortOrder } from 'shared/model';
 import { handleJsonResponse, httpGet } from 'shared/util/networkUtil';
 import { parseBool } from 'shared/util/lang';
 
-const contextPath = `${SERVER_API_URL}/api/staticdata/stm-actions`
+const contextPath = `${SERVER_API_URL}/sapi/stm-actions`
 
 class StmActionService implements StaticDataService<StmAction> {
 

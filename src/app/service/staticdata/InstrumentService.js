@@ -6,7 +6,7 @@ import { Instrument } from 'app/model/staticdata';
 import { handleJsonResponse, httpGet } from 'shared/util/networkUtil';
 import { parseBool } from 'shared/util/lang';
 
-const contextPath = `${SERVER_API_URL}/sapi/static-data/exchanges`
+const contextPath = `${SERVER_API_URL}/staticdata/v1/sapi/exchanges`
 
 class InstrumentService {
 

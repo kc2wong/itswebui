@@ -7,7 +7,7 @@ import { Pageable, PageResult, SortOrder } from 'shared/model';
 import { handleJsonResponse, httpGet } from 'shared/util/networkUtil';
 import { parseBool } from 'shared/util/lang';
 
-const contextPath = `${SERVER_API_URL}/sapi/static-data/exchange-board-price-spreads`
+const contextPath = `${SERVER_API_URL}/staticdata/v1/sapi/price-spreads`
 
 class ExchangeBoardPriceSpreadService implements StaticDataService<ExchangeBoardPriceSpread> {
 

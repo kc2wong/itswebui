@@ -5,7 +5,7 @@ import { ChargeCommission, OrderInputResourceBundle, Order, OrderCancelRequest, 
 import { httpGet, httpPatch, httpPost } from 'shared/util/networkUtil';
 
 const eApiContextPath = `${SERVER_API_URL}/eapi/order/order-request-bundles`
-const contextPath = `${SERVER_API_URL}/papi/orders`
+const contextPath = `${SERVER_API_URL}/order/v1`
 
 class OrderService {
 
@@ -24,7 +24,7 @@ class OrderService {
     }
 
     calculateChargeCommission(orderRequest: OrderRequest): Promise<ChargeCommission> {
-        let url = `${contextPath}/simulations`
+        let url = `${contextPath}/papi/simulations`
         return httpPost(url, null, orderRequest).then(
             msg => {
                 const json = msg.json
@@ -38,7 +38,7 @@ class OrderService {
     }
 
     enquireOrder(orderNumber: string): Promise<Order> {
-        let url = `${contextPath}/${orderNumber}`
+        let url = `${contextPath}/sapi/orders/${orderNumber}`
         return httpGet(url, {}).then(
             msg => {
                 const json = msg.json
@@ -52,7 +52,7 @@ class OrderService {
     }
 
     cancelOrder(orderCancelRequest: OrderCancelRequest): Promise<Order> {
-        let url = `${contextPath}/${orderCancelRequest.orderNumber}`
+        let url = `${contextPath}/papi/${orderCancelRequest.orderNumber}`
         return httpPatch(url, null, orderCancelRequest).then(
             msg => {
                 const json = msg.json

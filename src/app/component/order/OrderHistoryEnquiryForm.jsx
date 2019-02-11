@@ -187,7 +187,7 @@ export class OrderHistoryEnquiryForm extends Component<IntProps, State> {
         const { searchCriteria, sortBy, sortDirection } = this.state
         const exchangeCode = searchCriteria.exchangeCode
         const pageable = new Pageable(pageNum, pageSize, sortBy, sortDirection)
-        const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
+        const selectedTradingAccount = sessionContext.accountContext.selectedTradingAccount()
         if (selectedTradingAccount) {
             messageService.showLoading()
             const startTradeDate = searchCriteria.fromDate

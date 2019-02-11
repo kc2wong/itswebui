@@ -83,7 +83,7 @@ export class SimpleOrder {
 export class OrderEnquirySearchResult {
     simpleOrders: PageResult<SimpleOrder>;
     instruments: Array<Instrument>;
-    orderInstrumentIndex: Map<string, number>;
+    orderInstrumentIndex: Map<string, number>;      // Key = orderNumber, Value = Index in instruments array
 
     constructor(simpleOrders: PageResult<SimpleOrder>, instruments: Array<Instrument>, orderInstrumentIndex: Map<string, number>) {
         this.simpleOrders = simpleOrders
@@ -100,15 +100,16 @@ export class OrderEnquirySearchResult {
     static fromJson(criteria: Object, json: Object): OrderEnquirySearchResult {
         const data = _.map(json.content, e => SimpleOrder.fromJson(e))
         const simpleOrders = new PageResult(criteria, json.currentPage + 1, json.pageSize, json.totalPage, json.totalCount, json.hasNext, data)
-        const instruments = _.map(json.extraContent.instrumentList, e => Instrument.fromJson(e))
+        const instruments = _.map(json.extraContent.instruments, e => Instrument.fromJson(e))
         const orderInstrumentIndex = new Map()
-        _.forEach(json.extraContent.orderInstrumentIndex, (value, key) => orderInstrumentIndex.set(key, value))
+        _.forEach(simpleOrders.data, order => {
+            const idx = _.findIndex(instruments, inst => {
+                return inst.exchangeCode == order.exchangeCode && inst.instrumentCode == order.instrumentCode
+            })
+            orderInstrumentIndex.set(order.orderNumber, idx)
+        })
         return new OrderEnquirySearchResult(simpleOrders, instruments, orderInstrumentIndex)
     }
-
-    // static newInstance(): OrderEnquirySearchResult {
-    //     return new OrderEnquirySearchResult([], [], new Map());
-    // }
 
 }
 

@@ -10,14 +10,14 @@ import { parseJwt, removeAuthenticationToken, setAuthenticationToken } from 'sha
 import { MenuHierarchy } from 'app/model/security/menuHierarchy';
 import { SimpleTradingAccount } from 'app/model/client/simpleTradingAccount';
 
-const contextPath = `${SERVER_API_URL}/papi/entitlements`
+const contextPath = `${SERVER_API_URL}/account/v1`
 
 class UserProfileService {
 
     constructMainMenu(): Promise<MenuHierarchy> {
         const param = {}
         console.debug("UserService.getMenu()")
-        return httpGet(`${contextPath}/menus`, param).then(
+        return httpGet(`${contextPath}/sapi/menus`, param).then(
             msg => {
                 const menu = MenuHierarchy.fromJson(msg.json)
                 const rtn = Promise.resolve(menu)
@@ -33,10 +33,10 @@ class UserProfileService {
     getOwnedTradingAccount(): Promise<Array<SimpleTradingAccount>> {
         const param = {}
         console.debug("UserProfileService.getOwnedTradingAccount()")
-        return httpGet(`${contextPath}/simple-trading-accounts`, param).then(
+        return httpGet(`${contextPath}/sapi/trading-accounts`, param).then(
             msg => {
-                const tradingAccounts = _.map(msg.json, d => SimpleTradingAccount.fromJson(d))
-                const rtn = Promise.resolve(tradingAccounts)
+                const tradingAccounts = _.map(msg.json.content, d => SimpleTradingAccount.fromJson(d))
+                const rtn = Promise.resolve(_.sortBy(tradingAccounts, ['tradingAccountCode']))
                 return rtn
             },
             error => {

@@ -143,7 +143,7 @@ class PurchasePowerEnquiryForm extends React.Component<IntProps, State> {
     search = () => {
         const { messageService, sessionContext } = this.props
         const { currencyCode } = this.state
-        const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
+        const selectedTradingAccount = sessionContext.accountContext.selectedTradingAccount()
         if (selectedTradingAccount) {
             this.setState({ loading: true }, () => {
                 const promise = tradingAccountService.getAccountPortfolio(selectedTradingAccount.tradingAccountCode, currencyCode)
@@ -151,9 +151,9 @@ class PurchasePowerEnquiryForm extends React.Component<IntProps, State> {
                     promise.then(
                         result => {
                             this.setState({
-                                cashPortfolio: result.tradingAccountPortfolio.cashPortfolio,
+                                cashPortfolio: result.accountPortfolio.cashPortfolio,
                                 loading: false,
-                                purchasePower: result.tradingAccountPortfolio.purchasePower
+                                purchasePower: result.accountPortfolio.purchasePower
                             })
                         },
                         error => {

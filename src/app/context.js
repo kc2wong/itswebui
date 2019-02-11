@@ -44,7 +44,7 @@ export type NavigationContextType = {
 export type AccountContextType = {
     availableTradingAccount: Array<SimpleTradingAccount>,
     selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => void,
-    gelectTradingAccount: () => ?SimpleTradingAccount    
+    selectedTradingAccount: () => ?SimpleTradingAccount    
 }
 
 export type SessionContextType = {
@@ -74,6 +74,6 @@ export const SessionContext = React.createContext({
     accountContext: {
         availableTradingAccount: [],
         selectTradingAccount: (SimpleTradingAccount: SimpleTradingAccount) => {},
-        gelectTradingAccount: () => null    
+        selectedTradingAccount: () => null    
     }
 });

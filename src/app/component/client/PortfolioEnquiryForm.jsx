@@ -180,7 +180,7 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
     search = () => {
         const { exchanges, messageService, sessionContext } = this.props
         const { exchangeCode, sortBy, sortDirection } = this.state
-        const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
+        const selectedTradingAccount = sessionContext.accountContext.selectedTradingAccount()
         if (selectedTradingAccount) {
             messageService.showLoading()
             const promise = tradingAccountService.getAccountPortfolio(selectedTradingAccount.tradingAccountCode, BASE_CURRENCY)
@@ -189,7 +189,7 @@ class PortfolioEnquiryForm extends Component<IntProps, State> {
                     result => {
                         const instrumentMap = new Map()
                         _.forEach(exchanges, e => instrumentMap[e.exchangeCode] = _.keyBy(_.filter(result.instruments, i => e.exchangeCode == i.exchangeCode), 'instrumentCode'))
-                        let securityPositionSummary = _.sortBy(result.tradingAccountPortfolio.securityPositionSummary, [sortBy])
+                        let securityPositionSummary = _.sortBy(result.accountPortfolio.securityPositionSummary, [sortBy])
                         if (sortDirection == SortDirection.Descending) {
                             securityPositionSummary = _.reverse(securityPositionSummary)
                         }

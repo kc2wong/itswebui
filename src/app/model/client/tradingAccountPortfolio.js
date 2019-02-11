@@ -272,12 +272,12 @@ export class TradingAccountPortfolio {
 export class TradingAccountPortfolioBundle {
     currencies: Array<Currency>;
     instruments: Array<Instrument>;
-    tradingAccountPortfolio: TradingAccountPortfolio;
+    accountPortfolio: TradingAccountPortfolio;
 
-    constructor(currencies: Array<Currency>, instruments: Array<Instrument>, tradingAccountPortfolio: TradingAccountPortfolio) {
+    constructor(currencies: Array<Currency>, instruments: Array<Instrument>, accountPortfolio: TradingAccountPortfolio) {
         this.currencies = currencies
         this.instruments = instruments
-        this.tradingAccountPortfolio = tradingAccountPortfolio
+        this.accountPortfolio = accountPortfolio
     }    
 
     toJson(): Object {
@@ -287,14 +287,14 @@ export class TradingAccountPortfolioBundle {
     }
 
     static fromJson(json: Object): TradingAccountPortfolioBundle {
-        const tradingAccountPortfolio = TradingAccountPortfolio.fromJson(json.tradingAccountPortfolio)
+        const accountPortfolio = TradingAccountPortfolio.fromJson(json.accountPortfolio)
         const instruments = _.map(json.instruments, (e) =>
             Instrument.fromJson(e)
         )
         const currencies = _.map(json.currencies, (e) =>
             Currency.fromJson(e)
         )
-        return new TradingAccountPortfolioBundle(currencies, instruments, tradingAccountPortfolio)
+        return new TradingAccountPortfolioBundle(currencies, instruments, accountPortfolio)
     }
 
     static newInstance(): TradingAccountPortfolioBundle {

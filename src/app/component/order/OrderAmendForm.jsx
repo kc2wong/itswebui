@@ -195,7 +195,7 @@ class OrderAmendForm extends React.Component<IntProps, State> {
         orderInputRequest.quantity = order.quantity
         orderInputRequest.tradingAccountCode = order.tradingAccountCode    
 
-        const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
+        const selectedTradingAccount = sessionContext.accountContext.selectedTradingAccount()
         if (selectedTradingAccount) {
             orderInputRequest.operationUnitCode = selectedTradingAccount.operationUnitCode
         }

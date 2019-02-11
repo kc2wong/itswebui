@@ -55,7 +55,7 @@ class RetailSidebarMenu extends React.Component<IntProps, State> {
                     <List inverted style={{ marginLeft: 20, marginTop: 10 }}>
                         {(_.map(tradingAccounts, ta =>
                             <List.Item key={ta.tradingAccountCode} onClick={this.handleSelectTradingAccount(accountContext, ta)}>
-                                <List.Icon name={accountContext.gelectTradingAccount() && this.saveGetTradingAccountNo(accountContext.gelectTradingAccount()) == ta.tradingAccountCode ? 'check square outline' : 'square outline'} />
+                                <List.Icon name={accountContext.selectedTradingAccount() && this.saveGetTradingAccountNo(accountContext.selectedTradingAccount()) == ta.tradingAccountCode ? 'check square outline' : 'square outline'} />
                                 <List.Content>
                                     <List.Header>{ta.tradingAccountCode}</List.Header>
                                     <List.Description>{ta.nameOneDefLang}</List.Description>

@@ -4,16 +4,15 @@ import { SERVER_API_URL } from 'app/constant/ApplicationConstant';
 import { TradingAccountPortfolioBundle } from 'app/model/client'
 import { httpGet } from 'shared/util/networkUtil';
 
-const eApiContextPath = `${SERVER_API_URL}/eapi/trading-accounts`
-const contextPath = `${SERVER_API_URL}/papi/trading-accounts`
+const contextPath = `${SERVER_API_URL}/account/v1`
 
 class TradingAccountService {
 
     getAccountPortfolio(tradingAccountCode: string, baseCurrencyCode: string): Promise<TradingAccountPortfolioBundle> {
-        let url = `${contextPath}/${tradingAccountCode}/currencies/${baseCurrencyCode}/portfolios`
+        let url = `${contextPath}/xapi/trading-accounts/${tradingAccountCode}/currencies/${baseCurrencyCode}/portfolios`
         return httpGet(url, {}).then(
             msg => {
-                const json = msg.json
+                const json = msg.json                
                 return TradingAccountPortfolioBundle.fromJson(json)
             },
             error => {

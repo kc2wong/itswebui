@@ -6,12 +6,12 @@ import { Pageable, PageResult, SortOrder } from 'shared/model';
 import { httpGet, httpPost } from 'shared/util/networkUtil';
 import { formatDate } from 'shared/util/dateUtil'
 
-const contextPath = `${SERVER_API_URL}/xapi`
+const contextPath = `${SERVER_API_URL}/order/v1`
 
 class SimplOrderService {
 
     enquireOrder(tradingAccountCode: string, exchangeCode: ?string, startTradeDate: ?Date, endTradeDate: ?Date, pageable: ?Pageable): Promise<OrderEnquirySearchResult> {
-        let url = `${contextPath}/trading-accounts/${tradingAccountCode}/simple-orders`
+        let url = `${contextPath}/xapi/trading-accounts/${tradingAccountCode}/simple-orders`
         const sort = ( pageable && pageable.sortBy && pageable.sortDirection ) ? {sort: `${pageable.sortBy},${pageable.sortDirection.value}`} : {} 
         const criteria = { 
             exchangeCode: exchangeCode,

@@ -60,7 +60,7 @@ function request(contextPath: string, params: Object, timeout: number, extraQuer
         // POST or PUT
         body = JSON.stringify(params.data);
     }
-    const url = contextPath + nvl(qs, '');
+    const url = contextPath + nvl(qs, '')
     const timeoutErrorCode = ['DELETE', 'POST', 'PUT'].indexOf(method) > -1 ? ErrorCode.UPDATE_TIMEOUT : ErrorCode.ENQUIRY_TIMEOUT;
     // Only able to report a timeout but cannot cancel the submitted request
     return Promise.race([timeoutPromise(timeout, { errorCode: timeoutErrorCode }), fetch(url, { method, headers, body })]).then(

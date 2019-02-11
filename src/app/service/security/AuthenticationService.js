@@ -9,8 +9,8 @@ import { parseBool } from 'shared/util/lang';
 import { hexToBuffer } from 'shared/util/stringUtil';
 import { parseJwt, removeAuthenticationToken, setAuthenticationToken } from 'shared/util/sessionUtil';
 
-const initiateLoginCtxPath = `${SERVER_API_URL}/api/initiateLogin`
-const authenticateCtxPath = `${SERVER_API_URL}/api/authenticate`
+const initiateLoginCtxPath = `${SERVER_API_URL}/authentication/v1/papi/challenge`
+const authenticateCtxPath = `${SERVER_API_URL}/authentication/v1/papi/response`
 const hexChar = ["0", "1", "2", "3", "4", "5", "6", "7","8", "9", "a", "b", "c", "d", "e", "f"];
 
 class AuthenticationService {

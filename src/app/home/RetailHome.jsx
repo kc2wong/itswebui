@@ -173,7 +173,7 @@ class RetailHome extends React.Component<IntProps, State> {
                         })
                     }
                 },
-                gelectTradingAccount: () => { return selectedTradingAccount ? selectedTradingAccount : tradingAccounts.length > 0 ? tradingAccounts[0] : null}    
+                selectedTradingAccount: () => { return selectedTradingAccount ? selectedTradingAccount : tradingAccounts.length > 0 ? tradingAccounts[0] : null}    
             }
         }; 
 

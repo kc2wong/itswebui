@@ -41,7 +41,7 @@ class OrderInputForm extends React.Component<IntProps, State> {
         super(props);
 
         const orderInputRequest = OrderInputRequest.newInstance()
-        const selectedTradingAccount = props.sessionContext.accountContext.gelectTradingAccount()
+        const selectedTradingAccount = props.sessionContext.accountContext.selectedTradingAccount()
         if (selectedTradingAccount) {
             orderInputRequest.operationUnitCode = selectedTradingAccount.operationUnitCode
             orderInputRequest.tradingAccountCode = selectedTradingAccount.tradingAccountCode    
@@ -117,7 +117,7 @@ class OrderInputForm extends React.Component<IntProps, State> {
         // in case another account is selected, update the account info to orderInputRequest
         const { sessionContext } = this.props;
         const { orderInputRequest } = this.state;
-        const selectedTradingAccount = sessionContext.accountContext.gelectTradingAccount()
+        const selectedTradingAccount = sessionContext.accountContext.selectedTradingAccount()
         if (selectedTradingAccount && (orderInputRequest.operationUnitCode != selectedTradingAccount.operationUnitCode || orderInputRequest.tradingAccountCode != selectedTradingAccount.tradingAccountCode)) {
             orderInputRequest.operationUnitCode = selectedTradingAccount.operationUnitCode
             orderInputRequest.tradingAccountCode = selectedTradingAccount.tradingAccountCode
