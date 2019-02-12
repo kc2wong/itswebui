@@ -48,9 +48,9 @@ export class XcDialog extends React.Component<Props, State> {
     }
 }
 
-export const createConfirmationDialog = (confirmPositiveAction: () => void, confirmNegativeAction: () => void, title: ?string, message: string) => {
+export const createConfirmationDialog = (confirmPositiveAction: ?(() => void), confirmNegativeAction: () => void, title: ?string, message: string) => {
     const content = <p>{message}</p>
-    const positiveButton = <Button positive onClick={confirmPositiveAction} >
+    const positiveButton = <Button positive disabled={confirmPositiveAction == null} onClick={confirmPositiveAction} >
         <Icon name='checkmark' />{xlate("general.yes")}
     </Button>
     const negativeButton = <Button negative onClick={confirmNegativeAction} >

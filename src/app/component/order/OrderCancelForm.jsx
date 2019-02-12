@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import React, { Component } from 'react';
 import { DataType } from 'shared/model';
-import { XcButton, XcButtonGroup, XcDialog, XcForm, XcFormGroup, XcInputText, XcInputNumber } from 'shared/component';
+import { XaInputText, XaInputNumber, XcButton, XcButtonGroup, XcDialog, XcForm, XcFormGroup } from 'shared/component';
 import { XcOption, XcSelect } from 'shared/component';
 import { createConfirmationDialog } from 'shared/component';
 import { createNumberFormat, formatNumber, Language, xlate } from 'shared/util/lang';
@@ -61,19 +61,19 @@ class OrderCancelForm extends React.Component<IntProps, State> {
 
         return (
             <React.Fragment>
-                <h3 style={{color: "teal"}}>{xlate(`${formName}.title`)}</h3>
+                {/* <h3 style={{color: "teal"}}>{xlate(`${formName}.title`)}</h3> */}
                 <XcForm model={order} name={formName} subLabelColor="teal">
                     <XcFormGroup>
-                        <XcInputText name="orderNumber" readonly validation={{ required: true }} />
-                        <XcInputText name="orderStatus" readonly validation={{ required: true }} value={xlate(`enum.externalOrderStatus.${order.orderStatus}`)} />
+                        <XaInputText name="orderNumber" readonly validation={{ required: true }} />
+                        <XaInputText name="orderStatus" readonly validation={{ required: true }} value={xlate(`enum.externalOrderStatus.${order.orderStatus}`)} />
                     </XcFormGroup>
                     <XcSelect name="exchangeCode" options={exchangeOpt} readonly validation={{ required: true }} />
                     <XcSelect name="buySell" options={buySellOpt} readonly validation={{ required: true }} />
-                    <XcInputText name="instrumentCode" readonly subLabel={instrumentName} validation={{ required: true }} />
-                    <XcInputText name="price" readonly validation={{ required: true }} value={`${currencyName} ${formatNumber(order.price, priceFormat)}`} />
+                    <XaInputText name="instrumentCode" readonly subLabel={instrumentName} validation={{ required: true }} />
+                    <XaInputText name="price" readonly validation={{ required: true }} value={`${currencyName} ${formatNumber(order.price, priceFormat)}`} />
                     <XcFormGroup>
-                        <XcInputText name="quantity" readonly validation={{ required: true }} value={formatNumber(order.quantity, quantityFormat)} />
-                        <XcInputText name="executedQuantity" readonly validation={{ required: true }} value={formatNumber(order.executedQuantity, quantityFormat)} />
+                        <XaInputText name="quantity" readonly validation={{ required: true }} value={formatNumber(order.quantity, quantityFormat)} />
+                        <XaInputText name="executedQuantity" readonly validation={{ required: true }} value={formatNumber(order.executedQuantity, quantityFormat)} />
                     </XcFormGroup>
                     <br/>
                     <XcButtonGroup>
@@ -96,7 +96,7 @@ class OrderCancelForm extends React.Component<IntProps, State> {
 
         const numberFormat = createNumberFormat(true, currency ? currency.decimalPoint : 2)
 
-        const dialog = createConfirmationDialog(() => {
+        const confirmYesAction = () => {
             messageService.showLoading()
             const promise = orderService.cancelOrder(new OrderCancelRequest(order.orderNumber))
             promise.then(
@@ -111,7 +111,9 @@ class OrderCancelForm extends React.Component<IntProps, State> {
                     messageService.hideLoading()
                 }
             )
-        }, () => {messageService.dismissDialog()}, null, xlate(`${formName}.confirmOrderCancellation`, [order.orderNumber]))
+        }
+        // Disable the yes button
+        const dialog = createConfirmationDialog(null, () => {messageService.dismissDialog()}, null, xlate(`${formName}.confirmOrderCancellation`, [order.orderNumber]))
         messageService.showDialog(dialog);
     }
 
