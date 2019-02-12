@@ -50,7 +50,8 @@ type State = {
     panes: XcNavigationTab.Pane[],
     processingOrder: ?Order,
     tabIndex: number,
-    tradingFloorComponent: ?any
+    tradingFloorComponent: ?any,
+    tradingFloorComponentName: string
 }
 
 class DummyForm extends React.Component<{}, {}> {
@@ -81,7 +82,8 @@ class RetailHome extends React.Component<IntProps, State> {
             menuOpen: false,
             panes: panes,
             tabIndex: 0,            
-            tradingFloorComponent: null
+            tradingFloorComponent: null,
+            tradingFloorComponentName: 'orderInputForm'
         }
     }
 
@@ -116,7 +118,7 @@ class RetailHome extends React.Component<IntProps, State> {
     render() {
         const { messageService } = this.props;
         const { activeIndex } = this.state
-        const { language, currencies, exchanges, exchangeBoardPriceSpreads, orderTypes, selectedTradingAccount, tradingAccounts, menuOpen, panes, processingOrder, tabIndex, tradingFloorComponent } = this.state;
+        const { language, currencies, exchanges, exchangeBoardPriceSpreads, orderTypes, selectedTradingAccount, tradingAccounts, menuOpen, panes, processingOrder, tabIndex, tradingFloorComponent, tradingFloorComponentName } = this.state;
         const applicationDate = new Date()
 
         const sessionContext: SessionContextType = {
@@ -148,14 +150,14 @@ class RetailHome extends React.Component<IntProps, State> {
                 processingOrder: processingOrder,
                 navigateToOrderAmendForm: (instrument: Instrument, order: Order) => {
                     const orderAmendForm = <OrderAmendForm exchanges={exchanges} instrument={instrument} order={order} />
-                    this.setState({processingOrder: order, tradingFloorComponent: orderAmendForm})
+                    this.setState({processingOrder: order, tradingFloorComponent: orderAmendForm, tradingFloorComponentName: 'orderAmendForm'})
                 },
                 navigateToOrderCancelForm: (instrument: Instrument, order: Order) => {
                     const orderCancelForm = <OrderCancelForm exchanges={exchanges} instrument={instrument} order={order} />
-                    this.setState({processingOrder: order, tradingFloorComponent: orderCancelForm})
+                    this.setState({processingOrder: order, tradingFloorComponent: orderCancelForm, tradingFloorComponentName: 'orderCancelForm'})
                 },
                 navigateToOrderInputForm: (orderInputRequest: ?OrderInputRequest) => {
-                    this.setState({processingOrder: null, tradingFloorComponent: null})
+                    this.setState({processingOrder: null, tradingFloorComponent: null, tradingFloorComponentName: 'orderInputForm'})
                 }
             },            
             accountContext: {
@@ -188,16 +190,19 @@ class RetailHome extends React.Component<IntProps, State> {
                             <div className='orderPanel' >
                                 {exchanges.length > 0 && (
                                     <XcGrid>
-                                        <XcGrid.Row>
+                                        {/* <XcGrid.Row>
                                             <XcGrid.Col>
                                                 <XcCard style={{ backgroundColor: "transparent", height: "45vh" }}>
                                                     {tradingFloorComponent ? tradingFloorComponent : <OrderInputForm exchanges={exchanges} />}
                                                 </XcCard>
                                             </XcGrid.Col>
-                                        </XcGrid.Row>
+                                        </XcGrid.Row> */}
                                         <XcGrid.Row>
                                             <XcGrid.Col>
-                                                <XaAccordion style={{ backgroundColor: "transparent", height: "50vh" }}>
+                                                <XaAccordion style={{ backgroundColor: "transparent", height: "100vh" }}>
+                                                    <XaAccordion.Pane title={xlate("retailHome.tradingFloor") + " (" + xlate(`${tradingFloorComponentName}.title`) + ")"}>
+                                                        {tradingFloorComponent ? tradingFloorComponent : <OrderInputForm exchanges={exchanges} />}
+                                                    </XaAccordion.Pane>
                                                     <XaAccordion.Pane title={xlate('retailHome.quoteExpress')}>
                                                         <PriceQuoteForm exchanges={exchanges} />
                                                     </XaAccordion.Pane>

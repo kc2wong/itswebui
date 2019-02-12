@@ -297,6 +297,7 @@
     },
     "retailHome": {
         "newOrder": "New Order",
+        "tradingFloor": "Trading Floor",
         "quoteExpress": "Quote Express",
         "purchasePower": "Purchase Power"
     },    

@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import React, { Component } from 'react';
 import { DataType } from 'shared/model';
-import { XcButton, XcButtonGroup, XcDialog, XcForm, XcFormGroup, XcInputText, XcInputNumber } from 'shared/component';
+import { XaInputText, XaInputNumber, XcButton, XcButtonGroup, XcDialog, XcForm, XcFormGroup } from 'shared/component';
 import { XcMessage, XcOption, XcRadio, XcSelect, XcTable, XcTableColSpec } from 'shared/component';
 import { createConfirmationDialog } from 'shared/component';
 import { createNumberFormat, formatNumber, Language, xlate } from 'shared/util/lang';
@@ -66,23 +66,25 @@ class OrderAmendForm extends React.Component<IntProps, State> {
 
         return (
             <React.Fragment>
-                <h3 style={{color: "teal"}}>{xlate(`${formName}.title`)}</h3>
+                {/* <h3 style={{color: "teal"}}>{xlate(`${formName}.title`)}</h3> */}
                 <XcForm model={orderInputRequest} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
                     <XcFormGroup>
-                        <XcInputText name="orderNumber" readonly validation={{ required: true }} value={order.orderNumber} />
-                        <XcInputText name="orderStatus" readonly validation={{ required: true }} value={xlate(`enum.externalOrderStatus.${order.orderStatus}`)} />
+                        <XaInputText name="orderNumber" readonly validation={{ required: true }} value={order.orderNumber} />
+                        <XaInputText name="orderStatus" readonly validation={{ required: true }} value={xlate(`enum.externalOrderStatus.${order.orderStatus}`)} />
                     </XcFormGroup>
                     <XcFormGroup>
                         <XcSelect name="exchangeCode" options={exchangeOpt} readonly validation={{ required: true }} />
                         <XcSelect name="buySell" options={buySellOpt} readonly validation={{ required: true }} />
                     </XcFormGroup>                    
-                    <XcInputText name="instrumentCode" readonly subLabel={instrumentName} validation={{ required: true }} />
+                    <XaInputText name="instrumentCode" readonly subLabel={instrumentName} validation={{ required: true }} />
                     <XcFormGroup >
-                        <XcInputText name="price" readonly validation={{ required: true }} value={`${currencyName} ${formatNumber(order.price, priceFormat)}`} />
-                        <XcInputText name="quantity" readonly validation={{ required: true }} value={formatNumber(order.quantity, quantityFormat)} />
+                        <XaInputText name="price" readonly validation={{ required: true }} value={`${currencyName} ${formatNumber(order.price, priceFormat)}`} />
+                        <XaInputText name="quantity" readonly validation={{ required: true }} value={formatNumber(order.quantity, quantityFormat)} />
                     </XcFormGroup>
-                    <XcInputNumber label={xlate(`${formName}.newPrice`)} name="price" prefix={currencyName} prefixMinWidth="55px" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} />
-                    <XcInputNumber label={xlate(`${formName}.newQuantity`)} name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
+                    <XaInputNumber label={xlate(`${formName}.newPrice`)} name="price" prefix={currencyName} prefixMinWidth="55px" 
+                                steppingDown={instrument ? this.getStepDownPriceSpread(orderInputRequest.price, instrument) : 0} 
+                                steppingUp={instrument ? this.getStepUpPriceSpread(orderInputRequest.price, instrument) : 0} />
+                    <XaInputNumber label={xlate(`${formName}.newQuantity`)} name="quantity" steppingDown={instrument ? instrument.lotSize : 0} steppingUp={instrument ? instrument.lotSize : 0} subLabel={lotSizeHint} validation={{ required: true }} />
                     <br />
                     <XcButtonGroup>
                         <XcButton icon={{ name: "close" }} name="close" label={xlate('general.close')} onClick={this.handleCloseForm} />
@@ -104,7 +106,7 @@ class OrderAmendForm extends React.Component<IntProps, State> {
 
         const numberFormat = createNumberFormat(true, currency ? currency.decimalPoint : 2)
 
-        const dialog = createConfirmationDialog(() => {
+        const confirmYesAction = () => {
             messageService.showLoading()
             const promise = orderService.cancelOrder(new OrderCancelRequest(order.orderNumber))
             promise.then(
@@ -119,7 +121,9 @@ class OrderAmendForm extends React.Component<IntProps, State> {
                     messageService.hideLoading()
                 }
             )
-        }, () => {messageService.dismissDialog()}, null, xlate(`${formName}.confirmOrderCancellation`, order.orderNumber))
+        }
+        // Disable the yes button
+        const dialog = createConfirmationDialog(null, () => {messageService.dismissDialog()}, null, xlate(`${formName}.confirmOrderCancellation`, order.orderNumber))
         messageService.showDialog(dialog);
     }
 
@@ -182,6 +186,50 @@ class OrderAmendForm extends React.Component<IntProps, State> {
         const { sessionContext } = this.props
         sessionContext.navigationContext.navigateToOrderInputForm()
     }    
+
+    getStepUpPriceSpread(price: number, instrument: Instrument): number {
+        const { sessionContext } = this.props
+
+        const cacheContext = sessionContext.cacheContext
+        const ps = cacheContext.getExchangeBoardPriceSpread(instrument.exchangeBoardCode, instrument.exchangeBoardPsCode)
+        if (ps != null) {
+            const dtl = _.find(_.reverse([...ps.exchangeBoardPriceSpreadDetail]), d => price >= d.priceFrom)
+            if (dtl != null) {
+                return dtl.spreadValue
+            }
+            else {
+                return ps.exchangeBoardPriceSpreadDetail[0].spreadValue
+            }
+        }
+        return 0
+    }
+
+    getStepDownPriceSpread(price: number, instrument: Instrument): number {
+        const { sessionContext } = this.props
+
+        const cacheContext = sessionContext.cacheContext
+        const ps = cacheContext.getExchangeBoardPriceSpread(instrument.exchangeBoardCode, instrument.exchangeBoardPsCode)
+        if (price > 0 && ps != null) {
+            const idx = _.findLastIndex(ps.exchangeBoardPriceSpreadDetail, d => price >= d.priceFrom)
+            if (idx >= 0) {
+                const dtl = ps.exchangeBoardPriceSpreadDetail[idx]
+                if (dtl.priceFrom == price) {
+                    // current price same as From Price in range, use previous spread when step down
+                    if (idx >= 1) {
+                        return ps.exchangeBoardPriceSpreadDetail[idx - 1].spreadValue                        
+                    }
+                    else {
+                        return ps.exchangeBoardPriceSpreadDetail[0].spreadValue
+                    }
+                }
+                return dtl.spreadValue                        
+            }
+            else {
+                return ps.exchangeBoardPriceSpreadDetail[0].spreadValue
+            }
+        }
+        return 0
+    }
 
     defaultState = (): Object => {
         const { order, sessionContext } = this.props

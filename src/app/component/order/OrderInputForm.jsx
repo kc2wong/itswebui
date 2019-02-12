@@ -88,7 +88,7 @@ class OrderInputForm extends React.Component<IntProps, State> {
             <ThemeContext.Consumer>
                 {theme => (
                     <React.Fragment>
-                        <h3 style={{ color: theme.secondaryVariant }}>{xlate(`${formName}.title`)}</h3>
+                        {/* <h3 style={{ color: theme.secondaryVariant }}>{xlate(`${formName}.title`)}</h3> */}
                         <XcForm model={orderInputRequest.toJson()} name={formName} onModelUpdate={this.handleModelUpdate} subLabelColor="teal">
                             <XcSelect name="exchangeCode" options={exchangeOpt} validation={{ required: true }} />
                             <XcSelect name="buySell" options={buySellOpt} validation={{ required: true }} />
