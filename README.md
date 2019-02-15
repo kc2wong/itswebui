@@ -9,6 +9,7 @@ The initiative of this project is to build a library which helps to simplify web
 * Multilingual
 * Theming
 
+The level of completion is relatively low due to I shift my interest to reactive spring and flutter.  I will come back to this project some times later
 
 ## Table of Contents
 
@@ -51,6 +52,7 @@ For the project to build, **these files must exist with exact filenames**:
 
 * `public/index.html` is the page template;
 * `src/index.js` is the JavaScript entry point.
+* `webpack.dev.config.js` is the configuration file.  Change the value of **@SERVER_API_URL** if the services of [itsmicrosrv](https://github.com/kc2wong/itsmicrosrv) is not running in the same host
 
 Main directories
 * `assets/i18n` contains language files for UI labels and messages.
@@ -74,13 +76,12 @@ In the project directory, you can run:
 
 Install dependent librarires.  This script must be invoked before running the application
 
-
 ### `yarn start`
 
 Runs the app in the development mode.<br>
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-A login dialog will be displayed.  Enter <b>AD2923702</b> as username and <b>111111</b> as password
+A login dialog will be displayed.  Enter **AD2923702** as username and **111111** as password
 
 
 ## Libraries used
